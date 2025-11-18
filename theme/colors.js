@@ -1,0 +1,48 @@
+export const lightColors = {
+  primary: '#2563EB',
+  background: '#FFFFFF',
+  surface: '#F9FAFB',
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  border: '#E5E7EB',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  star: '#FBBF24',
+  tabIconDefault: '#687076',
+  tabIconSelected: '#2563EB',
+  link: '#2563EB',
+  buttonText: '#FFFFFF',
+  backgroundRoot: '#FFFFFF',
+  backgroundDefault: '#F2F2F2',
+  backgroundSecondary: '#E6E6E6',
+  backgroundTertiary: '#D9D9D9',
+  overlay: 'rgba(0, 0, 0, 0.4)',
+};
+
+export const darkColors = {
+  primary: '#3B82F6',
+  background: '#111827',
+  surface: '#1F2937',
+  textPrimary: '#F9FAFB',
+  textSecondary: '#9CA3AF',
+  border: '#374151',
+  success: '#34D399',
+  warning: '#FBBF24',
+  error: '#F87171',
+  star: '#FBBF24',
+  tabIconDefault: '#9BA1A6',
+  tabIconSelected: '#3B82F6',
+  link: '#3B82F6',
+  buttonText: '#FFFFFF',
+  backgroundRoot: '#1F2123',
+  backgroundDefault: '#2A2C2E',
+  backgroundSecondary: '#353739',
+  backgroundTertiary: '#404244',
+  overlay: 'rgba(0, 0, 0, 0.6)',
+};
+
+export const Colors = {
+  light: lightColors,
+  dark: darkColors,
+};
