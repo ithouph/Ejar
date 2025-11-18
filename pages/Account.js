@@ -1,31 +1,70 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, TextInput, Pressable, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView, View, Pressable, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
-import { Button } from '../components/Button';
 import { useTheme } from '../hooks/useTheme';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { userData } from '../data/userData';
 
+function ActionCard({ icon, title, subtitle, onPress, theme }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.actionCard, { backgroundColor: theme.surface }]}
+    >
+      <View style={[styles.actionIconContainer, { backgroundColor: theme.primary + '15' }]}>
+        <Feather name={icon} size={24} color={theme.primary} />
+      </View>
+      <View style={styles.actionContent}>
+        <ThemedText type="bodyLarge" style={styles.actionTitle}>
+          {title}
+        </ThemedText>
+        <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+          {subtitle}
+        </ThemedText>
+      </View>
+    </Pressable>
+  );
+}
+
 export default function Account({ navigation }) {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
-  const [formData, setFormData] = useState({
-    fullName: userData.profile.fullName,
-    dateOfBirth: userData.profile.dateOfBirth,
-    gender: userData.profile.gender,
-    phone: userData.profile.phone,
-    email: userData.profile.email,
-    weight: userData.profile.weight,
-    height: userData.profile.height,
-  });
+  const insets = useScreenInsets();
 
-  const handleSave = () => {
-    console.log('Profile updated:', formData);
-    navigation.goBack();
-  };
+  const actions = [
+    {
+      icon: 'calendar',
+      title: 'My Bookings',
+      subtitle: 'View reservations',
+    },
+    {
+      icon: 'edit-3',
+      title: 'Edit Profile',
+      subtitle: 'Update info',
+    },
+    {
+      icon: 'credit-card',
+      title: 'Payment Methods',
+      subtitle: 'Cards, wallets',
+    },
+    {
+      icon: 'gift',
+      title: 'Rewards',
+      subtitle: 'Points, offers',
+    },
+    {
+      icon: 'file-text',
+      title: 'Documents',
+      subtitle: 'ID, passport',
+    },
+    {
+      icon: 'settings',
+      title: 'Preferences',
+      subtitle: 'Travel settings',
+    },
+  ];
 
   return (
     <ThemedView style={styles.container}>
@@ -34,166 +73,169 @@ export default function Account({ navigation }) {
           styles.scrollContent,
           {
             paddingTop: insets.top + Spacing.xl,
-            paddingBottom: insets.bottom + 100,
+            paddingBottom: insets.bottom + Spacing.xl,
           },
         ]}
+        showsVerticalScrollIndicator={false}
       >
-        <ThemedText type="h1" style={styles.title}>
-          My Profile
-        </ThemedText>
-
-        <View style={styles.photoSection}>
-          <View style={styles.photoContainer}>
+        <View style={styles.header}>
+          <View style={styles.profileSection}>
             <Image
               source={{ uri: userData.profile.photo }}
-              style={styles.photo}
+              style={styles.profilePhoto}
             />
-            <Pressable style={[styles.editIcon, { backgroundColor: theme.primary }]}>
-              <Feather name="camera" size={16} color="#FFF" />
-            </Pressable>
+            <View style={styles.profileInfo}>
+              <ThemedText type="h2" style={styles.profileName}>
+                {userData.profile.fullName}
+              </ThemedText>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                {userData.profile.email}
+              </ThemedText>
+            </View>
           </View>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={styles.closeButton}
+          >
+            <Feather name="x" size={24} color={theme.textPrimary} />
+          </Pressable>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="h2" style={styles.sectionTitle}>
-            Basic Detail
-          </ThemedText>
-          
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Full name
-            </ThemedText>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.surface, color: theme.textPrimary }]}
-              value={formData.fullName}
-              onChangeText={(text) => setFormData({ ...formData, fullName: text })}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Date of birth
-            </ThemedText>
-            <Pressable style={[styles.input, styles.pickerInput, { backgroundColor: theme.surface }]}>
-              <ThemedText type="body">{formData.dateOfBirth}</ThemedText>
-              <Feather name="chevron-down" size={20} color={theme.textSecondary} />
+        <View style={[styles.balanceCard, { backgroundColor: theme.primary }]}>
+          <View style={styles.balanceHeader}>
+            <View>
+              <ThemedText
+                type="caption"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceLabel}
+              >
+                Total Balance
+              </ThemedText>
+              <ThemedText
+                type="display"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceAmount}
+              >
+                $2,850.00
+              </ThemedText>
+            </View>
+            <Pressable style={styles.walletIcon}>
+              <Feather name="dollar-sign" size={28} color="#FFF" />
             </Pressable>
           </View>
-
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Gender
-            </ThemedText>
-            <View style={styles.genderRow}>
-              <Pressable
-                onPress={() => setFormData({ ...formData, gender: 'Male' })}
-                style={[
-                  styles.genderOption,
-                  {
-                    backgroundColor: formData.gender === 'Male' ? theme.primary + '20' : theme.surface,
-                    borderColor: formData.gender === 'Male' ? theme.primary : theme.border,
-                  },
-                ]}
-              >
-                <View style={[styles.radio, { borderColor: theme.primary }]}>
-                  {formData.gender === 'Male' && (
-                    <View style={[styles.radioInner, { backgroundColor: theme.primary }]} />
-                  )}
-                </View>
-                <ThemedText type="body">Male</ThemedText>
-              </Pressable>
-              <Pressable
-                onPress={() => setFormData({ ...formData, gender: 'Female' })}
-                style={[
-                  styles.genderOption,
-                  {
-                    backgroundColor: formData.gender === 'Female' ? theme.primary + '20' : theme.surface,
-                    borderColor: formData.gender === 'Female' ? theme.primary : theme.border,
-                  },
-                ]}
-              >
-                <View style={[styles.radio, { borderColor: theme.primary }]}>
-                  {formData.gender === 'Female' && (
-                    <View style={[styles.radioInner, { backgroundColor: theme.primary }]} />
-                  )}
-                </View>
-                <ThemedText type="body">Female</ThemedText>
-              </Pressable>
+          
+          <View style={styles.balanceFooter}>
+            <View style={styles.balanceItem}>
+              <Feather name="trending-up" size={16} color="#FFF" />
+              <ThemedText type="caption" lightColor="#FFF" darkColor="#FFF">
+                Earned: $450
+              </ThemedText>
+            </View>
+            <View style={styles.balanceItem}>
+              <Feather name="clock" size={16} color="#FFF" />
+              <ThemedText type="caption" lightColor="#FFF" darkColor="#FFF">
+                Pending: $120
+              </ThemedText>
             </View>
           </View>
         </View>
 
+        <View style={styles.quickActions}>
+          <Pressable
+            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
+          >
+            <Feather name="plus-circle" size={20} color={theme.primary} />
+            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
+              Add Funds
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
+          >
+            <Feather name="send" size={20} color={theme.primary} />
+            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
+              Transfer
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
+          >
+            <Feather name="download" size={20} color={theme.primary} />
+            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
+              Withdraw
+            </ThemedText>
+          </Pressable>
+        </View>
+
         <View style={styles.section}>
           <ThemedText type="h2" style={styles.sectionTitle}>
-            Contact Detail
+            Account Services
           </ThemedText>
           
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Mobile number
-            </ThemedText>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.surface, color: theme.textPrimary }]}
-              value={formData.phone}
-              onChangeText={(text) => setFormData({ ...formData, phone: text })}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Email
-            </ThemedText>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.surface, color: theme.textSecondary }]}
-              value={formData.email}
-              editable={false}
-            />
+          <View style={styles.actionsGrid}>
+            {actions.map((action, index) => (
+              <ActionCard
+                key={index}
+                icon={action.icon}
+                title={action.title}
+                subtitle={action.subtitle}
+                theme={theme}
+                onPress={() => {}}
+              />
+            ))}
           </View>
         </View>
 
         <View style={styles.section}>
           <ThemedText type="h2" style={styles.sectionTitle}>
-            Personal Detail
+            Statistics
           </ThemedText>
           
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Weight (kg)
-            </ThemedText>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.surface, color: theme.textPrimary }]}
-              value={formData.weight}
-              onChangeText={(text) => setFormData({ ...formData, weight: text })}
-              keyboardType="numeric"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Height (cm)
-            </ThemedText>
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.surface, color: theme.textPrimary }]}
-              value={formData.height}
-              onChangeText={(text) => setFormData({ ...formData, height: text })}
-              keyboardType="numeric"
-            />
+          <View style={styles.statsContainer}>
+            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+              <Feather name="map-pin" size={24} color={theme.primary} />
+              <ThemedText type="h1" style={styles.statNumber}>
+                12
+              </ThemedText>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                Places Visited
+              </ThemedText>
+            </View>
+            
+            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+              <Feather name="star" size={24} color={theme.primary} />
+              <ThemedText type="h1" style={styles.statNumber}>
+                8
+              </ThemedText>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                Reviews Written
+              </ThemedText>
+            </View>
+            
+            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+              <Feather name="award" size={24} color={theme.primary} />
+              <ThemedText type="h1" style={styles.statNumber}>
+                Gold
+              </ThemedText>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                Member Status
+              </ThemedText>
+            </View>
           </View>
         </View>
+
+        <Pressable
+          style={[styles.logoutButton, { backgroundColor: theme.surface }]}
+          onPress={() => {}}
+        >
+          <Feather name="log-out" size={20} color={theme.error} />
+          <ThemedText type="body" style={{ color: theme.error }}>
+            Sign Out
+          </ThemedText>
+        </Pressable>
       </ScrollView>
-
-      <View
-        style={[
-          styles.footer,
-          {
-            backgroundColor: theme.backgroundRoot,
-            paddingBottom: insets.bottom + Spacing.md,
-          },
-        ]}
-      >
-        <Button onPress={handleSave}>Save</Button>
-      </View>
     </ThemedView>
   );
 }
@@ -206,30 +248,81 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     gap: Spacing.xl,
   },
-  title: {
-    fontWeight: '700',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  photoSection: {
+  profileSection: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.lg,
+    gap: Spacing.md,
+    flex: 1,
   },
-  photoContainer: {
-    position: 'relative',
+  profilePhoto: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
-  photo: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  profileInfo: {
+    flex: 1,
   },
-  editIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  profileName: {
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  balanceCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.large,
+    gap: Spacing.xl,
+  },
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  balanceLabel: {
+    opacity: 0.9,
+    marginBottom: Spacing.xs,
+  },
+  balanceAmount: {
+    fontWeight: '700',
+  },
+  walletIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  balanceFooter: {
+    flexDirection: 'row',
+    gap: Spacing.xl,
+  },
+  balanceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  quickActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.medium,
   },
   section: {
     gap: Spacing.md,
@@ -237,54 +330,50 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: '600',
   },
-  inputGroup: {
-    gap: Spacing.sm,
+  actionsGrid: {
+    gap: Spacing.md,
   },
-  label: {
-    fontSize: 14,
+  actionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    gap: Spacing.md,
   },
-  input: {
+  actionIconContainer: {
+    width: 48,
     height: 48,
     borderRadius: BorderRadius.small,
-    paddingHorizontal: Spacing.md,
-    fontSize: 16,
-  },
-  pickerInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  genderOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.small,
-    borderWidth: 1,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  actionContent: {
+    flex: 1,
   },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  actionTitle: {
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
     padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    gap: Spacing.sm,
+  },
+  statNumber: {
+    fontWeight: '700',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
   },
 });
