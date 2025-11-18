@@ -62,6 +62,7 @@ export default function Account({ navigation }) {
         </View>
 
         <Pressable
+          onPress={() => navigation.navigate('EditProfile')}
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
           <Image
@@ -138,7 +139,7 @@ export default function Account({ navigation }) {
 
           <Pressable
             style={[styles.actionItem, { backgroundColor: theme.surface }]}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('EditProfile')}
           >
             <View style={styles.actionLeft}>
               <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
