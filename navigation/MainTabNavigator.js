@@ -3,10 +3,9 @@ import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import DiscoverNavigator from '../router/Discover';
-import ExploreNavigator from '../router/Explore';
+import BalanceNavigator from '../router/Balance';
 import SavedNavigator from '../router/Saved';
 import SettingsNavigator from '../router/Settings';
-import Notifications from '../pages/Notifications';
 import { TabBarIcon } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing } from '../theme/global';
@@ -34,20 +33,20 @@ export default function MainTabNavigator() {
       }}
     >
       <Tab.Screen
-        name="Discover"
+        name="Home"
         component={DiscoverNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="search" color={color} focused={focused} />
+            <TabBarIcon name="home" color={color} focused={focused} />
           ),
         }}
       />
       <Tab.Screen
-        name="Notifications"
-        component={Notifications}
+        name="Balance"
+        component={BalanceNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="bell" color={color} focused={focused} />
+            <TabBarIcon name="tag" color={color} focused={focused} />
           ),
         }}
       />
@@ -61,16 +60,7 @@ export default function MainTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Explore"
-        component={ExploreNavigator}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="calendar" color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
+        name="Account"
         component={SettingsNavigator}
         options={{
           tabBarIcon: ({ color, focused }) => (
