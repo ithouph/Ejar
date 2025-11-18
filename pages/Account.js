@@ -8,23 +8,18 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { userData } from '../data/userData';
 
-function ActionCard({ icon, title, subtitle, onPress, theme }) {
+function ServiceCard({ icon, title, onPress, theme }) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.actionCard, { backgroundColor: theme.surface }]}
+      style={[styles.serviceCard, { backgroundColor: theme.surface }]}
     >
-      <View style={[styles.actionIconContainer, { backgroundColor: theme.primary + '15' }]}>
-        <Feather name={icon} size={24} color={theme.primary} />
+      <View style={[styles.serviceIconContainer, { backgroundColor: theme.primary + '10' }]}>
+        <Feather name={icon} size={28} color={theme.primary} />
       </View>
-      <View style={styles.actionContent}>
-        <ThemedText type="bodyLarge" style={styles.actionTitle}>
-          {title}
-        </ThemedText>
-        <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-          {subtitle}
-        </ThemedText>
-      </View>
+      <ThemedText type="bodySmall" style={styles.serviceTitle}>
+        {title}
+      </ThemedText>
     </Pressable>
   );
 }
@@ -33,37 +28,13 @@ export default function Account({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
 
-  const actions = [
-    {
-      icon: 'calendar',
-      title: 'My Bookings',
-      subtitle: 'View reservations',
-    },
-    {
-      icon: 'edit-3',
-      title: 'Edit Profile',
-      subtitle: 'Update info',
-    },
-    {
-      icon: 'credit-card',
-      title: 'Payment Methods',
-      subtitle: 'Cards, wallets',
-    },
-    {
-      icon: 'gift',
-      title: 'Rewards',
-      subtitle: 'Points, offers',
-    },
-    {
-      icon: 'file-text',
-      title: 'Documents',
-      subtitle: 'ID, passport',
-    },
-    {
-      icon: 'settings',
-      title: 'Preferences',
-      subtitle: 'Travel settings',
-    },
+  const services = [
+    { icon: 'calendar', title: 'Bookings' },
+    { icon: 'credit-card', title: 'Payments' },
+    { icon: 'gift', title: 'Rewards' },
+    { icon: 'file-text', title: 'Documents' },
+    { icon: 'settings', title: 'Settings' },
+    { icon: 'help-circle', title: 'Help' },
   ];
 
   return (
@@ -79,20 +50,9 @@ export default function Account({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View style={styles.profileSection}>
-            <Image
-              source={{ uri: userData.profile.photo }}
-              style={styles.profilePhoto}
-            />
-            <View style={styles.profileInfo}>
-              <ThemedText type="h2" style={styles.profileName}>
-                {userData.profile.fullName}
-              </ThemedText>
-              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                {userData.profile.email}
-              </ThemedText>
-            </View>
-          </View>
+          <ThemedText type="h1" style={styles.pageTitle}>
+            Account
+          </ThemedText>
           <Pressable
             onPress={() => navigation.goBack()}
             style={styles.closeButton}
@@ -102,10 +62,28 @@ export default function Account({ navigation }) {
         </View>
 
         <Pressable
+          style={[styles.profileCard, { backgroundColor: theme.surface }]}
+        >
+          <Image
+            source={{ uri: userData.profile.photo }}
+            style={styles.profilePhoto}
+          />
+          <View style={styles.profileInfo}>
+            <ThemedText type="h2" style={styles.profileName}>
+              {userData.profile.fullName}
+            </ThemedText>
+            <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+              {userData.profile.email}
+            </ThemedText>
+          </View>
+          <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+        </Pressable>
+
+        <Pressable
           onPress={() => navigation.navigate('Balance')}
           style={[styles.balanceCard, { backgroundColor: theme.primary }]}
         >
-          <View style={styles.balanceHeader}>
+          <View style={styles.balanceContent}>
             <View>
               <ThemedText
                 type="caption"
@@ -116,7 +94,7 @@ export default function Account({ navigation }) {
                 Total Balance
               </ThemedText>
               <ThemedText
-                type="display"
+                type="h1"
                 lightColor="#FFF"
                 darkColor="#FFF"
                 style={styles.balanceAmount}
@@ -124,66 +102,28 @@ export default function Account({ navigation }) {
                 $2,850.00
               </ThemedText>
             </View>
-            <View style={styles.walletIcon}>
-              <Feather name="dollar-sign" size={28} color="#FFF" />
-            </View>
-          </View>
-          
-          <View style={styles.balanceFooter}>
-            <View style={styles.balanceItem}>
-              <Feather name="trending-up" size={16} color="#FFF" />
-              <ThemedText type="caption" lightColor="#FFF" darkColor="#FFF">
-                Earned: $450
-              </ThemedText>
-            </View>
-            <View style={styles.balanceItem}>
-              <Feather name="clock" size={16} color="#FFF" />
-              <ThemedText type="caption" lightColor="#FFF" darkColor="#FFF">
-                Pending: $120
-              </ThemedText>
+            <View style={styles.balanceIcon}>
+              <Feather name="dollar-sign" size={32} color="#FFF" />
             </View>
           </View>
         </Pressable>
 
-        <View style={styles.quickActions}>
-          <Pressable
-            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
-          >
-            <Feather name="plus-circle" size={20} color={theme.primary} />
-            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
-              Add Funds
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
-          >
-            <Feather name="send" size={20} color={theme.primary} />
-            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
-              Transfer
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            style={[styles.quickActionButton, { backgroundColor: theme.surface }]}
-          >
-            <Feather name="download" size={20} color={theme.primary} />
-            <ThemedText type="bodySmall" style={{ color: theme.primary }}>
-              Withdraw
-            </ThemedText>
-          </Pressable>
-        </View>
-
         <View style={styles.section}>
-          <ThemedText type="h2" style={styles.sectionTitle}>
-            Account Services
-          </ThemedText>
-          
-          <View style={styles.actionsGrid}>
-            {actions.map((action, index) => (
-              <ActionCard
+          <View style={styles.sectionHeader}>
+            <ThemedText type="h2">Services Categories</ThemedText>
+            <Pressable>
+              <ThemedText type="bodySmall" style={{ color: theme.primary }}>
+                View all
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <View style={styles.servicesGrid}>
+            {services.map((service, index) => (
+              <ServiceCard
                 key={index}
-                icon={action.icon}
-                title={action.title}
-                subtitle={action.subtitle}
+                icon={service.icon}
+                title={service.title}
                 theme={theme}
                 onPress={() => {}}
               />
@@ -193,39 +133,78 @@ export default function Account({ navigation }) {
 
         <View style={styles.section}>
           <ThemedText type="h2" style={styles.sectionTitle}>
-            Statistics
+            Quick Actions
           </ThemedText>
-          
-          <View style={styles.statsContainer}>
-            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
-              <Feather name="map-pin" size={24} color={theme.primary} />
-              <ThemedText type="h1" style={styles.statNumber}>
-                12
-              </ThemedText>
-              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                Places Visited
-              </ThemedText>
+
+          <Pressable
+            style={[styles.actionItem, { backgroundColor: theme.surface }]}
+            onPress={() => {}}
+          >
+            <View style={styles.actionLeft}>
+              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
+                <Feather name="edit-3" size={20} color={theme.primary} />
+              </View>
+              <ThemedText type="bodyLarge">Edit Profile</ThemedText>
             </View>
-            
-            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
-              <Feather name="star" size={24} color={theme.primary} />
-              <ThemedText type="h1" style={styles.statNumber}>
-                8
-              </ThemedText>
-              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                Reviews Written
-              </ThemedText>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          <Pressable
+            style={[styles.actionItem, { backgroundColor: theme.surface }]}
+            onPress={() => navigation.navigate('Review')}
+          >
+            <View style={styles.actionLeft}>
+              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
+                <Feather name="star" size={20} color={theme.primary} />
+              </View>
+              <ThemedText type="bodyLarge">My Reviews</ThemedText>
             </View>
-            
-            <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
-              <Feather name="award" size={24} color={theme.primary} />
-              <ThemedText type="h1" style={styles.statNumber}>
-                Gold
-              </ThemedText>
-              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                Member Status
-              </ThemedText>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+
+          <Pressable
+            style={[styles.actionItem, { backgroundColor: theme.surface }]}
+            onPress={() => {}}
+          >
+            <View style={styles.actionLeft}>
+              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
+                <Feather name="bell" size={20} color={theme.primary} />
+              </View>
+              <ThemedText type="bodyLarge">Notifications</ThemedText>
             </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+        </View>
+
+        <View style={styles.statsSection}>
+          <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+            <Feather name="map-pin" size={24} color={theme.primary} />
+            <ThemedText type="h1" style={styles.statNumber}>
+              12
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Places Visited
+            </ThemedText>
+          </View>
+
+          <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+            <Feather name="star" size={24} color={theme.primary} />
+            <ThemedText type="h1" style={styles.statNumber}>
+              8
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Reviews
+            </ThemedText>
+          </View>
+
+          <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+            <Feather name="award" size={24} color={theme.primary} />
+            <ThemedText type="h1" style={styles.statNumber}>
+              Gold
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Status
+            </ThemedText>
           </View>
         </View>
 
@@ -234,7 +213,7 @@ export default function Account({ navigation }) {
           onPress={() => {}}
         >
           <Feather name="log-out" size={20} color={theme.error} />
-          <ThemedText type="body" style={{ color: theme.error }}>
+          <ThemedText type="bodyLarge" style={{ color: theme.error }}>
             Sign Out
           </ThemedText>
         </Pressable>
@@ -254,18 +233,28 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  profileSection: {
+  pageTitle: {
+    fontWeight: '700',
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.large,
     gap: Spacing.md,
-    flex: 1,
   },
   profilePhoto: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   profileInfo: {
     flex: 1,
@@ -274,90 +263,86 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: Spacing.xs,
   },
-  closeButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   balanceCard: {
     padding: Spacing.xl,
     borderRadius: BorderRadius.large,
-    gap: Spacing.xl,
   },
-  balanceHeader: {
+  balanceContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   balanceLabel: {
-    opacity: 0.9,
     marginBottom: Spacing.xs,
+    opacity: 0.9,
   },
   balanceAmount: {
     fontWeight: '700',
   },
-  walletIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  balanceIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  balanceFooter: {
-    flexDirection: 'row',
-    gap: Spacing.xl,
-  },
-  balanceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  quickActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.medium,
-  },
   section: {
     gap: Spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontWeight: '600',
   },
-  actionsGrid: {
-    gap: Spacing.md,
-  },
-  actionCard: {
+  servicesGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.medium,
+    flexWrap: 'wrap',
     gap: Spacing.md,
   },
-  actionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.small,
+  serviceCard: {
+    width: '31%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: BorderRadius.medium,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  serviceIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionContent: {
-    flex: 1,
+  serviceTitle: {
+    textAlign: 'center',
+    fontWeight: '500',
   },
-  actionTitle: {
-    fontWeight: '600',
-    marginBottom: Spacing.xs,
+  actionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
   },
-  statsContainer: {
+  actionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  actionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsSection: {
     flexDirection: 'row',
     gap: Spacing.md,
   },
