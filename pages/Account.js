@@ -29,12 +29,9 @@ export default function Account({ navigation }) {
   const insets = useScreenInsets();
 
   const services = [
-    { icon: 'calendar', title: 'Bookings' },
-    { icon: 'credit-card', title: 'Payments' },
-    { icon: 'gift', title: 'Rewards' },
-    { icon: 'file-text', title: 'Documents' },
-    { icon: 'settings', title: 'Settings' },
-    { icon: 'help-circle', title: 'Help' },
+    { icon: 'scissors', title: 'Hairdresser' },
+    { icon: 'wind', title: 'Cleaning' },
+    { icon: 'droplet', title: 'Painting' },
   ];
 
   return (
@@ -112,14 +109,19 @@ export default function Account({ navigation }) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText type="h2">Services Categories</ThemedText>
-            <Pressable>
-              <ThemedText type="bodySmall" style={{ color: theme.primary }}>
+            <Pressable style={styles.viewAllButton}>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
                 View all
               </ThemedText>
+              <Feather name="chevron-right" size={16} color={theme.textSecondary} />
             </Pressable>
           </View>
 
-          <View style={styles.servicesGrid}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.servicesScroll}
+          >
             {services.map((service, index) => (
               <ServiceCard
                 key={index}
@@ -129,7 +131,7 @@ export default function Account({ navigation }) {
                 onPress={() => {}}
               />
             ))}
-          </View>
+          </ScrollView>
         </View>
 
         <View style={styles.section}>
@@ -299,18 +301,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: '600',
   },
-  servicesGrid: {
+  viewAllButton: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 4,
+  },
+  servicesScroll: {
     gap: Spacing.md,
+    paddingRight: Spacing.lg,
   },
   serviceCard: {
-    width: '31%',
-    aspectRatio: 1,
+    width: 110,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: BorderRadius.medium,
-    padding: Spacing.md,
+    padding: Spacing.lg,
     gap: Spacing.sm,
   },
   serviceIconContainer: {
