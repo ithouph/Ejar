@@ -101,7 +101,10 @@ export default function Account({ navigation }) {
           </Pressable>
         </View>
 
-        <View style={[styles.balanceCard, { backgroundColor: theme.primary }]}>
+        <Pressable
+          onPress={() => navigation.navigate('Balance')}
+          style={[styles.balanceCard, { backgroundColor: theme.primary }]}
+        >
           <View style={styles.balanceHeader}>
             <View>
               <ThemedText
@@ -121,9 +124,9 @@ export default function Account({ navigation }) {
                 $2,850.00
               </ThemedText>
             </View>
-            <Pressable style={styles.walletIcon}>
+            <View style={styles.walletIcon}>
               <Feather name="dollar-sign" size={28} color="#FFF" />
-            </Pressable>
+            </View>
           </View>
           
           <View style={styles.balanceFooter}>
@@ -140,7 +143,7 @@ export default function Account({ navigation }) {
               </ThemedText>
             </View>
           </View>
-        </View>
+        </Pressable>
 
         <View style={styles.quickActions}>
           <Pressable
