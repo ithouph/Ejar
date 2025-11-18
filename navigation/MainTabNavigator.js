@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import DiscoverNavigator from '../router/Discover';
+import PostsNavigator from '../router/Posts';
 import BalanceNavigator from '../router/Balance';
 import SavedNavigator from '../router/Saved';
 import SettingsNavigator from '../router/Settings';
@@ -38,6 +39,15 @@ export default function MainTabNavigator() {
         options={{
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name="home" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Posts"
+        component={PostsNavigator}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="edit-3" color={color} focused={focused} />
           ),
         }}
       />
