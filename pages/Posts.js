@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, View, Pressable, Image, FlatList } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
@@ -6,6 +6,8 @@ import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
+import { postsService } from '../services/postsService';
+import { useFocusEffect } from '@react-navigation/native';
 
 function Navbar({ onMenuPress, theme }) {
   return (
@@ -69,7 +71,7 @@ function PostCard({ post, theme }) {
   );
 }
 
-function EmptyState({ theme }) {
+function EmptyState({ theme, onCreatePost }) {
   return (
     <View style={styles.emptyContainer}>
       <View style={[styles.emptyIconContainer, { backgroundColor: theme.primary + '15' }]}>
@@ -81,7 +83,10 @@ function EmptyState({ theme }) {
       <ThemedText type="bodyLarge" style={[styles.emptyDescription, { color: theme.textSecondary }]}>
         Share your travel experiences, photos, and stories with the community
       </ThemedText>
-      <Pressable style={[styles.createButton, { backgroundColor: theme.primary }]}>
+      <Pressable 
+        onPress={onCreatePost}
+        style={[styles.createButton, { backgroundColor: theme.primary }]}
+      >
         <Feather name="plus" size={20} color="#FFF" />
         <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF" style={styles.createButtonText}>
           Create Your First Post
@@ -96,8 +101,27 @@ export default function Posts({ navigation }) {
   const insets = useScreenInsets();
   const [posts, setPosts] = useState([]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      loadPosts();
+    }, [])
+  );
+
+  async function loadPosts() {
+    try {
+      const fetchedPosts = await postsService.getPosts();
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    }
+  }
+
   const handleMenuPress = () => {
-    console.log('Create new post');
+    navigation.navigate('AddPost');
+  };
+
+  const handleCreateFirstPost = () => {
+    navigation.navigate('AddPost');
   };
 
   return (
@@ -116,7 +140,7 @@ export default function Posts({ navigation }) {
           ]}
           showsVerticalScrollIndicator={false}
         >
-          <EmptyState theme={theme} />
+          <EmptyState theme={theme} onCreatePost={handleCreateFirstPost} />
         </ScrollView>
       ) : (
         <FlatList

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Posts from '../pages/Posts';
+import AddPost from '../pages/AddPost';
 
 const Stack = createNativeStackNavigator();
 
@@ -12,6 +13,7 @@ export default function PostsNavigator() {
       }}
     >
       <Stack.Screen name="PostsHome" component={Posts} />
+      <Stack.Screen name="AddPost" component={AddPost} />
     </Stack.Navigator>
   );
 }
