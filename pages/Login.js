@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Animated, {
   FadeInDown,
@@ -10,13 +10,25 @@ import { Button } from '../components/Button';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { signInWithGoogle } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const handleGoogleSignIn = () => {
-    navigation.replace('Main');
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      await signInWithGoogle();
+      navigation.replace('Main');
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Sign In Failed', 'Unable to sign in with Google. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,20 +49,28 @@ export default function Login({ navigation }) {
         <Animated.View entering={FadeInDown.delay(400)} style={styles.buttonsContainer}>
           <Pressable
             onPress={handleGoogleSignIn}
-            style={[styles.googleButton, { backgroundColor: theme.textPrimary }]}
+            disabled={loading}
+            style={[styles.googleButton, { backgroundColor: theme.textPrimary, opacity: loading ? 0.6 : 1 }]}
           >
-            <Feather name="chrome" size={20} color={theme.buttonText} />
-            <ThemedText
-              type="body"
-              style={[styles.buttonText, { color: theme.buttonText }]}
-            >
-              Sign up with Google
-            </ThemedText>
+            {loading ? (
+              <ActivityIndicator color={theme.buttonText} />
+            ) : (
+              <>
+                <Feather name="chrome" size={20} color={theme.buttonText} />
+                <ThemedText
+                  type="body"
+                  style={[styles.buttonText, { color: theme.buttonText }]}
+                >
+                  Sign up with Google
+                </ThemedText>
+              </>
+            )}
           </Pressable>
 
           <Pressable
             onPress={handleGoogleSignIn}
-            style={[styles.accountButton, { backgroundColor: theme.surface }]}
+            disabled={loading}
+            style={[styles.accountButton, { backgroundColor: theme.surface, opacity: loading ? 0.6 : 1 }]}
           >
             <ThemedText type="body">
               I have an account

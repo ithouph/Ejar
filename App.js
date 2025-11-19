@@ -9,6 +9,7 @@ import MainTabNavigator from './navigation/MainTabNavigator';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import { useTheme } from './hooks/useTheme';
+import { AuthProvider } from './contexts/AuthContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,7 +38,9 @@ export default function App() {
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <Navigation />
+          <AuthProvider>
+            <Navigation />
+          </AuthProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </ErrorBoundary>
