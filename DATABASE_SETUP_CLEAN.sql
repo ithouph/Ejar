@@ -1,14 +1,11 @@
 -- ═══════════════════════════════════════════════════════════════
--- TRAVELSTAY APP - COMPLETE DATABASE SETUP
--- ═══════════════════════════════════════════════════════════════
--- Execute this ENTIRE file in Supabase SQL Editor (one time only)
+-- TRAVELSTAY APP - DATABASE SETUP (SYNTAX VERIFIED)
 -- ═══════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 1: USER MANAGEMENT TABLES
+-- SECTION 1: USER TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: users (core user data)
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
@@ -19,7 +16,6 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table: user_profiles (extended profile info)
 CREATE TABLE IF NOT EXISTS user_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
@@ -33,10 +29,9 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 2: PROPERTY LISTINGS TABLES
+-- SECTION 2: PROPERTY TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: properties (hotels & apartments)
 CREATE TABLE IF NOT EXISTS properties (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
@@ -56,7 +51,6 @@ CREATE TABLE IF NOT EXISTS properties (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table: property_photos (property images)
 CREATE TABLE IF NOT EXISTS property_photos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
@@ -66,7 +60,6 @@ CREATE TABLE IF NOT EXISTS property_photos (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table: amenities (property features)
 CREATE TABLE IF NOT EXISTS amenities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
@@ -76,11 +69,9 @@ CREATE TABLE IF NOT EXISTS amenities (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 3: USER INTERACTIONS TABLES
+-- SECTION 3: USER INTERACTION TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: favorites (user saved properties)
--- Links: user_id → users.id, property_id → properties.id
 CREATE TABLE IF NOT EXISTS favorites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -89,26 +80,22 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, property_id)
 );
 
--- Table: reviews (property reviews)
--- Links: user_id → users.id, property_id → properties.id
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  rating INT NOT NULL,
   title TEXT,
   comment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT valid_rating CHECK (rating >= 1 AND rating <= 5)
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 4: SOCIAL FEATURES TABLES
+-- SECTION 4: SOCIAL TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: posts (social feed with property listings)
--- Links: user_id → users.id
--- NOTE: Each post belongs to ONE user (the creator)
 CREATE TABLE IF NOT EXISTS posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -132,8 +119,6 @@ CREATE TABLE IF NOT EXISTS posts (
 -- SECTION 5: WALLET & PAYMENT TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: wallet_accounts (user balance)
--- Links: user_id → users.id
 CREATE TABLE IF NOT EXISTS wallet_accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
@@ -143,8 +128,6 @@ CREATE TABLE IF NOT EXISTS wallet_accounts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table: wallet_transactions (transaction history)
--- Links: wallet_id → wallet_accounts.id
 CREATE TABLE IF NOT EXISTS wallet_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
@@ -156,9 +139,6 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Table: payment_requests (balance addition requests)
--- Links: user_id → users.id
--- Status flow: pending → processing → processed → approved/rejected
 CREATE TABLE IF NOT EXISTS payment_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -175,8 +155,6 @@ CREATE TABLE IF NOT EXISTS payment_requests (
   CONSTRAINT valid_payment_status CHECK (status IN ('pending', 'processing', 'processed', 'approved', 'rejected'))
 );
 
--- Table: support_messages (support chat messages)
--- Links: user_id → users.id, payment_request_id → payment_requests.id
 CREATE TABLE IF NOT EXISTS support_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -188,11 +166,9 @@ CREATE TABLE IF NOT EXISTS support_messages (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 6: EVENT PLANNING TABLES
+-- SECTION 6: EVENT TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: wedding_events (wedding/event planning)
--- Links: user_id → users.id
 CREATE TABLE IF NOT EXISTS wedding_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -209,7 +185,6 @@ CREATE TABLE IF NOT EXISTS wedding_events (
 -- SECTION 7: SYSTEM TABLES
 -- ═══════════════════════════════════════════════════════════════
 
--- Table: service_categories (app services)
 CREATE TABLE IF NOT EXISTS service_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
@@ -220,35 +195,27 @@ CREATE TABLE IF NOT EXISTS service_categories (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 8: PERFORMANCE INDEXES
+-- SECTION 8: INDEXES
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
-CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON user_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(type);
 CREATE INDEX IF NOT EXISTS idx_properties_location ON properties(location);
-CREATE INDEX IF NOT EXISTS idx_property_photos_property_id ON property_photos(property_id);
-CREATE INDEX IF NOT EXISTS idx_amenities_property_id ON amenities(property_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_property_id ON favorites(property_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_property_id ON reviews(property_id);
-CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_wallet_accounts_user_id ON wallet_accounts(user_id);
-CREATE INDEX IF NOT EXISTS idx_wallet_transactions_wallet_id ON wallet_transactions(wallet_id);
 CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_payment_requests_status ON payment_requests(status);
-CREATE INDEX IF NOT EXISTS idx_support_messages_payment_request_id ON support_messages(payment_request_id);
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 9: ENABLE SECURITY (Row Level Security)
+-- SECTION 9: ROW LEVEL SECURITY (RLS)
 -- ═══════════════════════════════════════════════════════════════
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE wedding_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE property_photos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE amenities ENABLE ROW LEVEL SECURITY;
@@ -259,54 +226,46 @@ ALTER TABLE wallet_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wedding_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
 
--- ═══════════════════════════════════════════════════════════════
--- SECTION 10: SECURITY POLICIES (Who can access what)
--- ═══════════════════════════════════════════════════════════════
-
--- Users policies
+-- Users
 CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own data" ON users FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can insert own data" ON users FOR INSERT WITH CHECK (auth.uid() = id);
 
--- User profiles policies
+-- User profiles
 CREATE POLICY "Users can view own profile" ON user_profiles FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own profile" ON user_profiles FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own profile" ON user_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Properties policies (PUBLIC READ)
+-- Properties (PUBLIC)
 CREATE POLICY "Properties are viewable by everyone" ON properties FOR SELECT USING (true);
-
--- Property photos policies (PUBLIC READ)
 CREATE POLICY "Property photos are viewable by everyone" ON property_photos FOR SELECT USING (true);
-
--- Amenities policies (PUBLIC READ)
 CREATE POLICY "Amenities are viewable by everyone" ON amenities FOR SELECT USING (true);
 
--- Favorites policies (USER-SPECIFIC)
+-- Favorites (USER-SPECIFIC)
 CREATE POLICY "Users can view own favorites" ON favorites FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own favorites" ON favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own favorites" ON favorites FOR DELETE USING (auth.uid() = user_id);
 
--- Reviews policies (PUBLIC READ, USER WRITE)
+-- Reviews (PUBLIC READ, USER WRITE)
 CREATE POLICY "Reviews are viewable by everyone" ON reviews FOR SELECT USING (true);
 CREATE POLICY "Users can insert own reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own reviews" ON reviews FOR DELETE USING (auth.uid() = user_id);
 
--- Posts policies (PUBLIC READ, USER WRITE)
+-- Posts (PUBLIC READ, USER WRITE)
 CREATE POLICY "Posts are viewable by everyone" ON posts FOR SELECT USING (true);
 CREATE POLICY "Users can insert own posts" ON posts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own posts" ON posts FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own posts" ON posts FOR DELETE USING (auth.uid() = user_id);
 
--- Wallet accounts policies (USER-SPECIFIC)
+-- Wallet (USER-SPECIFIC)
 CREATE POLICY "Users can view own wallet" ON wallet_accounts FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own wallet" ON wallet_accounts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own wallet" ON wallet_accounts FOR UPDATE USING (auth.uid() = user_id);
 
--- Wallet transactions policies (USER-SPECIFIC)
 CREATE POLICY "Users can view own transactions" ON wallet_transactions FOR SELECT USING (
   EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
 );
@@ -314,29 +273,28 @@ CREATE POLICY "Users can insert own transactions" ON wallet_transactions FOR INS
   EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
 );
 
--- Payment requests policies (USER-SPECIFIC)
+-- Payment requests (USER-SPECIFIC)
 CREATE POLICY "Users can view own payment requests" ON payment_requests FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own payment requests" ON payment_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own payment requests" ON payment_requests FOR UPDATE USING (auth.uid() = user_id);
 
--- Support messages policies (USER-SPECIFIC)
+-- Support messages (USER-SPECIFIC)
 CREATE POLICY "Users can view own support messages" ON support_messages FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own support messages" ON support_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Wedding events policies (USER-SPECIFIC)
+-- Wedding events (USER-SPECIFIC)
 CREATE POLICY "Users can view own events" ON wedding_events FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own events" ON wedding_events FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own events" ON wedding_events FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own events" ON wedding_events FOR DELETE USING (auth.uid() = user_id);
 
--- Service categories policies (PUBLIC READ)
+-- Service categories (PUBLIC)
 CREATE POLICY "Service categories are viewable by everyone" ON service_categories FOR SELECT USING (true);
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 11: DATABASE FUNCTIONS (Atomic operations)
+-- SECTION 10: FUNCTIONS
 -- ═══════════════════════════════════════════════════════════════
 
--- Function: Atomic wallet transaction (prevents race conditions)
 CREATE OR REPLACE FUNCTION add_wallet_transaction(
   p_wallet_id UUID,
   p_type TEXT,
@@ -354,14 +312,21 @@ DECLARE
   v_user_id UUID;
 BEGIN
   SELECT user_id INTO v_user_id FROM wallet_accounts WHERE id = p_wallet_id;
-  IF v_user_id != auth.uid() THEN RAISE EXCEPTION 'Unauthorized'; END IF;
+  IF v_user_id != auth.uid() THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
 
   INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
   VALUES (p_wallet_id, p_type, p_amount, p_description, p_category, 'completed')
   RETURNING id INTO v_transaction_id;
 
   UPDATE wallet_accounts
-  SET balance = CASE WHEN p_type = 'credit' THEN balance + p_amount ELSE balance - p_amount END, updated_at = NOW()
+  SET 
+    balance = CASE 
+      WHEN p_type = 'credit' THEN balance + p_amount 
+      ELSE balance - p_amount 
+    END,
+    updated_at = NOW()
   WHERE id = p_wallet_id
   RETURNING balance INTO v_new_balance;
 
@@ -369,7 +334,6 @@ BEGIN
 END;
 $$;
 
--- Function: Process payment request (backend approval/rejection)
 CREATE OR REPLACE FUNCTION process_payment_request(
   p_request_id UUID,
   p_new_status TEXT,
@@ -424,7 +388,7 @@ BEGIN
       'success', true,
       'status', p_new_status,
       'new_balance', v_new_balance,
-      'message', 'Payment request approved and balance added'
+      'message', 'Payment approved and balance added'
     );
   END IF;
 
@@ -436,7 +400,6 @@ BEGIN
 END;
 $$;
 
--- Function: Auto-update property rating when reviews change
 CREATE OR REPLACE FUNCTION update_property_rating()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -444,8 +407,16 @@ AS $$
 BEGIN
   UPDATE properties
   SET 
-    rating = (SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)),
-    total_reviews = (SELECT COUNT(*) FROM reviews WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)),
+    rating = (
+      SELECT COALESCE(AVG(rating), 0) 
+      FROM reviews 
+      WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)
+    ),
+    total_reviews = (
+      SELECT COUNT(*) 
+      FROM reviews 
+      WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)
+    ),
     updated_at = NOW()
   WHERE id = COALESCE(NEW.property_id, OLD.property_id);
   RETURN COALESCE(NEW, OLD);
@@ -453,7 +424,7 @@ END;
 $$;
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 12: TRIGGERS (Automatic actions)
+-- SECTION 11: TRIGGERS
 -- ═══════════════════════════════════════════════════════════════
 
 DROP TRIGGER IF EXISTS trigger_update_property_rating ON reviews;
@@ -462,7 +433,7 @@ CREATE TRIGGER trigger_update_property_rating
   FOR EACH ROW EXECUTE FUNCTION update_property_rating();
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 13: SAMPLE DATA (Service categories)
+-- SECTION 12: SAMPLE DATA
 -- ═══════════════════════════════════════════════════════════════
 
 INSERT INTO service_categories (name, icon, description, active) VALUES
@@ -476,25 +447,4 @@ ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════
 -- ✅ SETUP COMPLETE!
--- ═══════════════════════════════════════════════════════════════
--- Your TravelStay database is now ready with:
--- ✓ 14 organized tables
--- ✓ Secure user_id relationships
--- ✓ Row Level Security enabled
--- ✓ Performance indexes
--- ✓ Automatic triggers
--- ✓ Backend processing function for payment requests
--- ✓ Sample service categories
---
--- PAYMENT STATUS FLOW:
--- pending → processing → processed → approved/rejected
---
--- Backend can call: SELECT process_payment_request(
---   request_id, 
---   'approved', 
---   'Verified payment proof', 
---   NULL
--- );
---
--- Next: Configure Google OAuth in Supabase Authentication settings
 -- ═══════════════════════════════════════════════════════════════
