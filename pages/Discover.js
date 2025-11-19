@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, FlatList, Pressable, TextInput, Modal } from 'react-native';
+import { View, ScrollView, FlatList, Pressable, TextInput, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -8,7 +8,7 @@ import { CategoryTabs } from '../components/Filters';
 import { HotelCard } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
-import { Spacing, BorderRadius } from '../theme/global';
+import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
 import { userData } from '../data/userData';
 import { hotelsData, apartmentsData, allPropertiesData } from '../data/cardsData';
 import { filterOptions } from '../data/filterData';
@@ -58,11 +58,11 @@ export default function Discover({ navigation }) {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={layoutStyles.container}>
       <ScrollView
-        style={styles.scrollView}
+        style={layoutStyles.scrollView}
         contentContainerStyle={[
-          styles.scrollContent,
+          layoutStyles.scrollContent,
           { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
         ]}
         showsVerticalScrollIndicator={false}
@@ -75,7 +75,7 @@ export default function Discover({ navigation }) {
         />
 
         <Pressable 
-          style={[styles.searchContainer, { backgroundColor: theme.surface }]}
+          style={[inputStyles.searchInput, spacingStyles.mxLg, { backgroundColor: theme.surface }]}
           onPress={() => setShowFilters(true)}
         >
           <Feather name="search" size={20} color={theme.textSecondary} />
@@ -91,11 +91,11 @@ export default function Discover({ navigation }) {
           onSelectCategory={setSelectedCategory}
         />
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
+        <View style={layoutStyles.section}>
+          <View style={layoutStyles.sectionHeader}>
             <ThemedText type="h2">Popular hotels</ThemedText>
             <Pressable>
-              <View style={styles.seeAllButton}>
+              <View style={[layoutStyles.rowCenter, spacingStyles.gapXs]}>
                 <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
                   See all
                 </ThemedText>
@@ -108,7 +108,7 @@ export default function Discover({ navigation }) {
             data={getFilteredData()}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.hotelsList}
+            contentContainerStyle={listStyles.listHorizontal}
             renderItem={({ item }) => (
               <HotelCard
                 item={item}
@@ -128,8 +128,8 @@ export default function Discover({ navigation }) {
         transparent={false}
         onRequestClose={() => setShowFilters(false)}
       >
-        <ThemedView style={styles.modalContainer}>
-          <View style={[styles.modalHeader, { 
+        <ThemedView style={modalStyles.modalContainer}>
+          <View style={[modalStyles.modalHeader, { 
             backgroundColor: theme.background, 
             paddingTop: insets.top + Spacing.md 
           }]}>
@@ -143,19 +143,19 @@ export default function Discover({ navigation }) {
           </View>
 
           <ScrollView 
-            style={styles.filterContent}
+            style={modalStyles.modalBody}
             contentContainerStyle={[
-              styles.filterScrollContent,
+              modalStyles.modalScrollContent,
               { paddingBottom: insets.bottom + Spacing.xl }
             ]}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.filterSection}>
-              <ThemedText type="h3" style={styles.filterTitle}>Location</ThemedText>
-              <View style={[styles.searchInput, { backgroundColor: theme.surface }]}>
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Location</ThemedText>
+              <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
                 <Feather name="map-pin" size={20} color={theme.textSecondary} />
                 <TextInput
-                  style={[styles.input, { color: theme.textPrimary }]}
+                  style={{ flex: 1, fontSize: 16, color: theme.textPrimary }}
                   placeholder="Where are you going?"
                   placeholderTextColor={theme.textSecondary}
                   value={searchQuery}
@@ -164,28 +164,28 @@ export default function Discover({ navigation }) {
               </View>
             </View>
 
-            <View style={styles.filterSection}>
-              <View style={styles.filterHeader}>
-                <ThemedText type="h3" style={styles.filterTitle}>Price Range</ThemedText>
+            <View style={modalStyles.modalSection}>
+              <View style={layoutStyles.rowBetween}>
+                <ThemedText type="h3" style={modalStyles.modalSubtitle}>Price Range</ThemedText>
                 <ThemedText type="body" style={{ color: theme.primary }}>
                   ${priceRange[0]} - ${priceRange[1]}
                 </ThemedText>
               </View>
-              <View style={styles.priceRangeButtons}>
+              <View style={[layoutStyles.row, spacingStyles.gapSm]}>
                 <Pressable 
-                  style={[styles.priceButton, { backgroundColor: theme.surface }]}
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
                   onPress={() => setPriceRange([0, 1000])}
                 >
                   <ThemedText type="bodySmall">$0 - $1000</ThemedText>
                 </Pressable>
                 <Pressable 
-                  style={[styles.priceButton, { backgroundColor: theme.surface }]}
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
                   onPress={() => setPriceRange([1000, 3000])}
                 >
                   <ThemedText type="bodySmall">$1000 - $3000</ThemedText>
                 </Pressable>
                 <Pressable 
-                  style={[styles.priceButton, { backgroundColor: theme.surface }]}
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
                   onPress={() => setPriceRange([3000, 5000])}
                 >
                   <ThemedText type="bodySmall">$3000+</ThemedText>
@@ -193,14 +193,14 @@ export default function Discover({ navigation }) {
               </View>
             </View>
 
-            <View style={styles.filterSection}>
-              <ThemedText type="h3" style={styles.filterTitle}>Amenities</ThemedText>
-              <View style={styles.amenitiesGrid}>
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Amenities</ThemedText>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
                 {filterOptions.amenities.map((amenity) => (
                   <Pressable
                     key={amenity.id}
                     style={[
-                      styles.amenityChip,
+                      buttonStyles.chip,
                       { 
                         backgroundColor: selectedAmenities.includes(amenity.id) 
                           ? theme.primary + '20' 
@@ -231,14 +231,14 @@ export default function Discover({ navigation }) {
               </View>
             </View>
 
-            <View style={styles.filterSection}>
-              <ThemedText type="h3" style={styles.filterTitle}>Rating</ThemedText>
-              <View style={styles.ratingButtons}>
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Rating</ThemedText>
+              <View style={spacingStyles.gapSm}>
                 {filterOptions.ratings.map((rating) => (
                   <Pressable
                     key={rating.id}
                     style={[
-                      styles.ratingButton,
+                      buttonStyles.primary,
                       { 
                         backgroundColor: selectedRating === rating.id 
                           ? theme.primary 
@@ -260,13 +260,13 @@ export default function Discover({ navigation }) {
             </View>
           </ScrollView>
 
-          <View style={[styles.modalFooter, { 
+          <View style={[modalStyles.modalFooter, { 
             backgroundColor: theme.background,
             paddingBottom: insets.bottom + Spacing.md,
             borderTopColor: theme.border,
           }]}>
             <Pressable 
-              style={[styles.applyButton, { backgroundColor: theme.primary }]}
+              style={[buttonStyles.primaryLarge, { backgroundColor: theme.primary }]}
               onPress={applyFilters}
             >
               <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF">
@@ -280,123 +280,3 @@ export default function Discover({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    gap: Spacing.lg,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    marginHorizontal: Spacing.lg,
-    height: 48,
-    borderRadius: BorderRadius.medium,
-  },
-  searchInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    height: 48,
-    borderRadius: BorderRadius.medium,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-  },
-  section: {
-    gap: Spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
-  seeAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  hotelsList: {
-    paddingHorizontal: Spacing.lg,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-  },
-  filterContent: {
-    flex: 1,
-  },
-  filterScrollContent: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.xl,
-  },
-  filterSection: {
-    gap: Spacing.md,
-  },
-  filterTitle: {
-    fontWeight: '600',
-  },
-  filterHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  priceRangeButtons: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  priceButton: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-  },
-  amenitiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  amenityChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.full,
-  },
-  ratingButtons: {
-    gap: Spacing.sm,
-  },
-  ratingButton: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-  },
-  modalFooter: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    borderTopWidth: 1,
-  },
-  applyButton: {
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-  },
-});

@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Pressable, Image, TextInput, ScrollView } from 'react-native';
+import { View, Pressable, Image, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, BorderRadius } from '../theme/global';
+import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles } from '../theme';
 import { userData } from '../data/userData';
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
   return (
-    <View style={styles.inputGroup}>
-      <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+    <View style={inputStyles.container}>
+      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
         {label}
       </ThemedText>
       <TextInput
-        style={[styles.input, { 
+        style={[inputStyles.input, { 
           backgroundColor: theme.surface, 
           color: theme.textPrimary,
           borderColor: theme.border 
@@ -33,11 +33,11 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType, the
 
 function DatePickerField({ label, value, theme }) {
   return (
-    <View style={styles.inputGroup}>
-      <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+    <View style={inputStyles.container}>
+      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
         {label}
       </ThemedText>
-      <Pressable style={[styles.input, styles.dateInput, { 
+      <Pressable style={[inputStyles.picker, { 
         backgroundColor: theme.surface,
         borderColor: theme.border 
       }]}>
@@ -50,21 +50,22 @@ function DatePickerField({ label, value, theme }) {
 
 function GenderSelector({ value, onSelect, theme }) {
   return (
-    <View style={styles.inputGroup}>
-      <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+    <View style={inputStyles.container}>
+      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
         Gender
       </ThemedText>
-      <View style={styles.genderRow}>
+      <View style={[layoutStyles.row, spacingStyles.gapMd]}>
         <Pressable
           onPress={() => onSelect('Male')}
-          style={[styles.genderOption, { 
+          style={[inputStyles.input, layoutStyles.rowCenter, spacingStyles.gapSm, { 
+            flex: 1,
             backgroundColor: theme.surface,
             borderColor: value === 'Male' ? theme.primary : theme.border 
           }]}
         >
-          <View style={[styles.radio, { borderColor: value === 'Male' ? theme.primary : theme.border }]}>
+          <View style={[inputStyles.radio, { borderColor: value === 'Male' ? theme.primary : theme.border }]}>
             {value === 'Male' ? (
-              <View style={[styles.radioInner, { backgroundColor: theme.primary }]} />
+              <View style={[inputStyles.radioInner, { backgroundColor: theme.primary }]} />
             ) : null}
           </View>
           <ThemedText type="bodyLarge">Male</ThemedText>
@@ -72,14 +73,15 @@ function GenderSelector({ value, onSelect, theme }) {
         
         <Pressable
           onPress={() => onSelect('Female')}
-          style={[styles.genderOption, { 
+          style={[inputStyles.input, layoutStyles.rowCenter, spacingStyles.gapSm, { 
+            flex: 1,
             backgroundColor: theme.surface,
             borderColor: value === 'Female' ? theme.primary : theme.border 
           }]}
         >
-          <View style={[styles.radio, { borderColor: value === 'Female' ? theme.primary : theme.border }]}>
+          <View style={[inputStyles.radio, { borderColor: value === 'Female' ? theme.primary : theme.border }]}>
             {value === 'Female' ? (
-              <View style={[styles.radioInner, { backgroundColor: theme.primary }]} />
+              <View style={[inputStyles.radioInner, { backgroundColor: theme.primary }]} />
             ) : null}
           </View>
           <ThemedText type="bodyLarge">Female</ThemedText>
@@ -107,33 +109,45 @@ export default function EditProfile({ navigation }) {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={[styles.header, { backgroundColor: theme.background, paddingTop: insets.top + Spacing.md }]}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+    <ThemedView style={layoutStyles.container}>
+      <View style={[layoutStyles.header, { 
+        backgroundColor: theme.background, 
+        paddingTop: insets.top + Spacing.md,
+        justifyContent: 'space-between' 
+      }]}>
+        <Pressable onPress={() => navigation.goBack()} style={buttonStyles.icon}>
           <Feather name="arrow-left" size={24} color={theme.textPrimary} />
         </Pressable>
-        <ThemedText type="h2" style={styles.headerTitle}>
+        <ThemedText type="h2" style={{ fontWeight: '600' }}>
           My Profile
         </ThemedText>
         <View style={{ width: 40 }} />
       </View>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
+        contentContainerStyle={[spacingStyles.pbXl, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profilePhotoContainer}>
+        <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
           <Image
             source={{ uri: userData.profile.photo }}
-            style={styles.profilePhoto}
+            style={{ width: 100, height: 100, borderRadius: 50 }}
           />
-          <Pressable style={[styles.editPhotoButton, { backgroundColor: theme.primary }]}>
+          <Pressable style={[buttonStyles.iconSmall, { 
+            backgroundColor: theme.primary,
+            position: 'absolute',
+            bottom: Spacing.xl,
+            right: '50%',
+            marginRight: -60,
+            borderWidth: 3,
+            borderColor: '#FFF',
+          }]}>
             <Feather name="edit-2" size={16} color="#FFF" />
           </Pressable>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="h3" style={styles.sectionTitle}>
+        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
+          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
             Basic Detail
           </ThemedText>
 
@@ -158,8 +172,8 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="h3" style={styles.sectionTitle}>
+        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
+          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
             Contact Detail
           </ThemedText>
 
@@ -182,8 +196,8 @@ export default function EditProfile({ navigation }) {
           />
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="h3" style={styles.sectionTitle}>
+        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
+          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
             Personal Detail
           </ThemedText>
 
@@ -208,13 +222,16 @@ export default function EditProfile({ navigation }) {
 
         <Pressable
           onPress={handleSave}
-          style={[styles.saveButton, { backgroundColor: theme.primary }]}
+          style={[buttonStyles.primaryLarge, spacingStyles.mxLg, spacingStyles.mtMd, { 
+            backgroundColor: theme.primary,
+            marginBottom: Spacing['2xl']
+          }]}
         >
           <ThemedText 
             type="bodyLarge" 
             lightColor="#FFF" 
             darkColor="#FFF"
-            style={styles.saveButtonText}
+            style={{ fontWeight: '600' }}
           >
             Save
           </ThemedText>
@@ -224,112 +241,3 @@ export default function EditProfile({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    paddingTop: Spacing.xl,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontWeight: '600',
-  },
-  profilePhotoContainer: {
-    alignItems: 'center',
-    paddingVertical: Spacing.xl,
-  },
-  profilePhoto: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  editPhotoButton: {
-    position: 'absolute',
-    bottom: Spacing.xl,
-    right: '50%',
-    marginRight: -60,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFF',
-  },
-  section: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
-    gap: Spacing.md,
-  },
-  sectionTitle: {
-    fontWeight: '700',
-    marginBottom: Spacing.xs,
-  },
-  inputGroup: {
-    gap: Spacing.xs,
-  },
-  label: {
-    fontSize: 14,
-  },
-  input: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.medium,
-    fontSize: 16,
-    borderWidth: 1,
-  },
-  dateInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  genderRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  genderOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.medium,
-    borderWidth: 1,
-  },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  saveButton: {
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xxl,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontWeight: '600',
-  },
-});
