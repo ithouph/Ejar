@@ -36,13 +36,13 @@ export default function Login({ navigation }) {
       <View style={[styles.content, { paddingTop: insets.top + Spacing['3xl'], paddingBottom: insets.bottom + Spacing.xl }]}>
         <Animated.View entering={FadeInDown.delay(200)} style={styles.header}>
           <ThemedText type="display" style={styles.title}>
-            chat rooms
+            TravelStay
           </ThemedText>
           <ThemedText type="h1" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            with the most
+            Discover your
           </ThemedText>
           <ThemedText type="h1" style={styles.title}>
-            valuable
+            perfect stay
           </ThemedText>
         </Animated.View>
 
@@ -78,7 +78,7 @@ export default function Login({ navigation }) {
           </Pressable>
 
           <ThemedText type="caption" style={[styles.terms, { color: theme.textSecondary }]}>
-            By continuing you confirm that you agree to our Terms of Service, Privacy Policy and Good Manners at chat users feels like to your loved ones more often
+            By continuing you agree to our Terms of Service and Privacy Policy. Book your dream vacation with TravelStay.
           </ThemedText>
         </Animated.View>
       </View>

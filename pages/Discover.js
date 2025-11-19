@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, ScrollView, FlatList, Pressable, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, FlatList, Pressable, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { Header } from '../components/Header';
@@ -8,14 +9,18 @@ import { CategoryTabs } from '../components/Filters';
 import { HotelCard } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
+import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
 import { userData } from '../data/userData';
 import { hotelsData, apartmentsData, allPropertiesData } from '../data/cardsData';
 import { filterOptions } from '../data/filterData';
+import { propertiesService } from '../services/propertiesService';
+import { favoritesService } from '../services/favoritesService';
 
 export default function Discover({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [favorites, setFavorites] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -23,21 +28,83 @@ export default function Discover({ navigation }) {
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRating, setSelectedRating] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, [user, selectedCategory]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      const filters = {};
+      if (selectedCategory === 'hotels') {
+        filters.type = 'Hotel';
+      } else if (selectedCategory === 'apartments') {
+        filters.type = 'Apartment';
+      }
+
+      const [propertiesData, favoriteIds] = await Promise.all([
+        propertiesService.getProperties(filters).catch(() => allPropertiesData),
+        user ? favoritesService.getFavoriteIds(user.id).catch(() => []) : Promise.resolve([]),
+      ]);
+
+      setProperties(propertiesData.length > 0 ? propertiesData : allPropertiesData);
+      setFavorites(favoriteIds);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setProperties(allPropertiesData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getFilteredData = () => {
     if (selectedCategory === 'hotels') {
-      return hotelsData.filter(item => item.type === 'Hotel');
+      return properties.filter(item => item.type === 'Hotel');
     }
     if (selectedCategory === 'apartments') {
-      return apartmentsData;
+      return properties.filter(item => item.type === 'Apartment');
     }
-    return allPropertiesData;
+    return properties;
   };
 
-  const toggleFavorite = (id) => {
-    setFavorites(prev =>
-      prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
-    );
+  const toggleFavorite = async (id) => {
+    const previousFavorites = [...favorites];
+    const wasAdding = !favorites.includes(id);
+    
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      setFavorites(prev =>
+        prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
+      );
+
+      if (user) {
+        await favoritesService.toggleFavorite(user.id, id);
+      } else if (wasAdding) {
+        setFavorites(previousFavorites);
+        Alert.alert(
+          'Sign in required',
+          'Please sign in to save your favorites across devices.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      
+      setFavorites(previousFavorites);
+
+      Alert.alert(
+        'Action Failed',
+        wasAdding 
+          ? 'Unable to add to favorites. Please try again.'
+          : 'Unable to remove from favorites. Please try again.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const toggleAmenity = (id) => {
@@ -104,21 +171,27 @@ export default function Discover({ navigation }) {
             </Pressable>
           </View>
 
-          <FlatList
-            data={getFilteredData()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={listStyles.listHorizontal}
-            renderItem={({ item }) => (
-              <HotelCard
-                item={item}
-                onPress={() => navigation.navigate('Details', { property: item })}
-                onFavoritePress={toggleFavorite}
-                isFavorite={favorites.includes(item.id)}
-              />
-            )}
-            keyExtractor={item => item.id}
-          />
+          {loading ? (
+            <View style={{ paddingVertical: Spacing.xl, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={theme.primary} />
+            </View>
+          ) : (
+            <FlatList
+              data={getFilteredData()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={listStyles.listHorizontal}
+              renderItem={({ item }) => (
+                <HotelCard
+                  item={item}
+                  onPress={() => navigation.navigate('Details', { property: item })}
+                  onFavoritePress={toggleFavorite}
+                  isFavorite={favorites.includes(item.id)}
+                />
+              )}
+              keyExtractor={item => item.id}
+            />
+          )}
         </View>
       </ScrollView>
 
