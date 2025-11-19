@@ -180,8 +180,21 @@ export const postsService = {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error deleting post:', error);
-      throw error;
+      console.error('Error deleting post from Supabase, trying local storage:', error);
+      
+      // Fallback: Delete from local storage
+      try {
+        const localPosts = await AsyncStorage.getItem(POSTS_STORAGE_KEY);
+        if (localPosts) {
+          const posts = JSON.parse(localPosts);
+          const updatedPosts = posts.filter(post => post.id !== postId || post.userId !== userId);
+          await AsyncStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
+        }
+        return true;
+      } catch (storageError) {
+        console.error('Error deleting from local storage:', storageError);
+        throw error;
+      }
     }
   },
 
