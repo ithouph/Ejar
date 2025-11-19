@@ -50,18 +50,24 @@ A React Native mobile app built with Expo for booking hotels and apartments, fea
 │   ├── Wallet.js
 │   └── ...
 ├── components/               # Reusable components
+│   ├── MainTabNavigator.js   # Bottom tab navigation (64 lines)
+│   ├── Navbar.js             # Navbar components (TabBarIcon, PageHeader, SimpleHeader)
 │   ├── ThemedText.js
 │   ├── ThemedView.js
 │   ├── Card.js
-│   ├── Header.js
+│   ├── ErrorBoundary.js
 │   └── ...
+├── router/                   # Screen navigators (4 routers)
+│   ├── Discover.js
+│   ├── Posts.js
+│   ├── Saved.js
+│   └── Settings.js
 ├── theme/                    # Centralized styling (Bootstrap-like)
 │   ├── colors.js             # Color palette
 │   ├── global.js             # Spacing, typography, layouts
 │   ├── utils.js              # Utility styles
 │   └── index.js
 ├── data/                     # Static fallback data
-├── navigation/               # Navigation structure
 └── hooks/                    # Custom hooks
 
 Documentation:
@@ -182,21 +188,23 @@ Full design system documented in `design_guidelines.md`:
 ## Recent Changes
 
 **2024-11-19 (Latest)**:
+- ✅ Organized and moved MainTabNavigator to components folder
+  - Moved from navigation/MainTabNavigator.js → components/MainTabNavigator.js
+  - Reduced from 162 lines to 64 lines (60% reduction)
+  - Used TAB_CONFIG array for cleaner, maintainable structure
+  - Fixed metro bundler cache and verified app loads successfully
 - ✅ Organized navbar components into single file (components/Navbar.js)
   - Created 3 reusable components: TabBarIcon, PageHeader, SimpleHeader
   - Updated Posts.js and Saved.js to use PageHeader
-- ✅ Simplified MainTabNavigator
-  - Reduced from 162 lines to 64 lines (60% reduction)
-  - Used TAB_CONFIG array for cleaner structure
-  - Renamed "Account" tab to "Settings" (fixed duplicate screen warning)
+  - Removed redundant navbar styles from pages
 - ✅ Fixed critical bugs:
   - Fixed Supabase config to properly read env variables using expo-constants
   - Fixed guest user ID to valid UUID format (00000000-0000-0000-0000-000000000001)
-  - Fixed duplicate screen name warning
+  - Fixed duplicate screen name warning (Account → Settings)
 - ✅ Code cleanup:
   - Deleted 11 unused files
-  - Removed redundant navbar styles from pages
-  - Consolidated all navbar logic in components/Navbar.js
+  - Router folder now only contains 4 essential navigators
+  - All navigation components centralized in components/
 
 **2024-11-19 (Earlier)**:
 - ✅ Implemented complete Supabase integration
