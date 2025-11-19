@@ -4,7 +4,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
 import DiscoverNavigator from '../router/Discover';
 import PostsNavigator from '../router/Posts';
-import BalanceNavigator from '../router/Balance';
 import SavedNavigator from '../router/Saved';
 import SettingsNavigator from '../router/Settings';
 import { TabBarIcon } from '../components/Navbar';
@@ -16,7 +15,7 @@ const Tab = createBottomTabNavigator();
 /**
  * MAIN TAB NAVIGATOR
  * 
- * This is the bottom navigation bar with 5 tabs.
+ * This is the bottom navigation bar with 4 tabs.
  * 
  * EASY CUSTOMIZATION GUIDE:
  * 
@@ -112,21 +111,7 @@ export default function MainTabNavigator() {
       />
 
       {/* 
-        TAB 3: BALANCE (Wallet)
-        Icon: tag
-      */}
-      <Tab.Screen
-        name="Balance"
-        component={BalanceNavigator}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="tag" color={color} focused={focused} />
-          ),
-        }}
-      />
-
-      {/* 
-        TAB 4: SAVED (Favorites)
+        TAB 3: SAVED (Favorites)
         Icon: heart
       */}
       <Tab.Screen
@@ -140,7 +125,7 @@ export default function MainTabNavigator() {
       />
 
       {/* 
-        TAB 5: ACCOUNT (Profile & Settings)
+        TAB 4: ACCOUNT (Profile & Settings)
         Icon: user
       */}
       <Tab.Screen
