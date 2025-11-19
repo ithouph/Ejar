@@ -4,78 +4,96 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import { ActivityIndicator, View } from 'react-native';
 import ErrorBoundary from './components/ErrorBoundary';
 import MainTabNavigator from './navigation/MainTabNavigator';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import { useTheme } from './hooks/useTheme';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 const Stack = createNativeStackNavigator();
 
 /**
- * MAIN APP NAVIGATION
+ * ═══════════════════════════════════════════════════════════════════
+ * AUTH GATE - CONTROLS NAVIGATION BASED ON LOGIN STATUS
+ * ═══════════════════════════════════════════════════════════════════
  * 
- * This controls the initial flow of the app:
- * Welcome Screen → Login Screen → Main App (Tabs)
+ * This checks if user is logged in and shows the right screens:
+ * - NOT logged in: Shows Welcome → Login screens
+ * - LOGGED IN: Shows Main app with tabs
+ * - LOADING: Shows loading spinner
  * 
- * EASY CUSTOMIZATION GUIDE:
+ * WHY THIS FIXES THE ISSUE:
+ * - Before: Login button always went to homepage (even without login)
+ * - Now: Only goes to homepage AFTER successful login
  * 
- * 1. TO CHANGE STARTING SCREEN:
- *    - Change initialRouteName="Welcome" to:
- *      - "Login" to start at login
- *      - "Main" to skip welcome/login (for testing)
- * 
- * 2. TO ADD A NEW SCREEN BEFORE TABS:
- *    - Add another <Stack.Screen> here
- *    - Example: <Stack.Screen name="Tutorial" component={Tutorial} />
- * 
- * 3. TO SKIP WELCOME SCREEN:
- *    - Change initialRouteName to "Login"
- *    - Or remove the Welcome screen entirely
- * 
- * 4. TO REMOVE LOGIN:
- *    - Change initialRouteName to "Main"
- *    - Comment out or delete Login screen
+ * CUSTOMIZATION:
+ * - Add more auth screens (Register, ForgotPassword) to AuthStack
+ * - Change loading spinner design
+ * - Add splash screen while loading
  */
-function Navigation() {
-  const { isDark } = useTheme();
+function AuthGate() {
+  const { user, loading } = useAuth();
+  const { isDark, theme } = useTheme();
+
+  // STEP 1: Show loading spinner while checking if user is logged in
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
-      {/* Status bar color (clock, battery icons) */}
       <StatusBar style={isDark ? 'light' : 'dark'} />
       
-      <Stack.Navigator
-        // STARTING SCREEN - Change this to start on a different screen
-        initialRouteName="Welcome"
-        
-        screenOptions={{
-          // Hide headers on all screens (we use custom headers)
-          headerShown: false,
-        }}
-      >
-        {/* SCREEN 1: Welcome/Splash */}
-        <Stack.Screen name="Welcome" component={Welcome} />
-        
-        {/* SCREEN 2: Login/Sign Up */}
-        <Stack.Screen name="Login" component={Login} />
-        
-        {/* SCREEN 3: Main App with Bottom Tabs */}
-        <Stack.Screen name="Main" component={MainTabNavigator} />
-      </Stack.Navigator>
+      {/* STEP 2: Show different screens based on login status */}
+      {!user ? (
+        // ═══════════════════════════════════════════════════════════
+        // NOT LOGGED IN - Show welcome/login screens
+        // ═══════════════════════════════════════════════════════════
+        <Stack.Navigator
+          initialRouteName="Welcome"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          {/* Welcome Screen */}
+          <Stack.Screen name="Welcome" component={Welcome} />
+          
+          {/* Login Screen - ADD YOUR CUSTOM LOGIN DESIGN HERE */}
+          <Stack.Screen name="Login" component={Login} />
+          
+          {/* 
+            TO ADD MORE AUTH SCREENS:
+            - Create Register.js in /pages
+            - Add: <Stack.Screen name="Register" component={Register} />
+            - Same for ForgotPassword, etc.
+          */}
+        </Stack.Navigator>
+      ) : (
+        // ═══════════════════════════════════════════════════════════
+        // LOGGED IN - Show main app
+        // ═══════════════════════════════════════════════════════════
+        <MainTabNavigator />
+      )}
     </NavigationContainer>
   );
 }
 
 /**
+ * ═══════════════════════════════════════════════════════════════════
  * ROOT APP COMPONENT
+ * ═══════════════════════════════════════════════════════════════════
  * 
  * This wraps everything and sets up:
  * - Error handling (crashes show friendly message)
  * - Gestures (for swipes, taps)
  * - Safe areas (notch/home indicator handling)
- * - Authentication state
+ * - Authentication state (AuthProvider)
  * 
  * DON'T CHANGE THIS unless you know what you're doing!
  */
@@ -84,8 +102,10 @@ export default function App() {
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
+          {/* AuthProvider manages login state throughout app */}
           <AuthProvider>
-            <Navigation />
+            {/* AuthGate shows Welcome/Login OR Main App based on login */}
+            <AuthGate />
           </AuthProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
