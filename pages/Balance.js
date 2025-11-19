@@ -158,12 +158,15 @@ export default function Balance({ navigation }) {
             </ThemedText>
           </Pressable>
 
-          <Pressable style={[styles.actionButton, { backgroundColor: theme.surface }]}>
+          <Pressable 
+            onPress={() => navigation.navigate('SupportChat')}
+            style={[styles.actionButton, { backgroundColor: theme.surface }]}
+          >
             <View style={[styles.actionIcon, { backgroundColor: theme.backgroundRoot }]}>
               <Feather name="plus" size={20} color={theme.textPrimary} />
             </View>
             <ThemedText type="caption" style={styles.actionLabel}>
-              Add funds
+              Add balance
             </ThemedText>
           </Pressable>
 
