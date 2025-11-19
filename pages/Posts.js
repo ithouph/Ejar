@@ -4,34 +4,13 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
+import { PageHeader } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { postsService } from '../services/postsService';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-
-function Navbar({ onMenuPress, onViewToggle, viewMode, theme }) {
-  return (
-    <View style={[styles.navbar, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-      <ThemedText type="h1" style={styles.navTitle}>
-        Posts
-      </ThemedText>
-      <View style={styles.navButtons}>
-        <Pressable onPress={onViewToggle} style={styles.menuButton}>
-          <Feather 
-            name={viewMode === 'normal' ? 'grid' : 'list'} 
-            size={20} 
-            color={theme.primary} 
-          />
-        </Pressable>
-        <Pressable onPress={onMenuPress} style={styles.menuButton}>
-          <Feather name="plus-circle" size={24} color={theme.primary} />
-        </Pressable>
-      </View>
-    </View>
-  );
-}
 
 function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave }) {
   const isOwnPost = currentUserId && post.userId === currentUserId;
@@ -276,11 +255,13 @@ export default function Posts({ navigation }) {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.navbarContainer, { paddingTop: insets.top }]}>
-        <Navbar 
-          onMenuPress={handleMenuPress} 
+        <PageHeader
+          title="Posts"
+          theme={theme}
+          onAction={handleMenuPress}
+          actionIcon="plus-circle"
           onViewToggle={handleViewToggle}
           viewMode={viewMode}
-          theme={theme} 
         />
       </View>
 
@@ -348,28 +329,6 @@ const styles = StyleSheet.create({
   },
   navbarContainer: {
     zIndex: 10,
-  },
-  navbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  navTitle: {
-    fontWeight: '700',
-  },
-  navButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  menuButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   scrollContent: {
     flexGrow: 1,

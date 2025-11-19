@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { HotelCard } from '../components/Card';
+import { PageHeader } from '../components/Navbar';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
@@ -134,6 +135,15 @@ export default function Saved({ navigation }) {
 
   return (
     <ThemedView style={styles.container}>
+      <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
+        <PageHeader
+          title="Saved Properties"
+          theme={theme}
+          onViewToggle={toggleViewMode}
+          viewMode={viewMode}
+        />
+      </View>
+      
       <FlatList
         data={savedProperties}
         numColumns={viewMode === 'compact' ? 2 : 1}
@@ -141,7 +151,6 @@ export default function Saved({ navigation }) {
         contentContainerStyle={[
           viewMode === 'compact' ? styles.gridContent : styles.listContent,
           {
-            paddingTop: insets.top + Spacing.xl,
             paddingBottom: insets.bottom + Spacing.xl,
           },
         ]}
@@ -170,23 +179,6 @@ export default function Saved({ navigation }) {
           );
         }}
         keyExtractor={item => item.id}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <ThemedText type="h1" style={styles.title}>
-              Saved Properties
-            </ThemedText>
-            <Pressable 
-              onPress={toggleViewMode}
-              style={[styles.viewToggle, { backgroundColor: theme.surface }]}
-            >
-              <Feather 
-                name={viewMode === 'normal' ? 'grid' : 'list'} 
-                size={20} 
-                color={theme.primary} 
-              />
-            </Pressable>
-          </View>
-        }
         ListEmptyComponent={
           <View style={{ paddingVertical: Spacing.xl, alignItems: 'center' }}>
             <ThemedText type="body" style={{ color: theme.textSecondary }}>
@@ -203,32 +195,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    zIndex: 10,
+  },
   listContent: {
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
     gap: Spacing.lg,
   },
   gridContent: {
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
   },
   row: {
     justifyContent: 'space-between',
     marginBottom: Spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.md,
-  },
-  title: {
-    fontWeight: '700',
-  },
-  viewToggle: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   cardContainer: {
     marginBottom: Spacing.lg,
