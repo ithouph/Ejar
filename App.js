@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import ErrorBoundary from './components/ErrorBoundary';
-import MainTabNavigator from './navigation/MainTabNavigator';
+import MainTabNavigator from './components/MainTabNavigator';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import { useTheme } from './hooks/useTheme';
