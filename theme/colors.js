@@ -1,47 +1,115 @@
+/**
+ * THEME COLORS
+ * 
+ * This file controls ALL colors in the app.
+ * The app automatically switches between light and dark mode.
+ * 
+ * EASY CUSTOMIZATION GUIDE:
+ * 
+ * 1. TO CHANGE BRAND COLOR:
+ *    - Edit 'primary' in both light and dark
+ *    - This affects: buttons, links, active tabs, highlights
+ * 
+ * 2. TO CHANGE BACKGROUND COLORS:
+ *    - background: Main screen background
+ *    - surface: Cards and elevated elements
+ *    - backgroundDefault/Secondary/Tertiary: Different shades
+ * 
+ * 3. TO CHANGE TEXT COLORS:
+ *    - textPrimary: Main text (headlines, body)
+ *    - textSecondary: Less important text (captions, labels)
+ * 
+ * 4. TO CUSTOMIZE ALERT COLORS:
+ *    - success: Green for success messages
+ *    - warning: Orange for warnings
+ *    - error: Red for errors
+ * 
+ * 5. TO GET COLOR CODES:
+ *    - Use a color picker tool online
+ *    - Copy hex code (e.g., #2563EB)
+ *    - Paste it here
+ * 
+ * 6. RECOMMENDED TOOLS:
+ *    - https://coolors.co (color palette generator)
+ *    - https://htmlcolorcodes.com (color picker)
+ */
+
+// LIGHT MODE COLORS (when phone is in light mode)
 export const lightColors = {
-  primary: '#2563EB',
-  background: '#FFFFFF',
-  surface: '#F9FAFB',
-  textPrimary: '#111827',
-  textSecondary: '#6B7280',
-  border: '#E5E7EB',
-  success: '#10B981',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  star: '#FBBF24',
-  tabIconDefault: '#687076',
-  tabIconSelected: '#2563EB',
-  link: '#2563EB',
-  buttonText: '#FFFFFF',
-  backgroundRoot: '#FFFFFF',
-  backgroundDefault: '#F2F2F2',
-  backgroundSecondary: '#E6E6E6',
-  backgroundTertiary: '#D9D9D9',
-  overlay: 'rgba(0, 0, 0, 0.4)',
+  // BRAND COLORS
+  primary: '#2563EB',              // Main blue - buttons, links, active states
+  
+  // BACKGROUND COLORS
+  background: '#FFFFFF',           // Main screen background (white)
+  surface: '#F9FAFB',              // Cards, elevated sections (light gray)
+  backgroundRoot: '#FFFFFF',       // Root app background
+  backgroundDefault: '#F2F2F2',    // Secondary backgrounds
+  backgroundSecondary: '#E6E6E6',  // Tertiary backgrounds
+  backgroundTertiary: '#D9D9D9',   // Fourth level backgrounds
+  
+  // TEXT COLORS
+  textPrimary: '#111827',          // Main text (dark gray, almost black)
+  textSecondary: '#6B7280',        // Secondary text (medium gray)
+  
+  // BORDER & DIVIDERS
+  border: '#E5E7EB',               // Lines, borders, dividers
+  
+  // STATUS COLORS
+  success: '#10B981',              // Green for success
+  warning: '#F59E0B',              // Orange for warnings
+  error: '#EF4444',                // Red for errors
+  
+  // SPECIAL COLORS
+  star: '#FBBF24',                 // Yellow/gold for star ratings
+  link: '#2563EB',                 // Links (same as primary)
+  buttonText: '#FFFFFF',           // Text on colored buttons (white)
+  overlay: 'rgba(0, 0, 0, 0.4)',  // Dark overlay for modals
+  
+  // TAB BAR COLORS
+  tabIconDefault: '#687076',       // Inactive tab icons (gray)
+  tabIconSelected: '#2563EB',      // Active tab icon (same as primary)
 };
 
+// DARK MODE COLORS (when phone is in dark mode)
 export const darkColors = {
-  primary: '#3B82F6',
-  background: '#111827',
-  surface: '#1F2937',
-  textPrimary: '#F9FAFB',
-  textSecondary: '#9CA3AF',
-  border: '#374151',
-  success: '#34D399',
-  warning: '#FBBF24',
-  error: '#F87171',
-  star: '#FBBF24',
-  tabIconDefault: '#9BA1A6',
-  tabIconSelected: '#3B82F6',
-  link: '#3B82F6',
-  buttonText: '#FFFFFF',
-  backgroundRoot: '#1F2123',
-  backgroundDefault: '#2A2C2E',
-  backgroundSecondary: '#353739',
-  backgroundTertiary: '#404244',
-  overlay: 'rgba(0, 0, 0, 0.6)',
+  // BRAND COLORS
+  primary: '#3B82F6',              // Lighter blue for dark mode
+  
+  // BACKGROUND COLORS
+  background: '#111827',           // Main screen background (dark gray)
+  surface: '#1F2937',              // Cards, elevated sections (lighter dark gray)
+  backgroundRoot: '#1F2123',       // Root app background
+  backgroundDefault: '#2A2C2E',    // Secondary backgrounds
+  backgroundSecondary: '#353739',  // Tertiary backgrounds
+  backgroundTertiary: '#404244',   // Fourth level backgrounds
+  
+  // TEXT COLORS
+  textPrimary: '#F9FAFB',          // Main text (almost white)
+  textSecondary: '#9CA3AF',        // Secondary text (light gray)
+  
+  // BORDER & DIVIDERS
+  border: '#374151',               // Lines, borders, dividers (dark gray)
+  
+  // STATUS COLORS
+  success: '#34D399',              // Green for success (lighter than light mode)
+  warning: '#FBBF24',              // Orange for warnings
+  error: '#F87171',                // Red for errors (lighter than light mode)
+  
+  // SPECIAL COLORS
+  star: '#FBBF24',                 // Yellow/gold for star ratings (same)
+  link: '#3B82F6',                 // Links (same as primary)
+  buttonText: '#FFFFFF',           // Text on colored buttons (white)
+  overlay: 'rgba(0, 0, 0, 0.6)',  // Darker overlay for modals
+  
+  // TAB BAR COLORS
+  tabIconDefault: '#9BA1A6',       // Inactive tab icons (light gray)
+  tabIconSelected: '#3B82F6',      // Active tab icon (same as primary)
 };
 
+/**
+ * EXPORT
+ * Don't change this part - it's how the app reads your colors
+ */
 export const Colors = {
   light: lightColors,
   dark: darkColors,
