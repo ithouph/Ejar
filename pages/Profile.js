@@ -8,25 +8,6 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { userData } from '../data/userData';
 
-function SettingsItem({ icon, title, onPress, showChevron = true }) {
-  const { theme } = useTheme();
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.settingsItem, { backgroundColor: theme.surface }]}
-    >
-      <View style={styles.settingsLeft}>
-        <Feather name={icon} size={20} color={theme.textPrimary} />
-        <ThemedText type="body">{title}</ThemedText>
-      </View>
-      {showChevron && (
-        <Feather name="chevron-right" size={20} color={theme.textSecondary} />
-      )}
-    </Pressable>
-  );
-}
-
 export default function Profile({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
@@ -65,33 +46,96 @@ export default function Profile({ navigation }) {
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />
         </Pressable>
 
-        <View style={styles.section}>
-          <SettingsItem
-            icon="star"
-            title="My Reviews"
+        <View style={styles.gridContainer}>
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => navigation.navigate('Review')}
-          />
-          <SettingsItem
-            icon="bell"
-            title="Notification Preferences"
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="star" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              My Reviews
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              View your feedback
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => {}}
-          />
-          <SettingsItem
-            icon="help-circle"
-            title="Help & Support"
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="bell" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Notifications
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Manage alerts
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => navigation.navigate('Support')}
-          />
-          <SettingsItem
-            icon="file-text"
-            title="Terms of Service"
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="help-circle" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Help & Support
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Get help anytime
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => {}}
-          />
-          <SettingsItem
-            icon="shield"
-            title="Privacy Policy"
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="file-text" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Terms of Service
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Legal information
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => {}}
-            showChevron={false}
-          />
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="shield" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Privacy Policy
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Your data protection
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
+            onPress={() => navigation.navigate('Balance')}
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="dollar-sign" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Wallet
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Manage your balance
+            </ThemedText>
+          </Pressable>
         </View>
       </ScrollView>
     </ThemedView>
@@ -128,19 +172,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: Spacing.xs,
   },
-  section: {
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.md,
   },
-  settingsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  gridCard: {
+    width: '48%',
     padding: Spacing.lg,
-    borderRadius: BorderRadius.medium,
+    borderRadius: BorderRadius.large,
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
   },
-  settingsLeft: {
-    flexDirection: 'row',
+  gridIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.medium,
     alignItems: 'center',
-    gap: Spacing.md,
+    justifyContent: 'center',
+    marginBottom: Spacing.xs,
+  },
+  gridTitle: {
+    fontWeight: '600',
   },
 });
