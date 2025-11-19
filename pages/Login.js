@@ -16,7 +16,9 @@ import { useAuth } from '../contexts/AuthContext';
  * LOGIN SCREEN
  * ═══════════════════════════════════════════════════════════════════
  * 
- * This is where users sign in with Google.
+ * Two buttons:
+ * 1. "Sign up with Google" - Uses real Google OAuth (needs Supabase setup)
+ * 2. "I have an account" - TEMPORARY: Skips login for testing
  * 
  * BACKEND CONNECTION:
  * - useAuth() connects to contexts/AuthContext.js
@@ -24,37 +26,22 @@ import { useAuth } from '../contexts/AuthContext';
  * - authService uses config/supabase.js to authenticate
  * 
  * CUSTOMIZATION GUIDE:
- * 1. Change the design below (colors, layout, text)
- * 2. Add email/password login:
- *    - Create input fields for email and password
- *    - Call: await signInWithEmail(email, password)
- *    - Import signInWithEmail from useAuth()
- * 
- * 3. Add social logins:
- *    - Facebook: signInWithFacebook()
- *    - Apple: signInWithApple()
- *    - (Need to add these to authService.js first)
- * 
- * IMPORTANT: 
- * - DON'T use navigation.navigate() or navigation.replace()
- * - App.js automatically redirects after successful login
- * - Just call the auth functions and let AuthContext handle routing
+ * See BACKEND_STRUCTURE.md for full instructions on:
+ * - Adding email/password login
+ * - Adding other social logins (Facebook, Apple)
+ * - Customizing the design
  */
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signInAsGuest } = useAuth();
   const [loading, setLoading] = useState(false);
 
   /**
    * GOOGLE SIGN IN HANDLER
    * 
-   * Steps:
-   * 1. Show loading spinner
-   * 2. Call Google OAuth (opens browser)
-   * 3. Wait for result
-   * 4. If success: AuthContext updates, App.js redirects to Main
-   * 5. If fail: Show error, stay on login screen
+   * This uses real Google OAuth authentication through Supabase.
+   * Requires Supabase setup (see SUPABASE_SETUP_GUIDE.md)
    */
   const handleGoogleSignIn = async () => {
     try {
@@ -69,7 +56,6 @@ export default function Login({ navigation }) {
       }
       
       // Success! App.js will automatically redirect to Main
-      // No need to call navigation.replace() here
       
     } catch (error) {
       console.error('Login error:', error);
@@ -86,44 +72,32 @@ export default function Login({ navigation }) {
   };
 
   /**
-   * ═══════════════════════════════════════════════════════════════
-   * TO ADD EMAIL/PASSWORD LOGIN:
-   * ═══════════════════════════════════════════════════════════════
+   * TEMPORARY LOGIN BYPASS (FOR TESTING)
    * 
-   * 1. Import useState for email/password:
-   *    const [email, setEmail] = useState('');
-   *    const [password, setPassword] = useState('');
+   * This allows you to test the app without setting up authentication.
+   * It creates a fake user session so you can navigate to the homepage.
    * 
-   * 2. Add TextInput fields:
-   *    <TextInput
-   *      value={email}
-   *      onChangeText={setEmail}
-   *      placeholder="Email"
-   *    />
-   * 
-   * 3. Create handler:
-   *    const handleEmailSignIn = async () => {
-   *      try {
-   *        setLoading(true);
-   *        const result = await signInWithEmail(email, password);
-   *        if (!result?.user) throw new Error('Login failed');
-   *      } catch (error) {
-   *        Alert.alert('Error', error.message);
-   *      } finally {
-   *        setLoading(false);
-   *      }
-   *    };
-   * 
-   * 4. Add to services/authService.js:
-   *    async signInWithEmail(email, password) {
-   *      const { data, error } = await supabase.auth.signInWithPassword({
-   *        email,
-   *        password,
-   *      });
-   *      if (error) throw error;
-   *      return data;
-   *    }
+   * TO CONNECT REAL LOGIN LATER:
+   * - Replace this with real email/password login
+   * - Or connect to Google/Facebook/Apple OAuth
+   * - See BACKEND_STRUCTURE.md for instructions
    */
+  const handleGuestLogin = async () => {
+    try {
+      setLoading(true);
+      
+      // Create a guest session (fake user for testing)
+      await signInAsGuest();
+      
+      // App.js will automatically redirect to Main
+      
+    } catch (error) {
+      console.error('Guest login error:', error);
+      Alert.alert('Error', 'Unable to continue. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -147,7 +121,7 @@ export default function Login({ navigation }) {
             LOGIN BUTTONS - Customize this!
             ═══════════════════════════════════════════════════════════ */}
         <Animated.View entering={FadeInDown.delay(400)} style={styles.buttonsContainer}>
-          {/* Google Sign In Button */}
+          {/* Google Sign In Button (Real OAuth) */}
           <Pressable
             onPress={handleGoogleSignIn}
             disabled={loading}
@@ -168,9 +142,9 @@ export default function Login({ navigation }) {
             )}
           </Pressable>
 
-          {/* Already Have Account Button */}
+          {/* "I Have Account" Button (TEMPORARY: Goes to homepage for testing) */}
           <Pressable
-            onPress={handleGoogleSignIn}
+            onPress={handleGuestLogin}
             disabled={loading}
             style={[styles.accountButton, { backgroundColor: theme.surface, opacity: loading ? 0.6 : 1 }]}
           >
@@ -193,9 +167,6 @@ export default function Login({ navigation }) {
  * ═══════════════════════════════════════════════════════════════════
  * STYLES - Customize these!
  * ═══════════════════════════════════════════════════════════════════
- * 
- * Change colors, spacing, sizes here.
- * Or use theme/global.js styles instead.
  */
 const styles = StyleSheet.create({
   container: {

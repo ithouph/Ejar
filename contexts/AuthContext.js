@@ -65,11 +65,46 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // TEMPORARY: Guest login for testing without Supabase setup
+  // This creates a fake user session so you can test the app
+  // REMOVE THIS when you set up real authentication
+  async function signInAsGuest() {
+    try {
+      setLoading(true);
+      
+      // Create a fake user for testing
+      const guestUser = {
+        id: 'guest-user-123',
+        email: 'guest@travelstay.com',
+        user_metadata: {
+          full_name: 'Guest User',
+          avatar_url: null,
+        },
+      };
+      
+      const guestSession = {
+        user: guestUser,
+        access_token: 'guest-token',
+      };
+      
+      setUser(guestUser);
+      setSession(guestSession);
+      
+      return { user: guestUser, session: guestSession };
+    } catch (error) {
+      console.error('Guest sign in error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const value = {
     user,
     session,
     loading,
     signInWithGoogle,
+    signInAsGuest,
     signOut,
   };
 
