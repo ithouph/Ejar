@@ -40,7 +40,7 @@ const PROPERTY_TYPES = [
 
 const AMENITIES = [
   { id: 'wifi', label: 'Wi-Fi', icon: 'wifi' },
-  { id: 'parking', label: 'Parking', icon: 'car' },
+  { id: 'parking', label: 'Parking', icon: 'truck' },
   { id: 'pool', label: 'Pool', icon: 'droplet' },
   { id: 'gym', label: 'Gym', icon: 'activity' },
   { id: 'ac', label: 'Air Conditioning', icon: 'wind' },
@@ -100,7 +100,16 @@ export default function AddPost({ navigation }) {
         setImages(selectedImages);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to pick images. Please try again.');
+      console.error('Error picking image:', error);
+      if (error.message && error.message.includes('Permission')) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow access to your photo library in your device settings to upload images.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Failed to pick images. Please try again.');
+      }
     }
   }
 
