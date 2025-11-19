@@ -158,6 +158,7 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
 
 -- Table: payment_requests (balance addition requests)
 -- Links: user_id → users.id
+-- Status flow: pending → processing → processed → approved/rejected
 CREATE TABLE IF NOT EXISTS payment_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -165,8 +166,13 @@ CREATE TABLE IF NOT EXISTS payment_requests (
   status TEXT DEFAULT 'pending',
   payment_method TEXT,
   transaction_id TEXT,
+  processed_by UUID,
+  processed_at TIMESTAMPTZ,
+  rejection_reason TEXT,
+  admin_notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CHECK (status IN ('pending', 'processing', 'processed', 'approved', 'rejected'))
 );
 
 -- Table: support_messages (support chat messages)
@@ -233,6 +239,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_wallet_accounts_user_id ON wallet_accounts(user_id);
 CREATE INDEX IF NOT EXISTS idx_wallet_transactions_wallet_id ON wallet_transactions(wallet_id);
 CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_status ON payment_requests(status);
 CREATE INDEX IF NOT EXISTS idx_support_messages_payment_request_id ON support_messages(payment_request_id);
 
 -- ═══════════════════════════════════════════════════════════════
@@ -362,6 +369,73 @@ BEGIN
 END;
 $$;
 
+-- Function: Process payment request (backend approval/rejection)
+CREATE OR REPLACE FUNCTION process_payment_request(
+  p_request_id UUID,
+  p_new_status TEXT,
+  p_admin_notes TEXT DEFAULT NULL,
+  p_rejection_reason TEXT DEFAULT NULL
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_amount NUMERIC;
+  v_wallet_id UUID;
+  v_new_balance NUMERIC;
+BEGIN
+  IF p_new_status NOT IN ('processing', 'processed', 'approved', 'rejected') THEN
+    RAISE EXCEPTION 'Invalid status: %', p_new_status;
+  END IF;
+
+  SELECT user_id, amount INTO v_user_id, v_amount 
+  FROM payment_requests 
+  WHERE id = p_request_id;
+
+  UPDATE payment_requests
+  SET 
+    status = p_new_status,
+    processed_at = NOW(),
+    admin_notes = COALESCE(p_admin_notes, admin_notes),
+    rejection_reason = COALESCE(p_rejection_reason, rejection_reason),
+    updated_at = NOW()
+  WHERE id = p_request_id;
+
+  IF p_new_status = 'approved' THEN
+    SELECT id INTO v_wallet_id FROM wallet_accounts WHERE user_id = v_user_id;
+    
+    IF v_wallet_id IS NULL THEN
+      INSERT INTO wallet_accounts (user_id, balance, currency)
+      VALUES (v_user_id, v_amount, 'USD')
+      RETURNING id, balance INTO v_wallet_id, v_new_balance;
+    ELSE
+      UPDATE wallet_accounts
+      SET balance = balance + v_amount, updated_at = NOW()
+      WHERE id = v_wallet_id
+      RETURNING balance INTO v_new_balance;
+    END IF;
+
+    INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
+    VALUES (v_wallet_id, 'credit', v_amount, 'Balance addition approved', 'deposit', 'completed');
+
+    RETURN json_build_object(
+      'success', true,
+      'status', p_new_status,
+      'new_balance', v_new_balance,
+      'message', 'Payment request approved and balance added'
+    );
+  END IF;
+
+  RETURN json_build_object(
+    'success', true,
+    'status', p_new_status,
+    'message', 'Payment request status updated'
+  );
+END;
+$$;
+
 -- Function: Auto-update property rating when reviews change
 CREATE OR REPLACE FUNCTION update_property_rating()
 RETURNS TRIGGER
@@ -409,7 +483,18 @@ ON CONFLICT DO NOTHING;
 -- ✓ Row Level Security enabled
 -- ✓ Performance indexes
 -- ✓ Automatic triggers
+-- ✓ Backend processing function for payment requests
 -- ✓ Sample service categories
+--
+-- PAYMENT STATUS FLOW:
+-- pending → processing → processed → approved/rejected
+--
+-- Backend can call: SELECT process_payment_request(
+--   request_id, 
+--   'approved', 
+--   'Verified payment proof', 
+--   NULL
+-- );
 --
 -- Next: Configure Google OAuth in Supabase Authentication settings
 -- ═══════════════════════════════════════════════════════════════
