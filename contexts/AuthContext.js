@@ -72,9 +72,8 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       
-      // Create a fake user for testing
       const guestUser = {
-        id: 'guest-user-123',
+        id: '00000000-0000-0000-0000-000000000001',
         email: 'guest@travelstay.com',
         user_metadata: {
           full_name: 'Guest User',

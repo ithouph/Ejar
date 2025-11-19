@@ -181,7 +181,24 @@ Full design system documented in `design_guidelines.md`:
 
 ## Recent Changes
 
-**2024-11-19**:
+**2024-11-19 (Latest)**:
+- ✅ Organized navbar components into single file (components/Navbar.js)
+  - Created 3 reusable components: TabBarIcon, PageHeader, SimpleHeader
+  - Updated Posts.js and Saved.js to use PageHeader
+- ✅ Simplified MainTabNavigator
+  - Reduced from 162 lines to 64 lines (60% reduction)
+  - Used TAB_CONFIG array for cleaner structure
+  - Renamed "Account" tab to "Settings" (fixed duplicate screen warning)
+- ✅ Fixed critical bugs:
+  - Fixed Supabase config to properly read env variables using expo-constants
+  - Fixed guest user ID to valid UUID format (00000000-0000-0000-0000-000000000001)
+  - Fixed duplicate screen name warning
+- ✅ Code cleanup:
+  - Deleted 11 unused files
+  - Removed redundant navbar styles from pages
+  - Consolidated all navbar logic in components/Navbar.js
+
+**2024-11-19 (Earlier)**:
 - ✅ Implemented complete Supabase integration
 - ✅ Created all CRUD services (properties, favorites, wallet, reviews, posts, wedding)
 - ✅ Updated Discover and Saved pages to use real Supabase data
