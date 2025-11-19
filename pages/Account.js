@@ -139,44 +139,97 @@ export default function Account({ navigation }) {
             Quick Actions
           </ThemedText>
 
-          <Pressable
-            style={[styles.actionItem, { backgroundColor: theme.surface }]}
-            onPress={() => navigation.navigate('EditProfile')}
-          >
-            <View style={styles.actionLeft}>
-              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
-                <Feather name="edit-3" size={20} color={theme.primary} />
+          <View style={styles.gridContainer}>
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => navigation.navigate('EditProfile')}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="edit-3" size={24} color={theme.textPrimary} />
               </View>
-              <ThemedText type="bodyLarge">Edit Profile</ThemedText>
-            </View>
-            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
-          </Pressable>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                Edit Profile
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                Update your information
+              </ThemedText>
+            </Pressable>
 
-          <Pressable
-            style={[styles.actionItem, { backgroundColor: theme.surface }]}
-            onPress={() => navigation.navigate('Review')}
-          >
-            <View style={styles.actionLeft}>
-              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
-                <Feather name="star" size={20} color={theme.primary} />
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => navigation.navigate('Review')}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="star" size={24} color={theme.textPrimary} />
               </View>
-              <ThemedText type="bodyLarge">My Reviews</ThemedText>
-            </View>
-            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
-          </Pressable>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                My Reviews
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                View your feedback
+              </ThemedText>
+            </Pressable>
 
-          <Pressable
-            style={[styles.actionItem, { backgroundColor: theme.surface }]}
-            onPress={() => {}}
-          >
-            <View style={styles.actionLeft}>
-              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '15' }]}>
-                <Feather name="bell" size={20} color={theme.primary} />
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => navigation.navigate('Balance')}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="dollar-sign" size={24} color={theme.textPrimary} />
               </View>
-              <ThemedText type="bodyLarge">Notifications</ThemedText>
-            </View>
-            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
-          </Pressable>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                Wallet
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                Manage your balance
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => navigation.navigate('Support')}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="message-circle" size={24} color={theme.textPrimary} />
+              </View>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                Support
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                Get help anytime
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => {}}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="bell" size={24} color={theme.textPrimary} />
+              </View>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                Notifications
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                Manage alerts
+              </ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={[styles.gridCard, { backgroundColor: theme.surface }]}
+              onPress={() => {}}
+            >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="settings" size={24} color={theme.textPrimary} />
+              </View>
+              <ThemedText type="bodyLarge" style={styles.gridTitle}>
+                Settings
+              </ThemedText>
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                App preferences
+              </ThemedText>
+            </Pressable>
+          </View>
         </View>
 
         <View style={styles.statsSection}>
@@ -329,24 +382,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  actionItem: {
+  gridContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.medium,
-  },
-  actionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: Spacing.md,
   },
-  actionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  gridCard: {
+    width: '48%',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.large,
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
+  },
+  gridIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.medium,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: Spacing.xs,
+  },
+  gridTitle: {
+    fontWeight: '600',
   },
   statsSection: {
     flexDirection: 'row',
