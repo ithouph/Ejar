@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, ScrollView, View, Pressable, Image, FlatList, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
@@ -10,15 +11,93 @@ import { postsService } from '../services/postsService';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 
-function Navbar({ onMenuPress, theme }) {
+function Navbar({ onMenuPress, onViewToggle, viewMode, theme }) {
   return (
     <View style={[styles.navbar, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
       <ThemedText type="h1" style={styles.navTitle}>
         Posts
       </ThemedText>
-      <Pressable onPress={onMenuPress} style={styles.menuButton}>
-        <Feather name="plus-circle" size={24} color={theme.primary} />
-      </Pressable>
+      <View style={styles.navButtons}>
+        <Pressable onPress={onViewToggle} style={styles.menuButton}>
+          <Feather 
+            name={viewMode === 'normal' ? 'grid' : 'list'} 
+            size={20} 
+            color={theme.primary} 
+          />
+        </Pressable>
+        <Pressable onPress={onMenuPress} style={styles.menuButton}>
+          <Feather name="plus-circle" size={24} color={theme.primary} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave }) {
+  const isOwnPost = currentUserId && post.userId === currentUserId;
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => onDelete(post.id)
+        }
+      ]
+    );
+  };
+
+  return (
+    <View style={[styles.compactPostCard, { backgroundColor: theme.surface }]}>
+      {post.image ? (
+        <Image source={{ uri: post.image }} style={styles.compactPostImage} />
+      ) : null}
+      <View style={styles.compactPostContent}>
+        <View style={styles.compactPostHeader}>
+          <Image source={{ uri: post.userPhoto }} style={styles.compactUserPhoto} />
+          <View style={{ flex: 1 }}>
+            <ThemedText type="bodySmall" style={styles.compactUserName} numberOfLines={1}>
+              {post.userName}
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }} numberOfLines={1}>
+              {post.timeAgo}
+            </ThemedText>
+          </View>
+        </View>
+        <ThemedText type="bodySmall" style={styles.compactPostText} numberOfLines={2}>
+          {post.text}
+        </ThemedText>
+        <View style={styles.compactPostActions}>
+          <View style={styles.compactActionGroup}>
+            <Feather name="heart" size={14} color={theme.textSecondary} />
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              {post.likes}
+            </ThemedText>
+          </View>
+          <View style={styles.compactActionGroup}>
+            <Feather name="message-circle" size={14} color={theme.textSecondary} />
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              {post.comments}
+            </ThemedText>
+          </View>
+          <Pressable onPress={onToggleSave}>
+            <Feather 
+              name="bookmark" 
+              size={14} 
+              color={isSaved ? theme.primary : theme.textSecondary}
+            />
+          </Pressable>
+        </View>
+      </View>
+      {isOwnPost ? (
+        <Pressable style={styles.compactDeleteButton} onPress={handleDelete}>
+          <Feather name="trash-2" size={14} color={theme.error || '#EF4444'} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -135,6 +214,7 @@ export default function Posts({ navigation }) {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [savedPosts, setSavedPosts] = useState(new Set());
+  const [viewMode, setViewMode] = useState('normal');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -180,6 +260,11 @@ export default function Posts({ navigation }) {
     });
   }
 
+  const handleViewToggle = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setViewMode(prev => prev === 'normal' ? 'compact' : 'normal');
+  };
+
   const handleMenuPress = () => {
     navigation.navigate('AddPost');
   };
@@ -191,7 +276,12 @@ export default function Posts({ navigation }) {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.navbarContainer, { paddingTop: insets.top }]}>
-        <Navbar onMenuPress={handleMenuPress} theme={theme} />
+        <Navbar 
+          onMenuPress={handleMenuPress} 
+          onViewToggle={handleViewToggle}
+          viewMode={viewMode}
+          theme={theme} 
+        />
       </View>
 
       {posts.length === 0 ? (
@@ -209,22 +299,39 @@ export default function Posts({ navigation }) {
       ) : (
         <FlatList
           data={posts}
+          numColumns={viewMode === 'compact' ? 2 : 1}
+          key={viewMode}
           contentContainerStyle={[
-            styles.listContent,
+            viewMode === 'compact' ? styles.gridContent : styles.listContent,
             {
               paddingBottom: insets.bottom + Spacing.xl,
             },
           ]}
-          renderItem={({ item }) => (
-            <PostCard 
-              post={item} 
-              theme={theme} 
-              currentUserId={user?.id}
-              onDelete={handleDeletePost}
-              isSaved={savedPosts.has(item.id)}
-              onToggleSave={() => handleToggleSave(item.id)}
-            />
-          )}
+          columnWrapperStyle={viewMode === 'compact' ? styles.row : null}
+          renderItem={({ item }) => {
+            if (viewMode === 'compact') {
+              return (
+                <CompactPostCard
+                  post={item}
+                  theme={theme}
+                  currentUserId={user?.id}
+                  onDelete={handleDeletePost}
+                  isSaved={savedPosts.has(item.id)}
+                  onToggleSave={() => handleToggleSave(item.id)}
+                />
+              );
+            }
+            return (
+              <PostCard 
+                post={item} 
+                theme={theme} 
+                currentUserId={user?.id}
+                onDelete={handleDeletePost}
+                isSaved={savedPosts.has(item.id)}
+                onToggleSave={() => handleToggleSave(item.id)}
+              />
+            );
+          }}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           refreshing={refreshing}
@@ -253,6 +360,11 @@ const styles = StyleSheet.create({
   navTitle: {
     fontWeight: '700',
   },
+  navButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
   menuButton: {
     width: 40,
     height: 40,
@@ -266,6 +378,14 @@ const styles = StyleSheet.create({
   listContent: {
     paddingTop: Spacing.md,
     gap: Spacing.md,
+  },
+  gridContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+  },
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
   },
   postCard: {
     marginHorizontal: Spacing.lg,
@@ -352,5 +472,57 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     fontWeight: '600',
+  },
+  compactPostCard: {
+    width: '48%',
+    borderRadius: BorderRadius.medium,
+    overflow: 'hidden',
+  },
+  compactPostImage: {
+    width: '100%',
+    height: 120,
+  },
+  compactPostContent: {
+    padding: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  compactPostHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  compactUserPhoto: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  compactUserName: {
+    fontWeight: '600',
+  },
+  compactPostText: {
+    lineHeight: 18,
+    marginBottom: Spacing.xs,
+  },
+  compactPostActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  compactActionGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  compactDeleteButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
