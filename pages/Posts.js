@@ -23,7 +23,7 @@ function Navbar({ onMenuPress, theme }) {
   );
 }
 
-function PostCard({ post, theme, currentUserId, onDelete }) {
+function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave }) {
   const isOwnPost = currentUserId && post.userId === currentUserId;
 
   const handleDelete = () => {
@@ -87,6 +87,14 @@ function PostCard({ post, theme, currentUserId, onDelete }) {
             {post.comments}
           </ThemedText>
         </Pressable>
+        <Pressable style={styles.actionButton} onPress={onToggleSave}>
+          <Feather 
+            name={isSaved ? "bookmark" : "bookmark"} 
+            size={20} 
+            color={isSaved ? theme.primary : theme.textSecondary}
+            fill={isSaved ? theme.primary : 'transparent'}
+          />
+        </Pressable>
         <Pressable style={styles.actionButton}>
           <Feather name="share-2" size={20} color={theme.textSecondary} />
         </Pressable>
@@ -126,6 +134,7 @@ export default function Posts({ navigation }) {
   const insets = useScreenInsets();
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [savedPosts, setSavedPosts] = useState(new Set());
 
   useFocusEffect(
     React.useCallback(() => {
@@ -157,6 +166,18 @@ export default function Posts({ navigation }) {
       console.error('Error deleting post:', error);
       Alert.alert('Error', 'Failed to delete post. Please try again.');
     }
+  }
+
+  function handleToggleSave(postId) {
+    setSavedPosts(prev => {
+      const newSaved = new Set(prev);
+      if (newSaved.has(postId)) {
+        newSaved.delete(postId);
+      } else {
+        newSaved.add(postId);
+      }
+      return newSaved;
+    });
   }
 
   const handleMenuPress = () => {
@@ -200,6 +221,8 @@ export default function Posts({ navigation }) {
               theme={theme} 
               currentUserId={user?.id}
               onDelete={handleDeletePost}
+              isSaved={savedPosts.has(item.id)}
+              onToggleSave={() => handleToggleSave(item.id)}
             />
           )}
           keyExtractor={(item) => item.id}
