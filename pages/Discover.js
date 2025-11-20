@@ -172,24 +172,6 @@ export default function Discover({ navigation }) {
         />
 
         <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>
-          <ThemedText type="display" style={{ marginBottom: Spacing.md, lineHeight: 40 }}>
-            👍 Sidi Find{" "}
-            <ThemedText
-              type="display"
-              style={{
-                backgroundColor: theme.primary,
-                color: '#FFFFFF',
-                paddingHorizontal: Spacing.sm,
-                paddingVertical: Spacing.xs,
-              }}
-            >
-              the best
-            </ThemedText>{" "}
-            for your holiday
-          </ThemedText>
-        </View>
-
-        <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>
           <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
             <Feather name="search" size={20} color={theme.textSecondary} />
             <TextInput
