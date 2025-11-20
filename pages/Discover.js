@@ -25,6 +25,7 @@ export default function Discover({ navigation }) {
   const [favorites, setFavorites] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRating, setSelectedRating] = useState(null);
@@ -62,13 +63,42 @@ export default function Discover({ navigation }) {
   };
 
   const getFilteredData = () => {
+    let filtered = properties;
+    
     if (selectedCategory === 'hotels') {
-      return properties.filter(item => item.type === 'Hotel');
+      filtered = filtered.filter(item => item.type === 'Hotel');
+    } else if (selectedCategory === 'apartments') {
+      filtered = filtered.filter(item => item.type === 'Apartment');
     }
-    if (selectedCategory === 'apartments') {
-      return properties.filter(item => item.type === 'Apartment');
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title?.toLowerCase().includes(query) ||
+        item.location?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
+      );
     }
-    return properties;
+    
+    if (priceRange[0] > 0 || priceRange[1] < 5000) {
+      filtered = filtered.filter(item => 
+        item.price >= priceRange[0] && item.price <= priceRange[1]
+      );
+    }
+    
+    if (selectedAmenities.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedAmenities.every(amenity => 
+          item.amenities?.includes(amenity)
+        )
+      );
+    }
+    
+    if (selectedRating) {
+      filtered = filtered.filter(item => item.rating >= selectedRating);
+    }
+    
+    return filtered;
   };
 
   const toggleFavorite = async (id) => {
@@ -141,16 +171,33 @@ export default function Discover({ navigation }) {
           onNotificationsPress={() => navigation.navigate('Notifications')}
         />
 
-        <Pressable 
-          style={[inputStyles.searchInput, spacingStyles.mxLg, { backgroundColor: theme.surface }]}
-          onPress={() => setShowFilters(true)}
-        >
-          <Feather name="search" size={20} color={theme.textSecondary} />
-          <ThemedText type="body" style={{ color: theme.textSecondary, flex: 1 }}>
-            Find the best for your holiday
-          </ThemedText>
-          <Feather name="sliders" size={20} color={theme.textSecondary} />
-        </Pressable>
+        <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>
+          <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
+            <Feather name="search" size={20} color={theme.textSecondary} />
+            <TextInput
+              style={{ 
+                flex: 1, 
+                fontSize: 16, 
+                color: theme.textPrimary,
+                paddingVertical: 0,
+              }}
+              placeholder="Find the best for your holiday"
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+            {searchQuery.length > 0 ? (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <Feather name="x" size={20} color={theme.textSecondary} />
+              </Pressable>
+            ) : null}
+            <Pressable onPress={() => setShowFilters(true)} style={{ marginLeft: Spacing.xs }}>
+              <Feather name="sliders" size={20} color={theme.primary} />
+            </Pressable>
+          </View>
+        </View>
 
         <CategoryTabs
           categories={filterOptions.propertyTypes}
@@ -160,20 +207,34 @@ export default function Discover({ navigation }) {
 
         <View style={layoutStyles.section}>
           <View style={layoutStyles.sectionHeader}>
-            <ThemedText type="h2">Popular hotels</ThemedText>
-            <Pressable>
-              <View style={[layoutStyles.rowCenter, spacingStyles.gapXs]}>
-                <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                  See all
-                </ThemedText>
-                <Feather name="chevron-right" size={16} color={theme.textSecondary} />
-              </View>
-            </Pressable>
+            <ThemedText type="h2">
+              {searchQuery.trim() ? `Search results (${getFilteredData().length})` : 'Popular hotels'}
+            </ThemedText>
+            {!searchQuery.trim() ? (
+              <Pressable>
+                <View style={[layoutStyles.rowCenter, spacingStyles.gapXs]}>
+                  <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                    See all
+                  </ThemedText>
+                  <Feather name="chevron-right" size={16} color={theme.textSecondary} />
+                </View>
+              </Pressable>
+            ) : null}
           </View>
 
           {loading ? (
             <View style={{ paddingVertical: Spacing.xl, alignItems: 'center' }}>
               <ActivityIndicator size="large" color={theme.primary} />
+            </View>
+          ) : getFilteredData().length === 0 ? (
+            <View style={{ paddingVertical: Spacing.xxl, alignItems: 'center' }}>
+              <Feather name="search" size={48} color={theme.textSecondary} style={{ marginBottom: Spacing.md }} />
+              <ThemedText type="h3" style={{ marginBottom: Spacing.xs }}>
+                No results found
+              </ThemedText>
+              <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                Try adjusting your search or filters
+              </ThemedText>
             </View>
           ) : (
             <FlatList
