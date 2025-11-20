@@ -37,7 +37,7 @@
 // LIGHT MODE COLORS (when phone is in light mode)
 export const lightColors = {
   // BRAND COLORS
-  primary: '#2563EB',              // Main blue - buttons, links, active states
+  primary: '#165A4A',              // Main green - buttons, links, active states
   
   // BACKGROUND COLORS
   background: '#FFFFFF',           // Main screen background (white)
@@ -61,19 +61,19 @@ export const lightColors = {
   
   // SPECIAL COLORS
   star: '#FBBF24',                 // Yellow/gold for star ratings
-  link: '#2563EB',                 // Links (same as primary)
+  link: '#165A4A',                 // Links (same as primary)
   buttonText: '#FFFFFF',           // Text on colored buttons (white)
   overlay: 'rgba(0, 0, 0, 0.4)',  // Dark overlay for modals
   
   // TAB BAR COLORS
   tabIconDefault: '#687076',       // Inactive tab icons (gray)
-  tabIconSelected: '#2563EB',      // Active tab icon (same as primary)
+  tabIconSelected: '#165A4A',      // Active tab icon (same as primary)
 };
 
 // DARK MODE COLORS (when phone is in dark mode)
 export const darkColors = {
   // BRAND COLORS
-  primary: '#3B82F6',              // Lighter blue for dark mode
+  primary: '#1F7A63',              // Lighter green for dark mode
   
   // BACKGROUND COLORS
   background: '#111827',           // Main screen background (dark gray)
@@ -97,13 +97,13 @@ export const darkColors = {
   
   // SPECIAL COLORS
   star: '#FBBF24',                 // Yellow/gold for star ratings (same)
-  link: '#3B82F6',                 // Links (same as primary)
+  link: '#1F7A63',                 // Links (same as primary)
   buttonText: '#FFFFFF',           // Text on colored buttons (white)
   overlay: 'rgba(0, 0, 0, 0.6)',  // Darker overlay for modals
   
   // TAB BAR COLORS
   tabIconDefault: '#9BA1A6',       // Inactive tab icons (light gray)
-  tabIconSelected: '#3B82F6',      // Active tab icon (same as primary)
+  tabIconSelected: '#1F7A63',      // Active tab icon (same as primary)
 };
 
 /**
