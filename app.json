@@ -5,12 +5,12 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "com.travelstay.app",
+    "scheme": "com.ejar.app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.travelstay.app"
+      "bundleIdentifier": "com.ejar.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.travelstay.app",
+      "package": "com.ejar.app",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
