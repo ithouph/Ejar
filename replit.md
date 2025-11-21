@@ -222,7 +222,7 @@ Full design system documented in `design_guidelines.md`:
 2. **RLS policies must be deployed** - Without them, authenticated users get 401 errors
 3. **Static data fallback** - App works without Supabase but data doesn't persist
 4. **Web vs Native** - Some features work differently on web vs Expo Go
-5. **Bundle identifier** - Set to `com.travelstay.app`, do not change
+5. **Bundle identifier** - Set to `com.ejar.app` (updated from com.travelstay.app on 2024-11-21)
 
 ## User Preferences
 
