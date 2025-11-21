@@ -1,6 +1,6 @@
-# TravelStay App - Supabase Database Schema
+# Ejar App - Supabase Database Schema
 
-This document outlines the database tables needed for the TravelStay MVP.
+This document outlines the database tables needed for the Ejar MVP.
 
 ## Required Tables
 

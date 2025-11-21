@@ -50,7 +50,7 @@ export default function Welcome({ navigation }) {
         <Animated.View entering={FadeInDown.delay(400)} style={styles.centerContent}>
           <Feather name="map-pin" size={64} color={theme.primary} />
           <ThemedText type="display" style={styles.title}>
-            Welcome to TravelStay
+            Welcome to Ejar
           </ThemedText>
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
             Immerse yourself in the world of hotels and communicate with friends using only quotes from famous works.

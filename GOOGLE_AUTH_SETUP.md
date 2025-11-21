@@ -1,4 +1,4 @@
-# Google OAuth Setup Guide for TravelStay
+# Google OAuth Setup Guide for Ejar
 
 The app has Google OAuth authentication code ready to go. To complete the setup, you need to configure Google OAuth in your Supabase project and Google Cloud Console.
 
@@ -16,7 +16,7 @@ Your app is configured with:
 ### Step 1: Enable Google Provider
 
 1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your TravelStay project
+2. Select your Ejar project
 3. Navigate to **Authentication** → **Providers**
 4. Find **Google** in the list and click on it
 5. Toggle **Enable Sign in with Google** to ON
@@ -32,7 +32,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Click the project dropdown and select **New Project**
-3. Name it "TravelStay" (or any name you prefer)
+3. Name it "Ejar" (or any name you prefer)
 4. Click **Create** and wait for the project to be created
 5. Select your new project from the dropdown
 
@@ -42,7 +42,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 2. Select **External** user type
 3. Click **Create**
 4. Fill in the required fields:
-   - **App name**: TravelStay
+   - **App name**: Ejar
    - **User support email**: Your email
    - **Developer contact email**: Your email
 5. Click **Save and Continue**
@@ -55,7 +55,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 2. Click **Create Credentials** → **OAuth client ID**
 3. Select **iOS** as the application type
 4. Fill in:
-   - **Name**: TravelStay iOS
+   - **Name**: Ejar iOS
    - **Bundle ID**: `com.travelstay.app`
 5. Click **Create**
 6. **Copy the iOS Client ID** - you'll need this for Supabase
@@ -67,7 +67,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 2. Click **Create Credentials** → **OAuth client ID**
 3. Select **Android** as the application type
 4. Fill in:
-   - **Name**: TravelStay Android
+   - **Name**: Ejar Android
    - **Package name**: `com.travelstay.app`
    - **SHA-1 certificate fingerprint**: See instructions below
 
@@ -96,7 +96,7 @@ Copy the SHA-1 fingerprint and paste it into Google Cloud Console.
 2. Click **Create Credentials** → **OAuth client ID**
 3. Select **Web application** as the application type
 4. Fill in:
-   - **Name**: TravelStay Web
+   - **Name**: Ejar Web
    - **Authorized redirect URIs**: Add these two:
      - `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`
      - (Replace YOUR_PROJECT_REF with your actual Supabase project reference)
@@ -128,12 +128,12 @@ Copy the SHA-1 fingerprint and paste it into Google Cloud Console.
 1. Make sure you've completed Parts 1-3 above
 2. Open the Expo Go app on your iPhone
 3. Scan the QR code from your Replit terminal
-4. Wait for TravelStay to load
+4. Wait for Ejar to load
 5. On the Login screen, tap **Sign up with Google**
 6. You'll be redirected to Google's sign-in page
 7. Choose your Google account
 8. Grant the requested permissions
-9. You should be redirected back to TravelStay
+9. You should be redirected back to Ejar
 10. The app should show you're logged in
 
 ### On Android (via Expo Go)
@@ -141,19 +141,19 @@ Copy the SHA-1 fingerprint and paste it into Google Cloud Console.
 1. Make sure you've completed Parts 1-3 above
 2. Open the Expo Go app on your Android device
 3. Scan the QR code from your Replit terminal
-4. Wait for TravelStay to load
+4. Wait for Ejar to load
 5. On the Login screen, tap **Sign up with Google**
 6. You'll be redirected to Google's sign-in page
 7. Choose your Google account
 8. Grant the requested permissions
-9. You should be redirected back to TravelStay
+9. You should be redirected back to Ejar
 10. The app should show you're logged in
 
 ---
 
 ## Current Implementation
 
-The TravelStay app already includes:
+The Ejar app already includes:
 - ✅ **AuthContext** for managing authentication state across the app
 - ✅ **Google OAuth service** using expo-auth-session
 - ✅ **Session persistence** with AsyncStorage (stays logged in)
@@ -216,7 +216,7 @@ The TravelStay app already includes:
 
 **How to Proceed:**
 1. Click "Advanced" on the warning page
-2. Click "Go to TravelStay (unsafe)" - this is safe during development
+2. Click "Go to Ejar (unsafe)" - this is safe during development
 3. Grant the permissions
 
 **To Remove Warning (Optional):**
@@ -243,7 +243,7 @@ The TravelStay app already includes:
 - You're logged into multiple Google accounts on your device
 
 **Solution:**
-1. Sign out from TravelStay
+1. Sign out from Ejar
 2. When signing in again, carefully select the correct Google account
 3. Or go to Google account settings and remove unused accounts
 
@@ -251,7 +251,7 @@ The TravelStay app already includes:
 
 ## Production Deployment
 
-When you're ready to publish TravelStay to the App Store and Google Play:
+When you're ready to publish Ejar to the App Store and Google Play:
 
 ### For iOS:
 

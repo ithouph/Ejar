@@ -1,4 +1,4 @@
-# TravelStay - Travel Booking App
+# Ejar - Travel Booking App
 
 A React Native mobile app built with Expo for booking hotels and apartments, featuring wedding/event planning, social features, wallet system, and property reviews.
 

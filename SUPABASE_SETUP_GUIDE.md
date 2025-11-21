@@ -1,6 +1,6 @@
-# Complete Supabase Setup Guide for TravelStay
+# Complete Supabase Setup Guide for Ejar
 
-This guide will walk you through setting up the complete Supabase backend for the TravelStay app.
+This guide will walk you through setting up the complete Supabase backend for the Ejar app.
 
 ## Prerequisites
 

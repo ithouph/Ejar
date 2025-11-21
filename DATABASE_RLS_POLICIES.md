@@ -1,4 +1,4 @@
-# Row Level Security (RLS) Policies for TravelStay
+# Row Level Security (RLS) Policies for Ejar
 
 **IMPORTANT**: These RLS policies must be configured in Supabase for the app to work correctly with authenticated users.
 
