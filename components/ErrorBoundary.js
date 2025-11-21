@@ -43,7 +43,7 @@ function ErrorFallback({ onReload }) {
         Oops!
       </ThemedText>
       <ThemedText type="body" style={styles.message}>
-        TravelStay encountered an unexpected error.
+        Ejar encountered an unexpected error.
       </ThemedText>
       <Pressable style={styles.button} onPress={onReload}>
         <ThemedText type="body" style={styles.buttonText}>

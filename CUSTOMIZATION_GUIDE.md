@@ -1,6 +1,6 @@
 # 🎨 Easy Customization Guide
 
-This guide shows you how to customize your TravelStay app without touching the backend code.
+This guide shows you how to customize your Ejar app without touching the backend code.
 
 ## 📱 Navigation Customization
 

@@ -1,4 +1,4 @@
-# Backend Processing Guide - TravelStay Payment Requests
+# Backend Processing Guide - Ejar Payment Requests
 
 ## 📊 Payment Request Status Flow
 
