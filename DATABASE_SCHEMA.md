@@ -112,9 +112,23 @@ CREATE TABLE favorites (
 ```
 
 ### 8. reviews
-Property reviews
+Post reviews (users can review posts in the marketplace)
 ```sql
 CREATE TABLE reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 8b. property_reviews
+Property reviews (separate from post reviews)
+```sql
+CREATE TABLE property_reviews (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
@@ -134,16 +148,97 @@ CREATE TABLE posts (
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   title TEXT,
   content TEXT,
+  description TEXT,
+  images JSONB DEFAULT '[]'::jsonb,
   image_url TEXT,
+  property_type TEXT,
+  price NUMERIC,
+  location TEXT,
+  amenities JSONB DEFAULT '[]'::jsonb,
+  specifications JSONB DEFAULT '{}'::jsonb, -- Category-specific features
   listing_type TEXT DEFAULT 'rent', -- 'rent' or 'sell'
-  category TEXT, -- 'phones', 'laptops', 'electronics', 'cars', 'property', etc.
-  rating INT CHECK (rating >= 1 AND rating <= 5),
-  review_text TEXT,
+  category TEXT, -- 'phones', 'laptops', 'electronics', 'cars', 'property'
   likes_count INT DEFAULT 0,
   comments_count INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+```
+
+**Category-Specific Specifications Structure:**
+
+**Phones:**
+```json
+{
+  "battery_health": "95%",
+  "storage": "256GB",
+  "condition": "Excellent",
+  "model": "iPhone 14 Pro",
+  "color": "Black"
+}
+```
+
+**Laptops:**
+```json
+{
+  "processor": "M2 Pro",
+  "ram": "16GB",
+  "storage": "512GB SSD",
+  "condition": "Good",
+  "model": "MacBook Pro 16"
+}
+```
+
+**Electronics:**
+```json
+{
+  "brand": "Sony",
+  "condition": "Excellent",
+  "warranty": "1 year"
+}
+```
+
+**Cars:**
+```json
+{
+  "make": "Toyota Camry",
+  "model": "2.5L SE",
+  "year": "2022",
+  "mileage": "25,000 km",
+  "gear_type": "Automatic",
+  "fuel_type": "Petrol",
+  "condition": "Excellent"
+}
+```
+
+**Property (Rent):**
+```json
+{
+  "bedrooms": "3",
+  "bathrooms": "2",
+  "size_sqft": "1500",
+  "property_type": "apartment",
+  "amenities": ["wifi", "parking", "pool"],
+  "monthly_rent": "2500",
+  "deposit": "5000",
+  "min_contract_duration": "12 months",
+  "furnished": "Yes"
+}
+```
+
+**Property (Sell):**
+```json
+{
+  "bedrooms": "4",
+  "bathrooms": "3",
+  "size_sqft": "2000",
+  "property_type": "villa",
+  "amenities": ["wifi", "parking", "gym"],
+  "sale_price": "500000",
+  "ownership_type": "Freehold",
+  "property_age": "5 years",
+  "payment_options": "Cash, Installments"
+}
 ```
 
 ### 10. wallet_accounts

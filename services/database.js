@@ -811,8 +811,6 @@ export const posts = {
         specifications: post.specifications || {},
         listing_type: post.listingType || 'rent',
         category: post.category,
-        rating: post.rating,
-        review_text: post.reviewText,
         likes_count: 0,
         comments_count: 0,
       })
@@ -1090,6 +1088,107 @@ export async function pickImage() {
 }
 
 // ════════════════════════════════════════════════════════════════════
+// 11. POST REVIEWS (Reviews for Marketplace Posts)
+// ════════════════════════════════════════════════════════════════════
+
+export const postReviews = {
+  // Get all reviews for a post
+  async getForPost(postId) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        users (full_name, photo_url, email)
+      `)
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching post reviews:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  // Get all reviews by a user
+  async getByUser(userId) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        posts (title, category)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user reviews:', error);
+      return [];
+    }
+    return data || [];
+  },
+
+  // Add a new review to a post
+  async add(userId, postId, review) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .insert({
+        user_id: userId,
+        post_id: postId,
+        rating: review.rating,
+        comment: review.comment,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding post review:', error);
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Update existing review
+  async update(reviewId, userId, updates) {
+    const { data, error } = await supabase
+      .from('reviews')
+      .update({
+        rating: updates.rating,
+        comment: updates.comment,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', reviewId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating post review:', error);
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Delete review
+  async delete(reviewId, userId) {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting post review:', error);
+      throw error;
+    }
+
+    return true;
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
 // EXPORT ALL (for backward compatibility)
 // ════════════════════════════════════════════════════════════════════
 
@@ -1103,6 +1202,7 @@ export const db = {
   balanceRequests,
   posts,
   wedding,
+  postReviews,
 };
 
 export default db;

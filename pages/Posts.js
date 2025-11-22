@@ -12,7 +12,7 @@ import { posts as postsApi, savedPosts as savedPostsApi } from '../services/data
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 
-function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave }) {
+function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave, onPress }) {
   const isOwnPost = currentUserId && post.userId === currentUserId;
 
   const handleDelete = () => {
@@ -31,7 +31,7 @@ function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onTogg
   };
 
   return (
-    <View style={[styles.compactPostCard, { backgroundColor: theme.surface }]}>
+    <Pressable onPress={onPress} style={[styles.compactPostCard, { backgroundColor: theme.surface }]}>
       {post.image ? (
         <Image source={{ uri: post.image }} style={styles.compactPostImage} />
       ) : null}
@@ -77,11 +77,11 @@ function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onTogg
           <Feather name="trash-2" size={14} color={theme.error || '#EF4444'} />
         </Pressable>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
-function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave }) {
+function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave, onPress }) {
   const isOwnPost = currentUserId && post.userId === currentUserId;
 
   const handleDelete = () => {
@@ -100,7 +100,7 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave 
   };
 
   return (
-    <View style={[styles.postCard, { backgroundColor: theme.surface }]}>
+    <Pressable onPress={onPress} style={[styles.postCard, { backgroundColor: theme.surface }]}>
       <View style={styles.postHeader}>
         <Image source={{ uri: post.userPhoto }} style={styles.userPhoto} />
         <View style={styles.postHeaderInfo}>
@@ -157,7 +157,7 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave 
           <Feather name="share-2" size={20} color={theme.textSecondary} />
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -346,6 +346,7 @@ export default function Posts({ navigation }) {
                   onDelete={handleDeletePost}
                   isSaved={savedPosts.has(item.id)}
                   onToggleSave={() => handleToggleSave(item.id)}
+                  onPress={() => navigation.navigate('PostDetail', { post: item })}
                 />
               );
             }
@@ -357,6 +358,7 @@ export default function Posts({ navigation }) {
                 onDelete={handleDeletePost}
                 isSaved={savedPosts.has(item.id)}
                 onToggleSave={() => handleToggleSave(item.id)}
+                onPress={() => navigation.navigate('PostDetail', { post: item })}
               />
             );
           }}
