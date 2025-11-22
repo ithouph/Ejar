@@ -267,6 +267,8 @@ export default function EditProfile({ navigation }) {
           />
           <Pressable 
             onPress={pickProfilePicture}
+            accessibilityLabel="Change Profile Picture"
+            accessibilityRole="button"
             style={[buttonStyles.iconSmall, { 
               backgroundColor: theme.primary,
               position: 'absolute',
