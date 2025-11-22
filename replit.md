@@ -187,7 +187,34 @@ Full design system documented in `design_guidelines.md`:
 
 ## Recent Changes
 
-**2024-11-22 (Latest - Header Updates)**:
+**2024-11-22 (Latest - Settings Page Improvements)**:
+- ✅ **Removed Wallet from Settings Page:**
+  - Removed large wallet balance card from Profile.js
+  - Removed wallet grid item from settings
+  - Removed notifications grid item from settings
+  - Cleaned up unused wallet service imports
+- ✅ **Added Useful Pages:**
+  - Created Terms of Service page with complete legal information
+  - Created Privacy Policy page with data protection details
+  - Updated Support page navigation
+  - All pages properly integrated with Settings router
+- ✅ **Settings Grid Now Shows:**
+  - My Reviews - View your feedback
+  - Help & Support - Get help anytime
+  - Terms of Service - Legal information
+  - Privacy Policy - Your data protection
+
+**2024-11-22 (Earlier - Balance Page Updates)**:
+- ✅ **Updated Balance Page Header:**
+  - Changed header from "Welcome back" to "Balance"
+  - Removed notification bell icon
+  - Simplified header design
+- ✅ **Cleaned Up Action Buttons:**
+  - Kept only "Add balance" button (fully functional)
+  - Removed Send, Request, and More buttons
+  - Cleaner, focused interface
+
+**2024-11-22 (Earlier - Header Updates)**:
 - ✅ **Removed Notifications Feature:**
   - Removed notifications bell icon from Header component
   - Deleted notificationsData.js file

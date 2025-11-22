@@ -6,6 +6,8 @@ import EditProfile from '../pages/EditProfile';
 import Balance from '../pages/Balance';
 import Review from '../pages/Review';
 import Support from '../pages/Support';
+import Terms from '../pages/Terms';
+import Privacy from '../pages/Privacy';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,8 @@ export default function SettingsNavigator() {
       <Stack.Screen name="Balance" component={Balance} />
       <Stack.Screen name="Review" component={Review} />
       <Stack.Screen name="Support" component={Support} />
+      <Stack.Screen name="Terms" component={Terms} />
+      <Stack.Screen name="Privacy" component={Privacy} />
     </Stack.Navigator>
   );
 }
