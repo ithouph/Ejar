@@ -15,6 +15,8 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
+- **Nearby Amenities for Property Posts**: Added "Nearby" section (Mosque, Laundry, Gym) that only appears for Rent + House/Apartment property types; Land property type now shows Land Size field instead of Bedrooms/Bathrooms/Size
+- **Discover Page Updated to Marketplace**: Changed Discover (home) page from showing properties to showing marketplace posts with category filters (All, Property, Phones, Electronics, Others)
 - **Combined Search and Filter Functionality**: Updated `properties.search()` in `services/database.js` to accept and apply filters (type, price range, rating) alongside search terms, allowing users to search and filter simultaneously
 - **Improved Auth Guards**: Added proper authentication guards and loading states in Balance, Saved, and Posts pages to prevent errors when user is not logged in
 - **Consolidated Backend Services**: All database operations unified in `services/database.js` with "Api" suffix naming convention to prevent naming collisions

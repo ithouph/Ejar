@@ -11,12 +11,14 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
-import { properties as propertiesApi, favorites as favoritesApi } from '../services/database';
+import { posts as postsApi, savedPosts as savedPostsApi } from '../services/database';
 
-const PROPERTY_TYPES = [
+const CATEGORIES = [
   { id: 'all', label: 'All' },
-  { id: 'hotels', label: 'Hotels' },
-  { id: 'apartments', label: 'Apartments' },
+  { id: 'property', label: 'Property' },
+  { id: 'phones', label: 'Phones' },
+  { id: 'electronics', label: 'Electronics' },
+  { id: 'others', label: 'Others' },
 ];
 
 const AMENITIES_OPTIONS = [
@@ -46,7 +48,7 @@ export default function Discover({ navigation }) {
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRating, setSelectedRating] = useState(null);
-  const [properties, setProperties] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,67 +59,60 @@ export default function Discover({ navigation }) {
     try {
       setLoading(true);
       
-      const filters = {};
-      
-      if (selectedCategory === 'hotels') {
-        filters.type = 'Hotel';
-      } else if (selectedCategory === 'apartments') {
-        filters.type = 'Apartment';
-      }
-
-      if (priceRange[0] > 0) {
-        filters.minPrice = priceRange[0];
-      }
-      if (priceRange[1] < 5000) {
-        filters.maxPrice = priceRange[1];
-      }
-
-      if (selectedRating) {
-        filters.minRating = selectedRating;
-      }
-
-      let propertiesData;
-      if (searchQuery.trim()) {
-        propertiesData = await propertiesApi.search(searchQuery.trim(), filters);
-      } else {
-        propertiesData = await propertiesApi.getAll(filters);
-      }
+      let postsData = await postsApi.getAll();
 
       const favoriteIds = user 
-        ? await favoritesApi.getIds(user.id)
+        ? await savedPostsApi.getIds(user.id)
         : [];
 
-      setProperties(propertiesData || []);
+      setPosts(postsData || []);
       setFavorites(favoriteIds || []);
     } catch (error) {
       console.error('Error loading data:', error);
       Alert.alert(
-        'Error Loading Properties',
-        'Unable to load properties. Please check your internet connection and try again.',
+        'Error Loading Posts',
+        'Unable to load posts. Please check your internet connection and try again.',
         [{ text: 'OK' }]
       );
-      setProperties([]);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const getFilteredData = () => {
-    let filtered = properties;
+    let filtered = posts;
     
-    if (selectedAmenities.length > 0) {
-      filtered = filtered.filter(item => {
-        const propertyAmenities = item.amenities?.map(a => a.name || a) || [];
-        return selectedAmenities.every(amenity => 
-          propertyAmenities.includes(amenity)
+    if (selectedCategory !== 'all') {
+      if (selectedCategory === 'others') {
+        filtered = filtered.filter(item => 
+          ['cars', 'laptops'].includes(item.category)
         );
+      } else {
+        filtered = filtered.filter(item => item.category === selectedCategory);
+      }
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.title?.toLowerCase().includes(query) ||
+        item.text?.toLowerCase().includes(query) ||
+        item.location?.toLowerCase().includes(query)
+      );
+    }
+
+    if (priceRange[0] > 0 || priceRange[1] < 5000) {
+      filtered = filtered.filter(item => {
+        const price = item.price || 0;
+        return price >= priceRange[0] && price <= priceRange[1];
       });
     }
     
     return filtered;
   };
 
-  const toggleFavorite = async (id) => {
+  const toggleSaved = async (id) => {
     const previousFavorites = [...favorites];
     const wasAdding = !favorites.includes(id);
     
@@ -129,25 +124,25 @@ export default function Discover({ navigation }) {
       );
 
       if (user) {
-        await favoritesApi.toggle(user.id, id);
+        await savedPostsApi.toggle(user.id, id);
       } else if (wasAdding) {
         setFavorites(previousFavorites);
         Alert.alert(
           'Sign in required',
-          'Please sign in to save your favorites across devices.',
+          'Please sign in to save posts across devices.',
           [{ text: 'OK' }]
         );
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error('Error toggling saved:', error);
       
       setFavorites(previousFavorites);
 
       Alert.alert(
         'Action Failed',
         wasAdding 
-          ? 'Unable to add to favorites. Please try again.'
-          : 'Unable to remove from favorites. Please try again.',
+          ? 'Unable to save post. Please try again.'
+          : 'Unable to unsave post. Please try again.',
         [{ text: 'OK' }]
       );
     }
@@ -219,7 +214,7 @@ export default function Discover({ navigation }) {
         </View>
 
         <CategoryTabs
-          categories={PROPERTY_TYPES}
+          categories={CATEGORIES}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
@@ -227,7 +222,7 @@ export default function Discover({ navigation }) {
         <View style={layoutStyles.section}>
           <View style={layoutStyles.sectionHeader}>
             <ThemedText type="h2">
-              {searchQuery.trim() ? `Search results (${getFilteredData().length})` : 'Popular hotels'}
+              {searchQuery.trim() ? `Search results (${getFilteredData().length})` : 'Explore Marketplace'}
             </ThemedText>
           </View>
 
@@ -254,8 +249,8 @@ export default function Discover({ navigation }) {
               renderItem={({ item }) => (
                 <HotelCard
                   item={item}
-                  onPress={() => navigation.navigate('Details', { property: item })}
-                  onFavoritePress={toggleFavorite}
+                  onPress={() => navigation.navigate('PostDetail', { post: item })}
+                  onFavoritePress={toggleSaved}
                   isFavorite={favorites.includes(item.id)}
                 />
               )}
