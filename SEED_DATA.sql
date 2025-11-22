@@ -185,36 +185,21 @@ INSERT INTO balance_requests (user_id, amount, status, proof_image_url, created_
 ('550e8400-e29b-41d4-a716-446655440010', 60000, 'approved', 'https://images.unsplash.com/photo-1554224154-22dec7ec8818?w=400', NOW() - INTERVAL '16 days', NOW() - INTERVAL '15 days');
 
 -- ════════════════════════════════════════════════════════════════════
--- 8. WEDDING EVENTS TABLE (10 events)
+-- 8. PAYMENT REQUESTS TABLE (10 requests)
 -- ════════════════════════════════════════════════════════════════════
+-- Payment requests assigned to members for approval
 
-INSERT INTO wedding_events (user_id, event_name, event_type, event_date, location, budget, guests_count, notes, created_at) VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'Ahmed & Fatima Wedding', 'wedding', (NOW() + INTERVAL '30 days')::date, 'Nouakchott (Capital city)', 500000, 200, 'Traditional wedding ceremony with modern touches', NOW() - INTERVAL '10 days'),
-('550e8400-e29b-41d4-a716-446655440002', 'Birthday Celebration - Omar', 'birthday', (NOW() + INTERVAL '15 days')::date, 'Nouadhibou (Port-Étienne)', 80000, 50, '30th birthday party, outdoor venue', NOW() - INTERVAL '8 days'),
-('550e8400-e29b-41d4-a716-446655440003', 'Corporate Gala Dinner', 'corporate', (NOW() + INTERVAL '45 days')::date, 'Kiffa', 300000, 150, 'Annual company celebration', NOW() - INTERVAL '7 days'),
-('550e8400-e29b-41d4-a716-446655440004', 'Mariam & Hassan Engagement', 'engagement', (NOW() + INTERVAL '20 days')::date, 'Atar', 150000, 100, 'Garden engagement party', NOW() - INTERVAL '6 days'),
-('550e8400-e29b-41d4-a716-446655440005', 'Family Reunion Picnic', 'other', (NOW() + INTERVAL '10 days')::date, 'Kaédi', 50000, 75, 'Annual family gathering', NOW() - INTERVAL '5 days'),
-('550e8400-e29b-41d4-a716-446655440006', 'Ibrahim & Aisha Wedding', 'wedding', (NOW() + INTERVAL '60 days')::date, 'Zouerat', 700000, 300, 'Grand wedding with live music', NOW() - INTERVAL '12 days'),
-('550e8400-e29b-41d4-a716-446655440007', 'Graduation Ceremony', 'graduation', (NOW() + INTERVAL '25 days')::date, 'Rosso', 120000, 80, 'University graduation celebration', NOW() - INTERVAL '4 days'),
-('550e8400-e29b-41d4-a716-446655440008', 'Baby Shower - Khadija', 'baby_shower', (NOW() + INTERVAL '12 days')::date, 'Boutilimit', 60000, 40, 'Gender reveal baby shower', NOW() - INTERVAL '3 days'),
-('550e8400-e29b-41d4-a716-446655440009', 'Anniversary Dinner', 'anniversary', (NOW() + INTERVAL '18 days')::date, 'Chinguetti', 90000, 60, '25th wedding anniversary', NOW() - INTERVAL '2 days'),
-('550e8400-e29b-41d4-a716-446655440010', 'Business Conference', 'corporate', (NOW() + INTERVAL '50 days')::date, 'Sélibaby', 400000, 250, 'Regional business summit', NOW() - INTERVAL '1 day');
-
--- ════════════════════════════════════════════════════════════════════
--- 9. SERVICE CATEGORIES TABLE (10 categories)
--- ════════════════════════════════════════════════════════════════════
-
-INSERT INTO service_categories (name, description, icon, created_at) VALUES
-('Photography', 'Professional photography and videography services for events', 'camera', NOW() - INTERVAL '100 days'),
-('Catering', 'Food and beverage services for all types of events', 'coffee', NOW() - INTERVAL '100 days'),
-('Venue Decoration', 'Event decoration and setup services', 'star', NOW() - INTERVAL '100 days'),
-('Music & Entertainment', 'DJs, live bands, and entertainment services', 'music', NOW() - INTERVAL '100 days'),
-('Event Planning', 'Full-service event planning and coordination', 'calendar', NOW() - INTERVAL '100 days'),
-('Floral Arrangements', 'Wedding and event floral design services', 'gift', NOW() - INTERVAL '100 days'),
-('Transportation', 'Guest transportation and logistics services', 'truck', NOW() - INTERVAL '100 days'),
-('Hair & Makeup', 'Professional beauty services for events', 'feather', NOW() - INTERVAL '100 days'),
-('Invitation Design', 'Custom invitation and stationery design', 'mail', NOW() - INTERVAL '100 days'),
-('Event Security', 'Professional security services for events', 'shield', NOW() - INTERVAL '100 days');
+INSERT INTO payment_requests (member_id, amount, description, requester_name, requester_id, status, created_at, updated_at) VALUES
+('550e8400-e29b-41d4-a716-446655440001', 50000, 'Supplier invoice payment for October delivery', 'Ahmed Hassan', '550e8400-e29b-41d4-a716-446655440005', 'pending', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+('550e8400-e29b-41d4-a716-446655440002', 120000, 'Equipment rental payment - November', 'Fatima Mohamed', '550e8400-e29b-41d4-a716-446655440006', 'pending', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+('550e8400-e29b-41d4-a716-446655440003', 75000, 'Marketing campaign invoice - Q4', 'Ibrahim Ali', '550e8400-e29b-41d4-a716-446655440007', 'approved', NOW() - INTERVAL '5 days', NOW() - INTERVAL '4 days'),
+('550e8400-e29b-41d4-a716-446655440001', 200000, 'Office renovation contractor payment', 'Mariam Abdullah', '550e8400-e29b-41d4-a716-446655440008', 'pending', NOW() - INTERVAL '3 days', NOW() - INTERVAL '3 days'),
+('550e8400-e29b-41d4-a716-446655440004', 30000, 'Monthly software subscription renewal', 'Omar Salem', '550e8400-e29b-41d4-a716-446655440009', 'approved', NOW() - INTERVAL '6 days', NOW() - INTERVAL '5 days'),
+('550e8400-e29b-41d4-a716-446655440002', 95000, 'Consulting services payment - October', 'Aisha Mohammed', '550e8400-e29b-41d4-a716-446655440010', 'rejected', NOW() - INTERVAL '7 days', NOW() - INTERVAL '6 days'),
+('550e8400-e29b-41d4-a716-446655440005', 150000, 'Training program invoice - Q4', 'Hassan Omar', '550e8400-e29b-41d4-a716-446655440001', 'pending', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'),
+('550e8400-e29b-41d4-a716-446655440003', 85000, 'Legal services retainer - November', 'Khadija Ahmed', '550e8400-e29b-41d4-a716-446655440002', 'approved', NOW() - INTERVAL '8 days', NOW() - INTERVAL '7 days'),
+('550e8400-e29b-41d4-a716-446655440004', 60000, 'Utility bills payment - October', 'Youssef Ibrahim', '550e8400-e29b-41d4-a716-446655440003', 'pending', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days'),
+('550e8400-e29b-41d4-a716-446655440005', 110000, 'Insurance premium - Annual renewal', 'Zainab Hassan', '550e8400-e29b-41d4-a716-446655440004', 'pending', NOW() - INTERVAL '4 days', NOW() - INTERVAL '4 days');
 
 COMMIT;
 
@@ -237,9 +222,7 @@ SELECT 'Wallet Transactions', COUNT(*) FROM wallet_transactions
 UNION ALL
 SELECT 'Balance Requests', COUNT(*) FROM balance_requests
 UNION ALL
-SELECT 'Wedding Events', COUNT(*) FROM wedding_events
-UNION ALL
-SELECT 'Service Categories', COUNT(*) FROM service_categories;
+SELECT 'Payment Requests', COUNT(*) FROM payment_requests;
 
 -- Check that property posts have proper specifications
 SELECT 

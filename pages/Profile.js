@@ -134,6 +134,21 @@ export default function Profile({ navigation }) {
         <View style={styles.gridContainer}>
           <Pressable
             style={[styles.gridCard, { backgroundColor: theme.surface }]}
+            onPress={() => navigation.navigate('PaymentRequests')}
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="credit-card" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Payment Requests
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Manage approvals
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => navigation.navigate('Review')}
           >
             <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>

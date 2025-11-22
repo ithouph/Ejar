@@ -289,5 +289,72 @@ WHERE event_object_table = 'posts';
 -- );
 
 -- ════════════════════════════════════════════════════════════════════
+-- 10. CREATE PAYMENT_REQUESTS TABLE
+-- ════════════════════════════════════════════════════════════════════
+-- Add payment requests table for member-based payment approvals
+
+CREATE TABLE IF NOT EXISTS payment_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  amount NUMERIC NOT NULL,
+  description TEXT,
+  requester_name TEXT,
+  requester_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  approved_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_payment_requests_member_id 
+ON payment_requests(member_id);
+
+CREATE INDEX IF NOT EXISTS idx_payment_requests_status 
+ON payment_requests(status);
+
+-- Add comments
+COMMENT ON TABLE payment_requests IS 
+'Payment requests assigned to members for approval';
+
+COMMENT ON COLUMN payment_requests.member_id IS 
+'The member (user) who can approve this payment request';
+
+COMMENT ON COLUMN payment_requests.status IS 
+'Request status: pending, approved, or rejected';
+
+-- Enable RLS on payment_requests table
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
+
+-- Members can view only payment requests assigned to them
+CREATE POLICY "Members can view own payment requests" ON payment_requests
+  FOR SELECT USING (auth.uid() = member_id);
+
+-- Members can update (approve/reject) only their assigned payment requests
+CREATE POLICY "Members can update own payment requests" ON payment_requests
+  FOR UPDATE USING (auth.uid() = member_id);
+
+-- Users can create payment requests where they are the requester
+-- This prevents privilege escalation (can't create requests for other users)
+CREATE POLICY "Users can create payment requests as requester" ON payment_requests
+  FOR INSERT WITH CHECK (
+    auth.uid() = requester_id
+    AND member_id != requester_id
+  );
+
+-- Add constraint to prevent duplicate approvals and invalid status transitions
+ALTER TABLE payment_requests 
+ADD CONSTRAINT check_status_values 
+CHECK (status IN ('pending', 'approved', 'rejected'));
+
+-- ════════════════════════════════════════════════════════════════════
+-- 11. DROP WEDDING/EVENT TABLES (IF THEY EXIST)
+-- ════════════════════════════════════════════════════════════════════
+-- Remove wedding/event functionality from the app
+
+DROP TABLE IF EXISTS wedding_events CASCADE;
+DROP TABLE IF EXISTS service_categories CASCADE;
+
+-- ════════════════════════════════════════════════════════════════════
 -- END OF MIGRATIONS
 -- ════════════════════════════════════════════════════════════════════
