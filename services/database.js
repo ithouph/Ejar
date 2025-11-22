@@ -103,7 +103,7 @@ export const users = {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -511,7 +511,12 @@ export const wallet = {
 
     // Create wallet if doesn't exist
     if (!data) {
-      return await this.create(userId);
+      try {
+        return await this.create(userId);
+      } catch (createError) {
+        console.error('Error creating wallet:', createError);
+        return null;
+      }
     }
 
     return data;
