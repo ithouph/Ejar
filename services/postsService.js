@@ -1,8 +1,5 @@
 import { supabase } from '../config/supabase';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const POSTS_STORAGE_KEY = '@posts_storage';
 
 export const postsService = {
   async pickImages(maxImages = 5) {
@@ -44,32 +41,26 @@ export const postsService = {
 
       if (error) throw error;
       
-      if (data && data.length > 0) {
-        return data.map(post => ({
-          id: post.id,
-          userId: post.user_id,
-          userName: post.users?.full_name || 'Anonymous User',
-          userPhoto: post.users?.photo_url || 'https://via.placeholder.com/40',
-          image: post.images?.[0] || post.image_url,
-          images: post.images || (post.image_url ? [post.image_url] : []),
-          text: post.content || post.description,
-          title: post.title,
-          location: post.location || 'Location',
-          timeAgo: getTimeAgo(post.created_at),
-          likes: post.likes_count || 0,
-          comments: post.comments_count || 0,
-          amenities: post.amenities || [],
-          propertyType: post.property_type,
-          price: post.price,
-        }));
-      }
-      
-      const localPosts = await AsyncStorage.getItem(POSTS_STORAGE_KEY);
-      return localPosts ? JSON.parse(localPosts) : [];
+      return (data || []).map(post => ({
+        id: post.id,
+        userId: post.user_id,
+        userName: post.users?.full_name || 'Anonymous User',
+        userPhoto: post.users?.photo_url || 'https://via.placeholder.com/40',
+        image: post.images?.[0] || post.image_url,
+        images: post.images || (post.image_url ? [post.image_url] : []),
+        text: post.content || post.description,
+        title: post.title,
+        location: post.location || 'Location',
+        timeAgo: getTimeAgo(post.created_at),
+        likes: post.likes_count || 0,
+        comments: post.comments_count || 0,
+        amenities: post.amenities || [],
+        propertyType: post.property_type,
+        price: post.price,
+      }));
     } catch (error) {
       console.error('Error fetching posts:', error);
-      const localPosts = await AsyncStorage.getItem(POSTS_STORAGE_KEY);
-      return localPosts ? JSON.parse(localPosts) : [];
+      throw error;
     }
   },
 
@@ -116,33 +107,8 @@ export const postsService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating post with Supabase, using local storage:', error);
-      
-      const localPost = {
-        id: Date.now().toString(),
-        userId,
-        userName: postData.userName || 'Anonymous User',
-        userPhoto: postData.userPhoto || 'https://via.placeholder.com/40',
-        title: postData.title,
-        text: postData.description,
-        image: postData.images?.[0],
-        images: postData.images || [],
-        location: postData.location || 'Location',
-        timeAgo: 'Just now',
-        likes: 0,
-        comments: 0,
-        propertyType: postData.propertyType,
-        price: postData.price,
-        amenities: postData.amenities || [],
-        specifications: postData.specifications || {},
-        createdAt: new Date().toISOString(),
-      };
-
-      const existingPosts = await this.getPosts();
-      const updatedPosts = [localPost, ...existingPosts];
-      await AsyncStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
-      
-      return localPost;
+      console.error('Error creating post:', error);
+      throw error;
     }
   },
 
@@ -180,21 +146,8 @@ export const postsService = {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error deleting post from Supabase, trying local storage:', error);
-      
-      // Fallback: Delete from local storage
-      try {
-        const localPosts = await AsyncStorage.getItem(POSTS_STORAGE_KEY);
-        if (localPosts) {
-          const posts = JSON.parse(localPosts);
-          const updatedPosts = posts.filter(post => post.id !== postId || post.userId !== userId);
-          await AsyncStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
-        }
-        return true;
-      } catch (storageError) {
-        console.error('Error deleting from local storage:', storageError);
-        throw error;
-      }
+      console.error('Error deleting post:', error);
+      throw error;
     }
   },
 
