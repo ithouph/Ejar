@@ -1,5 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════
--- TRAVELSTAY APP - DATABASE SETUP (SYNTAX VERIFIED)
+-- EJAR APP - COMPLETE DATABASE SETUP
+-- ═══════════════════════════════════════════════════════════════
+-- Run this script in Supabase SQL Editor to create all tables
 -- ═══════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════
@@ -11,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   google_id TEXT UNIQUE,
   full_name TEXT,
-  photo_url TEXT,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -92,27 +94,48 @@ CREATE TABLE IF NOT EXISTS reviews (
   CONSTRAINT valid_rating CHECK (rating >= 1 AND rating <= 5)
 );
 
+CREATE TABLE IF NOT EXISTS property_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  rating INT NOT NULL,
+  review_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT valid_property_review_rating CHECK (rating >= 1 AND rating <= 5)
+);
+
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 4: SOCIAL TABLES
+-- SECTION 4: SOCIAL & MARKETPLACE TABLES
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT,
+  title TEXT NOT NULL,
   description TEXT,
   content TEXT,
-  images TEXT[] DEFAULT ARRAY[]::TEXT[],
+  images JSONB DEFAULT '[]'::JSONB,
   image_url TEXT,
+  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
   property_type TEXT,
+  listing_type TEXT,
   price NUMERIC,
   location TEXT,
-  amenities TEXT[] DEFAULT ARRAY[]::TEXT[],
+  amenities JSONB DEFAULT '[]'::JSONB,
   specifications JSONB DEFAULT '{}'::JSONB,
   likes_count INT DEFAULT 0,
   comments_count INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS saved_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
 );
 
 -- ═══════════════════════════════════════════════════════════════
@@ -130,8 +153,8 @@ CREATE TABLE IF NOT EXISTS wallet_accounts (
 
 CREATE TABLE IF NOT EXISTS wallet_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
-  type TEXT NOT NULL,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  transaction_type TEXT NOT NULL,
   amount NUMERIC NOT NULL,
   description TEXT,
   category TEXT,
@@ -139,30 +162,30 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS payment_requests (
+CREATE TABLE IF NOT EXISTS balance_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   amount NUMERIC NOT NULL,
-  status TEXT DEFAULT 'pending',
-  payment_method TEXT,
-  transaction_id TEXT,
-  processed_by UUID,
-  processed_at TIMESTAMPTZ,
-  rejection_reason TEXT,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  proof_image_url TEXT,
   admin_notes TEXT,
+  reviewed_by UUID REFERENCES users(id),
+  reviewed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT valid_payment_status CHECK (status IN ('pending', 'processing', 'processed', 'approved', 'rejected'))
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS support_messages (
+CREATE TABLE IF NOT EXISTS payment_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  payment_request_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
-  message TEXT,
-  image_url TEXT,
-  sender_type TEXT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  member_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  amount NUMERIC NOT NULL,
+  description TEXT,
+  requester_name TEXT,
+  requester_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  approved_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ═══════════════════════════════════════════════════════════════
@@ -177,12 +200,19 @@ CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_property_id ON favorites(property_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_property_id ON reviews(property_id);
 CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
 CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_posts_user_id ON saved_posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_posts_post_id ON saved_posts(post_id);
+CREATE INDEX IF NOT EXISTS idx_property_reviews_post_id ON property_reviews(post_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_balance_requests_user_id ON balance_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_balance_requests_status ON balance_requests(status);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_member_id ON payment_requests(member_id);
 CREATE INDEX IF NOT EXISTS idx_payment_requests_status ON payment_requests(status);
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 9: ROW LEVEL SECURITY (RLS)
+-- SECTION 7: ROW LEVEL SECURITY (RLS)
 -- ═══════════════════════════════════════════════════════════════
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -192,11 +222,13 @@ ALTER TABLE property_photos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE amenities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE property_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE balance_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
 
 -- Users
 CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
@@ -224,142 +256,45 @@ CREATE POLICY "Users can insert own reviews" ON reviews FOR INSERT WITH CHECK (a
 CREATE POLICY "Users can update own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own reviews" ON reviews FOR DELETE USING (auth.uid() = user_id);
 
+-- Property Reviews (PUBLIC READ, USER WRITE)
+CREATE POLICY "Property reviews are viewable by everyone" ON property_reviews FOR SELECT USING (true);
+CREATE POLICY "Users can insert own property reviews" ON property_reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own property reviews" ON property_reviews FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own property reviews" ON property_reviews FOR DELETE USING (auth.uid() = user_id);
+
 -- Posts (PUBLIC READ, USER WRITE)
 CREATE POLICY "Posts are viewable by everyone" ON posts FOR SELECT USING (true);
 CREATE POLICY "Users can insert own posts" ON posts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own posts" ON posts FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own posts" ON posts FOR DELETE USING (auth.uid() = user_id);
 
+-- Saved Posts (USER-SPECIFIC)
+CREATE POLICY "Users can view own saved posts" ON saved_posts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own saved posts" ON saved_posts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own saved posts" ON saved_posts FOR DELETE USING (auth.uid() = user_id);
+
 -- Wallet (USER-SPECIFIC)
 CREATE POLICY "Users can view own wallet" ON wallet_accounts FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own wallet" ON wallet_accounts FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own wallet" ON wallet_accounts FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can view own transactions" ON wallet_transactions FOR SELECT USING (
-  EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
-);
-CREATE POLICY "Users can insert own transactions" ON wallet_transactions FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
-);
+-- Wallet Transactions (USER-SPECIFIC)
+CREATE POLICY "Users can view own transactions" ON wallet_transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own transactions" ON wallet_transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Payment requests (USER-SPECIFIC)
-CREATE POLICY "Users can view own payment requests" ON payment_requests FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own payment requests" ON payment_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own payment requests" ON payment_requests FOR UPDATE USING (auth.uid() = user_id);
+-- Balance Requests (USER-SPECIFIC)
+CREATE POLICY "Users can view own balance requests" ON balance_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own balance requests" ON balance_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own balance requests" ON balance_requests FOR UPDATE USING (auth.uid() = user_id);
 
--- Support messages (USER-SPECIFIC)
-CREATE POLICY "Users can view own support messages" ON support_messages FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own support messages" ON support_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
-
+-- Payment Requests (MEMBER-SPECIFIC)
+CREATE POLICY "Members can view own payment requests" ON payment_requests FOR SELECT USING (auth.uid() = member_id);
+CREATE POLICY "Members can update own payment requests" ON payment_requests FOR UPDATE USING (auth.uid() = member_id);
+CREATE POLICY "Authenticated users can insert payment requests" ON payment_requests FOR INSERT WITH CHECK (auth.uid() = requester_id);
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 10: FUNCTIONS
+-- SECTION 8: FUNCTIONS
 -- ═══════════════════════════════════════════════════════════════
-
-CREATE OR REPLACE FUNCTION add_wallet_transaction(
-  p_wallet_id UUID,
-  p_type TEXT,
-  p_amount NUMERIC,
-  p_description TEXT,
-  p_category TEXT
-)
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  v_transaction_id UUID;
-  v_new_balance NUMERIC;
-  v_user_id UUID;
-BEGIN
-  SELECT user_id INTO v_user_id FROM wallet_accounts WHERE id = p_wallet_id;
-  IF v_user_id != auth.uid() THEN
-    RAISE EXCEPTION 'Unauthorized';
-  END IF;
-
-  INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
-  VALUES (p_wallet_id, p_type, p_amount, p_description, p_category, 'completed')
-  RETURNING id INTO v_transaction_id;
-
-  UPDATE wallet_accounts
-  SET 
-    balance = CASE 
-      WHEN p_type = 'credit' THEN balance + p_amount 
-      ELSE balance - p_amount 
-    END,
-    updated_at = NOW()
-  WHERE id = p_wallet_id
-  RETURNING balance INTO v_new_balance;
-
-  RETURN json_build_object('transaction_id', v_transaction_id, 'new_balance', v_new_balance);
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION process_payment_request(
-  p_request_id UUID,
-  p_new_status TEXT,
-  p_admin_notes TEXT DEFAULT NULL,
-  p_rejection_reason TEXT DEFAULT NULL
-)
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-DECLARE
-  v_user_id UUID;
-  v_amount NUMERIC;
-  v_wallet_id UUID;
-  v_new_balance NUMERIC;
-BEGIN
-  IF p_new_status NOT IN ('processing', 'processed', 'approved', 'rejected') THEN
-    RAISE EXCEPTION 'Invalid status: %', p_new_status;
-  END IF;
-
-  SELECT user_id, amount INTO v_user_id, v_amount 
-  FROM payment_requests 
-  WHERE id = p_request_id;
-
-  UPDATE payment_requests
-  SET 
-    status = p_new_status,
-    processed_at = NOW(),
-    admin_notes = COALESCE(p_admin_notes, admin_notes),
-    rejection_reason = COALESCE(p_rejection_reason, rejection_reason),
-    updated_at = NOW()
-  WHERE id = p_request_id;
-
-  IF p_new_status = 'approved' THEN
-    SELECT id INTO v_wallet_id FROM wallet_accounts WHERE user_id = v_user_id;
-    
-    IF v_wallet_id IS NULL THEN
-      INSERT INTO wallet_accounts (user_id, balance, currency)
-      VALUES (v_user_id, v_amount, 'USD')
-      RETURNING id, balance INTO v_wallet_id, v_new_balance;
-    ELSE
-      UPDATE wallet_accounts
-      SET balance = balance + v_amount, updated_at = NOW()
-      WHERE id = v_wallet_id
-      RETURNING balance INTO v_new_balance;
-    END IF;
-
-    INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
-    VALUES (v_wallet_id, 'credit', v_amount, 'Balance addition approved', 'deposit', 'completed');
-
-    RETURN json_build_object(
-      'success', true,
-      'status', p_new_status,
-      'new_balance', v_new_balance,
-      'message', 'Payment approved and balance added'
-    );
-  END IF;
-
-  RETURN json_build_object(
-    'success', true,
-    'status', p_new_status,
-    'message', 'Payment request status updated'
-  );
-END;
-$$;
 
 CREATE OR REPLACE FUNCTION update_property_rating()
 RETURNS TRIGGER
@@ -385,7 +320,7 @@ END;
 $$;
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 11: TRIGGERS
+-- SECTION 9: TRIGGERS
 -- ═══════════════════════════════════════════════════════════════
 
 DROP TRIGGER IF EXISTS trigger_update_property_rating ON reviews;
@@ -395,4 +330,11 @@ CREATE TRIGGER trigger_update_property_rating
 
 -- ═══════════════════════════════════════════════════════════════
 -- ✅ SETUP COMPLETE!
+-- ═══════════════════════════════════════════════════════════════
+-- 
+-- Next steps:
+-- 1. Run SEED_DATA.sql to add dummy data (optional)
+-- 2. Test your app with the database
+-- 
+-- All tables created with Row Level Security enabled!
 -- ═══════════════════════════════════════════════════════════════

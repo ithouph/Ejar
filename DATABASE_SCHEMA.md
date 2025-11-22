@@ -1,33 +1,73 @@
 # Ejar App - Supabase Database Schema
 
-This document outlines the database tables needed for the Ejar MVP.
+Complete database schema for the Ejar marketplace app.
 
-## Required Tables
+---
+
+## Table Overview
+
+### User Management
+- `users` - User authentication and basic info
+- `user_profiles` - Extended user profile information
+
+### Marketplace
+- `posts` - Marketplace listings (phones, laptops, cars, property)
+- `saved_posts` - User's saved/favorited posts
+- `property_reviews` - Reviews for marketplace posts
+
+### Properties (Legacy)
+- `properties` - Hotel/apartment listings
+- `property_photos` - Property image gallery
+- `amenities` - Property features/amenities
+- `favorites` - User's saved properties
+- `reviews` - Property reviews
+
+### Wallet & Payments
+- `wallet_accounts` - User wallet balances
+- `wallet_transactions` - Transaction history
+- `balance_requests` - Balance top-up requests
+- `payment_requests` - Member payment approvals
+
+---
+
+## Detailed Schema
 
 ### 1. users
-Stores user authentication and basic info
+User authentication and basic information
+
 ```sql
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
   google_id TEXT UNIQUE,
   full_name TEXT,
-  photo_url TEXT,
+  avatar_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
+**Columns:**
+- `id` - Unique user identifier (UUID)
+- `email` - User email address (unique, required)
+- `google_id` - Google OAuth ID (unique)
+- `full_name` - User's full name
+- `avatar_url` - Profile picture URL
+- `created_at` - Account creation timestamp
+- `updated_at` - Last update timestamp
+
+---
+
 ### 2. user_profiles
 Extended user profile information
+
 ```sql
 CREATE TABLE user_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   date_of_birth DATE,
   gender TEXT,
   mobile TEXT,
-  whatsapp TEXT,
   weight NUMERIC,
   height NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -35,13 +75,180 @@ CREATE TABLE user_profiles (
 );
 ```
 
-### 3. properties
-Hotel and apartment listings
+**Columns:**
+- `user_id` - References `users.id` (unique, cascading delete)
+- `date_of_birth` - User's birth date
+- `gender` - User's gender
+- `mobile` - Phone number
+- `weight` - User weight (optional)
+- `height` - User height (optional)
+
+---
+
+### 3. posts
+Social marketplace posts (all categories)
+
+```sql
+CREATE TABLE posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  content TEXT,
+  images JSONB DEFAULT '[]'::JSONB,
+  image_url TEXT,
+  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
+  property_type TEXT,
+  listing_type TEXT,
+  price NUMERIC,
+  location TEXT,
+  amenities JSONB DEFAULT '[]'::JSONB,
+  specifications JSONB DEFAULT '{}'::JSONB,
+  likes_count INT DEFAULT 0,
+  comments_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Core Columns:**
+- `user_id` - Post creator (references users)
+- `title` - Post title (required)
+- `description` - Short description
+- `content` - Full post content
+- `images` - Array of image URLs (JSONB)
+- `category` - Post category (phones, laptops, electronics, cars, property)
+- `price` - Item price
+- `location` - Item location
+
+**Property-Specific Columns:**
+- `property_type` - house, apartment, villa, land (for property category)
+- `listing_type` - rent or sell (for property category)
+- `amenities` - Main amenities (JSONB array: wifi, parking, ac, kitchen)
+- `specifications` - Category-specific details (JSONB object)
+
+**Category-Specific Specifications:**
+
+#### Phones
+```json
+{
+  "brand": "Apple",
+  "model": "iPhone 14 Pro",
+  "storage": "256GB",
+  "color": "Space Black",
+  "condition": "Excellent"
+}
+```
+
+#### Laptops
+```json
+{
+  "brand": "Apple",
+  "model": "MacBook Pro 16-inch",
+  "processor": "M2 Max",
+  "ram": "32GB",
+  "storage": "1TB SSD",
+  "condition": "Excellent"
+}
+```
+
+#### Electronics
+```json
+{
+  "brand": "Sony",
+  "size": "65 inches",
+  "type": "4K Smart TV",
+  "condition": "New",
+  "warranty": "2 years"
+}
+```
+
+#### Cars
+```json
+{
+  "make": "Toyota",
+  "model": "Camry",
+  "year": 2020,
+  "mileage": 45000,
+  "fuel_type": "Petrol",
+  "gear_type": "Automatic",
+  "condition": "Excellent"
+}
+```
+
+#### Property (Rent House/Apartment)
+```json
+{
+  "bedrooms": 3,
+  "bathrooms": 2,
+  "size_sqft": 1200,
+  "floor": 5,
+  "nearby_amenities": ["mosque", "laundry", "gym"]
+}
+```
+
+#### Property (Land)
+```json
+{
+  "land_size": "500 sqm",
+  "location_type": "residential",
+  "utilities_available": true
+}
+```
+
+---
+
+### 4. saved_posts
+User's saved/favorited marketplace posts
+
+```sql
+CREATE TABLE saved_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
+);
+```
+
+**Columns:**
+- `user_id` - User who saved the post
+- `post_id` - The saved post
+- Unique constraint prevents duplicate saves
+
+---
+
+### 5. property_reviews
+Reviews for marketplace posts
+
+```sql
+CREATE TABLE property_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  review_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+**Columns:**
+- `post_id` - The post being reviewed
+- `user_id` - Reviewer
+- `rating` - 1-5 star rating (required)
+- `review_text` - Review text
+
+---
+
+### 6. properties
+Hotel and apartment listings (legacy)
+
 ```sql
 CREATE TABLE properties (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
-  type TEXT NOT NULL, -- 'Hotel' or 'Apartment'
+  type TEXT NOT NULL,
   location TEXT NOT NULL,
   address TEXT,
   description TEXT,
@@ -58,223 +265,11 @@ CREATE TABLE properties (
 );
 ```
 
-### 5. property_photos
-Property image gallery
-```sql
-CREATE TABLE property_photos (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  url TEXT NOT NULL,
-  category TEXT DEFAULT 'Main', -- 'Main', 'Bedroom', 'Kitchen', etc.
-  order_index INT DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+---
 
-### 6. amenities
-Property amenities/features
-```sql
-CREATE TABLE amenities (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  icon TEXT, -- Feather icon name
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
+### 7. wallet_accounts
+User wallet balances
 
-### 7. favorites
-User's saved/favorited properties
-```sql
-CREATE TABLE favorites (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, property_id)
-);
-```
-
-### 8. reviews
-Post reviews (users can review posts in the marketplace)
-```sql
-CREATE TABLE reviews (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  comment TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 8b. property_reviews
-Property reviews (separate from post reviews)
-```sql
-CREATE TABLE property_reviews (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
-  rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  title TEXT,
-  comment TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 9. posts
-Social posts/feed with marketplace functionality
-```sql
-CREATE TABLE posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  content TEXT,
-  description TEXT,
-  images JSONB DEFAULT '[]'::jsonb,
-  image_url TEXT,
-  property_type TEXT, -- 'house', 'apartment', 'villa', 'land' (for property category only)
-  price NUMERIC,
-  location TEXT,
-  amenities JSONB DEFAULT '[]'::jsonb, -- Main amenities: Wi-Fi, Parking, AC, Kitchen
-  specifications JSONB DEFAULT '{}'::jsonb, -- Category-specific features (see below)
-  listing_type TEXT, -- 'rent' or 'sell' (for property category only, NULL for other categories)
-  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
-  likes_count INT DEFAULT 0,
-  comments_count INT DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Add indexes for performance
-CREATE INDEX idx_posts_category ON posts(category);
-CREATE INDEX idx_posts_user_id ON posts(user_id);
-CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
-CREATE INDEX idx_posts_price ON posts(price);
-```
-
-**Category-Specific Specifications Structure:**
-
-> **Note:** The `specifications` JSONB field stores category-specific details. The structure varies based on `category` and `listing_type`.
-
-#### **Phones** (category='phones')
-```json
-{
-  "battery_health": "95%",
-  "storage": "256GB",
-  "condition": "Excellent",
-  "model": "iPhone 14 Pro",
-  "color": "Black"
-}
-```
-
-#### **Laptops** (category='laptops')
-```json
-{
-  "processor": "M2 Pro",
-  "ram": "16GB",
-  "storage": "512GB SSD",
-  "condition": "Good",
-  "model": "MacBook Pro 16"
-}
-```
-
-#### **Electronics** (category='electronics')
-```json
-{
-  "brand": "Sony",
-  "condition": "Excellent",
-  "warranty": "1 year"
-}
-```
-
-#### **Cars** (category='cars')
-```json
-{
-  "make": "Toyota Camry",
-  "model": "2.5L SE",
-  "year": "2022",
-  "mileage": "25,000 km",
-  "gear_type": "Automatic",
-  "fuel_type": "Petrol",
-  "condition": "Excellent"
-}
-```
-
-#### **Property - Rent House/Apartment** (category='property', listing_type='rent', property_type in ['house', 'apartment'])
-```json
-{
-  "bedrooms": "3",
-  "bathrooms": "2",
-  "size_sqft": "1500",
-  "property_type": "apartment",
-  "monthly_rent": "2500",
-  "deposit": "5000",
-  "min_contract_duration": "12 months",
-  "furnished": "Yes",
-  "nearby_amenities": ["mosque", "laundry", "gym"]
-}
-```
-**Important:** `nearby_amenities` array only appears for rent listings with property_type='house' or 'apartment'. Main amenities (Wi-Fi, Parking, AC, Kitchen) are stored in the `amenities` JSONB field at the root level.
-
-#### **Property - Rent Villa** (category='property', listing_type='rent', property_type='villa')
-```json
-{
-  "bedrooms": "5",
-  "bathrooms": "4",
-  "size_sqft": "3000",
-  "property_type": "villa",
-  "monthly_rent": "5000",
-  "deposit": "10000",
-  "min_contract_duration": "12 months",
-  "furnished": "Partially"
-}
-```
-**Note:** Villas do NOT include `nearby_amenities` array.
-
-#### **Property - Rent Land** (category='property', listing_type='rent', property_type='land')
-```json
-{
-  "property_type": "land",
-  "land_size": "500",
-  "monthly_rent": "1000",
-  "min_contract_duration": "12 months",
-  "zoning": "Residential"
-}
-```
-**Note:** Land listings use `land_size` (in sq meters) instead of bedrooms/bathrooms/size_sqft. No nearby amenities.
-
-#### **Property - Sell House/Apartment** (category='property', listing_type='sell', property_type in ['house', 'apartment'])
-```json
-{
-  "bedrooms": "4",
-  "bathrooms": "3",
-  "size_sqft": "2000",
-  "property_type": "house",
-  "sale_price": "500000",
-  "ownership_type": "Freehold",
-  "property_age": "5 years",
-  "payment_options": "Cash, Installments"
-}
-```
-**Note:** Sell listings do NOT include `nearby_amenities` (only for rent).
-
-#### **Property - Sell Land** (category='property', listing_type='sell', property_type='land')
-```json
-{
-  "property_type": "land",
-  "land_size": "1000",
-  "sale_price": "300000",
-  "ownership_type": "Freehold",
-  "zoning": "Commercial",
-  "payment_options": "Cash, Installments"
-}
-```
-
-### 10. wallet_accounts
-User wallet/balance
 ```sql
 CREATE TABLE wallet_accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -286,32 +281,49 @@ CREATE TABLE wallet_accounts (
 );
 ```
 
-### 11. wallet_transactions
+**Columns:**
+- `user_id` - Wallet owner (unique)
+- `balance` - Current balance
+- `currency` - Currency code (default: USD)
+
+---
+
+### 8. wallet_transactions
 Transaction history
+
 ```sql
 CREATE TABLE wallet_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
-  type TEXT NOT NULL, -- 'credit' or 'debit'
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  transaction_type TEXT NOT NULL,
   amount NUMERIC NOT NULL,
   description TEXT,
-  category TEXT, -- 'booking', 'refund', 'deposit', etc.
+  category TEXT,
   status TEXT DEFAULT 'completed',
-  balance_after NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-### 12. balance_requests
-Balance top-up requests pending admin approval
+**Columns:**
+- `user_id` - Transaction owner
+- `transaction_type` - 'deposit' or 'debit'
+- `amount` - Transaction amount
+- `description` - Transaction description
+- `category` - Transaction category (deposit, payment, etc.)
+- `status` - Transaction status (default: completed)
+
+---
+
+### 9. balance_requests
+Balance top-up requests
+
 ```sql
 CREATE TABLE balance_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
   amount NUMERIC NOT NULL,
-  transaction_image_url TEXT NOT NULL,
-  status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  proof_image_url TEXT,
   admin_notes TEXT,
   reviewed_by UUID REFERENCES users(id),
   reviewed_at TIMESTAMPTZ,
@@ -320,20 +332,20 @@ CREATE TABLE balance_requests (
 );
 ```
 
-### 13. saved_posts
-User's saved/favorited posts
-```sql
-CREATE TABLE saved_posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, post_id)
-);
-```
+**Columns:**
+- `user_id` - User requesting balance top-up
+- `amount` - Requested amount
+- `status` - pending, approved, or rejected
+- `proof_image_url` - Payment proof image
+- `admin_notes` - Admin review notes
+- `reviewed_by` - Admin who reviewed
+- `reviewed_at` - Review timestamp
 
-### 14. payment_requests
-Payment requests for member approval
+---
+
+### 10. payment_requests
+Member payment approval system
+
 ```sql
 CREATE TABLE payment_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -347,33 +359,58 @@ CREATE TABLE payment_requests (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- Index for fast lookup by member
-CREATE INDEX idx_payment_requests_member_id ON payment_requests(member_id);
-CREATE INDEX idx_payment_requests_status ON payment_requests(status);
 ```
+
+**Columns:**
+- `member_id` - Member who approves/rejects (required)
+- `amount` - Payment amount
+- `description` - Payment description
+- `requester_name` - Name of requester
+- `requester_id` - User who created request
+- `status` - pending, approved, or rejected
+- `approved_at` - Approval timestamp
+
+---
+
+## Indexes
+
+Performance indexes on key columns:
+
+```sql
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_posts_category ON posts(category);
+CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX idx_saved_posts_user_id ON saved_posts(user_id);
+CREATE INDEX idx_wallet_transactions_user_id ON wallet_transactions(user_id);
+CREATE INDEX idx_payment_requests_member_id ON payment_requests(member_id);
+```
+
+---
+
+## Row Level Security (RLS)
+
+All tables have RLS enabled with appropriate policies:
+
+### Public Read
+- `posts` - Anyone can view
+- `properties` - Anyone can view
+- `property_reviews` - Anyone can view
+
+### User-Specific Access
+- `wallet_accounts` - Users can only access their own wallet
+- `wallet_transactions` - Users see only their transactions
+- `saved_posts` - Users manage only their saved posts
+- `balance_requests` - Users manage only their requests
+
+### Member-Only Access
+- `payment_requests` - Members can only see requests assigned to them
+
+---
 
 ## Setup Instructions
 
-1. Go to your Supabase project dashboard
-2. Navigate to SQL Editor
-3. Copy and paste the CREATE TABLE statements above
-4. Execute them one by one
-5. Enable Row Level Security (RLS) policies as needed
+1. Run `DATABASE_SETUP_CLEAN.sql` in Supabase SQL Editor
+2. Run `SEED_DATA.sql` for dummy data (optional)
+3. Verify with verification queries
 
-## Row Level Security (RLS) Example
-
-```sql
--- Enable RLS on users table
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-
--- Users can read their own data
-CREATE POLICY "Users can view own data" ON users
-  FOR SELECT USING (auth.uid() = id);
-
--- Users can update their own data
-CREATE POLICY "Users can update own data" ON users
-  FOR UPDATE USING (auth.uid() = id);
-```
-
-Repeat similar RLS policies for other tables based on your security requirements.
+See [DATABASE_SETUP_INSTRUCTIONS.md](DATABASE_SETUP_INSTRUCTIONS.md) for detailed setup guide.
