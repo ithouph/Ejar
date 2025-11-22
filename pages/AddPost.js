@@ -31,6 +31,19 @@ import { posts as postsApi } from '../services/database';
  * - Amenities selection (Wi-Fi, parking, pool, etc.)
  */
 
+const LISTING_TYPES = [
+  { id: 'rent', label: 'Rent' },
+  { id: 'sell', label: 'Sell' },
+];
+
+const CATEGORIES = [
+  { id: 'phones', label: 'Phones', icon: 'smartphone' },
+  { id: 'laptops', label: 'Laptops', icon: 'monitor' },
+  { id: 'electronics', label: 'Electronics', icon: 'zap' },
+  { id: 'cars', label: 'Cars', icon: 'truck' },
+  { id: 'property', label: 'Property', icon: 'home' },
+];
+
 const PROPERTY_TYPES = [
   { id: 'apartment', label: 'Apartment', icon: 'home' },
   { id: 'house', label: 'House', icon: 'home' },
@@ -84,6 +97,10 @@ export default function AddPost({ navigation }) {
   const { user } = useAuth();
   const insets = useScreenInsets();
   
+  const [listingType, setListingType] = useState('rent');
+  const [category, setCategory] = useState('property');
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -153,6 +170,10 @@ export default function AddPost({ navigation }) {
         propertyType,
         amenities: selectedAmenities,
         images,
+        listingType,
+        category,
+        rating: rating > 0 ? rating : null,
+        reviewText: reviewText.trim() || null,
         userName: user?.user_metadata?.full_name || user?.email || 'Anonymous User',
         userPhoto: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/40',
       };
@@ -211,6 +232,116 @@ export default function AddPost({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Listing Type
+          </ThemedText>
+          <View style={styles.typeGrid}>
+            {LISTING_TYPES.map(type => (
+              <Pressable
+                key={type.id}
+                onPress={() => setListingType(type.id)}
+                style={[
+                  styles.typeChip,
+                  { 
+                    backgroundColor: listingType === type.id ? theme.primary + '20' : theme.surface,
+                    borderColor: listingType === type.id ? theme.primary : theme.border,
+                    borderWidth: 1,
+                    flex: 1,
+                  }
+                ]}
+              >
+                <ThemedText 
+                  type="body" 
+                  style={{ color: listingType === type.id ? theme.primary : theme.textSecondary, fontWeight: '600' }}
+                >
+                  {type.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Category
+          </ThemedText>
+          <View style={styles.typeGrid}>
+            {CATEGORIES.map(cat => (
+              <Pressable
+                key={cat.id}
+                onPress={() => setCategory(cat.id)}
+                style={[
+                  styles.typeChip,
+                  { 
+                    backgroundColor: category === cat.id ? theme.primary + '20' : theme.surface,
+                    borderColor: category === cat.id ? theme.primary : theme.border,
+                    borderWidth: 1,
+                  }
+                ]}
+              >
+                <Feather 
+                  name={cat.icon} 
+                  size={20} 
+                  color={category === cat.id ? theme.primary : theme.textSecondary} 
+                />
+                <ThemedText 
+                  type="body" 
+                  style={{ color: category === cat.id ? theme.primary : theme.textSecondary }}
+                >
+                  {cat.label}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Rating (Optional)
+          </ThemedText>
+          <View style={styles.ratingContainer}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Pressable
+                key={star}
+                onPress={() => setRating(star)}
+                style={styles.starButton}
+              >
+                <Feather
+                  name={star <= rating ? 'star' : 'star'}
+                  size={32}
+                  color={star <= rating ? '#FFD700' : theme.border}
+                  fill={star <= rating ? '#FFD700' : 'transparent'}
+                />
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {rating > 0 && (
+          <View style={styles.section}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Review (Optional)
+            </ThemedText>
+            <TextInput
+              value={reviewText}
+              onChangeText={setReviewText}
+              placeholder="Share your experience..."
+              placeholderTextColor={theme.textSecondary}
+              multiline
+              numberOfLines={4}
+              style={[
+                styles.textArea,
+                {
+                  backgroundColor: theme.surface,
+                  color: theme.textPrimary,
+                  borderColor: theme.border,
+                }
+              ]}
+            />
+          </View>
+        )}
+
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>
             Photos
@@ -465,5 +596,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.medium,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  starButton: {
+    padding: Spacing.xs,
   },
 });
