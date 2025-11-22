@@ -42,10 +42,14 @@ const PROPERTY_TYPES = [
 const AMENITIES = [
   { id: 'wifi', label: 'Wi-Fi', icon: 'wifi' },
   { id: 'parking', label: 'Parking', icon: 'truck' },
-  { id: 'gym', label: 'Gym', icon: 'activity' },
   { id: 'ac', label: 'Air Conditioning', icon: 'wind' },
   { id: 'kitchen', label: 'Kitchen', icon: 'coffee' },
+];
+
+const NEARBY_AMENITIES = [
+  { id: 'mosque', label: 'Mosque', icon: 'map-pin' },
   { id: 'laundry', label: 'Laundry', icon: 'refresh-cw' },
+  { id: 'gym', label: 'Gym', icon: 'activity' },
 ];
 
 const CONDITION_OPTIONS = ['Excellent', 'Good', 'Fair', 'Poor'];
@@ -160,6 +164,8 @@ export default function AddPost({ navigation }) {
   const [sizeSqft, setSizeSqft] = useState('');
   const [propertyType, setPropertyType] = useState('apartment');
   const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedNearbyAmenities, setSelectedNearbyAmenities] = useState([]);
+  const [landSize, setLandSize] = useState('');
   const [monthlyRent, setMonthlyRent] = useState('');
   const [deposit, setDeposit] = useState('');
   const [minContract, setMinContract] = useState('');
@@ -191,6 +197,14 @@ export default function AddPost({ navigation }) {
 
   function toggleAmenity(amenityId) {
     setSelectedAmenities(prev => 
+      prev.includes(amenityId)
+        ? prev.filter(id => id !== amenityId)
+        : [...prev, amenityId]
+    );
+  }
+
+  function toggleNearbyAmenity(amenityId) {
+    setSelectedNearbyAmenities(prev => 
       prev.includes(amenityId)
         ? prev.filter(id => id !== amenityId)
         : [...prev, amenityId]
@@ -233,12 +247,21 @@ export default function AddPost({ navigation }) {
         };
       case 'property':
         const commonSpecs = {
-          bedrooms,
-          bathrooms,
-          size_sqft: sizeSqft,
           property_type: propertyType,
           amenities: selectedAmenities,
         };
+
+        if (propertyType === 'land') {
+          commonSpecs.land_size = landSize;
+        } else {
+          commonSpecs.bedrooms = bedrooms;
+          commonSpecs.bathrooms = bathrooms;
+          commonSpecs.size_sqft = sizeSqft;
+        }
+        
+        if (listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment')) {
+          commonSpecs.nearby_amenities = selectedNearbyAmenities;
+        }
         
         if (listingType === 'rent') {
           return {
@@ -469,9 +492,15 @@ export default function AddPost({ navigation }) {
                 ))}
               </View>
 
-              <InputField label="Bedrooms" value={bedrooms} onChangeText={setBedrooms} placeholder="e.g., 3" keyboardType="numeric" theme={theme} />
-              <InputField label="Bathrooms" value={bathrooms} onChangeText={setBathrooms} placeholder="e.g., 2" keyboardType="numeric" theme={theme} />
-              <InputField label="Size (sq ft)" value={sizeSqft} onChangeText={setSizeSqft} placeholder="e.g., 1500" keyboardType="numeric" theme={theme} />
+              {propertyType === 'land' ? (
+                <InputField label="Land Size (sq m)" value={landSize} onChangeText={setLandSize} placeholder="e.g., 500" keyboardType="numeric" theme={theme} />
+              ) : (
+                <>
+                  <InputField label="Bedrooms" value={bedrooms} onChangeText={setBedrooms} placeholder="e.g., 3" keyboardType="numeric" theme={theme} />
+                  <InputField label="Bathrooms" value={bathrooms} onChangeText={setBathrooms} placeholder="e.g., 2" keyboardType="numeric" theme={theme} />
+                  <InputField label="Size (sq ft)" value={sizeSqft} onChangeText={setSizeSqft} placeholder="e.g., 1500" keyboardType="numeric" theme={theme} />
+                </>
+              )}
 
               <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
                 Amenities
@@ -487,6 +516,25 @@ export default function AddPost({ navigation }) {
                   />
                 ))}
               </View>
+
+              {listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment') && (
+                <>
+                  <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.md }]}>
+                    Nearby
+                  </ThemedText>
+                  <View style={styles.amenitiesGrid}>
+                    {NEARBY_AMENITIES.map(amenity => (
+                      <AmenityChip
+                        key={amenity.id}
+                        amenity={amenity}
+                        selected={selectedNearbyAmenities.includes(amenity.id)}
+                        onPress={() => toggleNearbyAmenity(amenity.id)}
+                        theme={theme}
+                      />
+                    ))}
+                  </View>
+                </>
+              )}
 
               {listingType === 'rent' ? (
                 <>
