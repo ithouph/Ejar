@@ -15,9 +15,6 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
-- **Category Filtering & Popular Posts**: Added horizontal category filter cards (All, Phones, Laptops, Electronics, Cars, Property) at top of Posts page. Implemented "Popular" posts section (posts with >=10 likes) displayed above regular posts. Posts auto-filter when category is selected with instant UI updates.
-- **Nearby Amenities for Rentals**: Added conditional "Nearby" amenities section (Mosque, Laundry, Gym) that appears only for Property category with Rent listing type and House/Apartment property types
-- **Land Property Type Enhancement**: Added Land Size (sq m) field for Land property type, replacing standard Bedrooms/Bathrooms/Size fields
 - **Combined Search and Filter Functionality**: Updated `properties.search()` in `services/database.js` to accept and apply filters (type, price range, rating) alongside search terms, allowing users to search and filter simultaneously
 - **Improved Auth Guards**: Added proper authentication guards and loading states in Balance, Saved, and Posts pages to prevent errors when user is not logged in
 - **Consolidated Backend Services**: All database operations unified in `services/database.js` with "Api" suffix naming convention to prevent naming collisions
@@ -38,8 +35,7 @@ The application is built using Expo React Native for the frontend and Supabase (
     -   Favorites system with Supabase persistence.
     -   Property reviews and ratings.
     -   User wallet with transaction history and balance top-up request system (with image upload for proof).
-    -   Social posts feed with category filtering (Phones, Laptops, Electronics, Cars, Property) and Popular posts section.
-    -   Category-specific post creation with conditional fields (nearby amenities, land size, etc.).
+    -   Social posts feed (CRUD).
     -   Wedding/event planning features.
     -   User profile management.
     -   Legal pages (Terms of Service, Privacy Policy).
