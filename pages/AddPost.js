@@ -795,21 +795,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     fontSize: 16,
   },
-  locationRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    alignItems: 'center',
-  },
-  locationInput: {
-    flex: 1,
-  },
-  mapButton: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.small,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
