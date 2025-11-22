@@ -1092,6 +1092,24 @@ export async function pickImage() {
 // ════════════════════════════════════════════════════════════════════
 
 export const postReviews = {
+  // Get all reviews across all posts
+  async getAll() {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        users (full_name, photo_url, email),
+        posts (title, category, image)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching all post reviews:', error);
+      return [];
+    }
+    return data || [];
+  },
+
   // Get all reviews for a post
   async getForPost(postId) {
     const { data, error } = await supabase
