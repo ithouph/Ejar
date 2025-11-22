@@ -189,7 +189,6 @@ export default function Discover({ navigation }) {
           }}
           onSettingsPress={() => navigation.navigate('Settings')}
           onFavoritePress={() => navigation.navigate('Saved')}
-          onNotificationsPress={() => navigation.navigate('Notifications')}
         />
 
         <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>

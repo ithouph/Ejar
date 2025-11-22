@@ -5,25 +5,26 @@ import { ThemedText } from './ThemedText';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing } from '../theme/global';
 
-export function Header({ userData, onSettingsPress, onFavoritePress, onNotificationsPress }) {
+export function Header({ userData, onSettingsPress, onFavoritePress }) {
   const { theme } = useTheme();
+
+  const greetings = [
+    'Explore amazing places',
+    'Discover your next adventure',
+    'Find your perfect stay',
+    'Your journey starts here',
+    'Ready for new experiences',
+  ];
+
+  const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
 
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
         <View style={styles.leftText}>
           <ThemedText style={styles.captionText}>
-            👍 Sidi Find{' '}
-            <ThemedText style={[styles.badgeText, { backgroundColor: theme.primary }]}>
-              the best
-            </ThemedText>{' '}
-            for your holiday
+            {randomGreeting}
           </ThemedText>
-        </View>
-        <View style={styles.rightIcons}>
-          <Pressable onPress={onNotificationsPress} style={styles.iconButton}>
-            <Feather name="bell" size={24} color={theme.textPrimary} />
-          </Pressable>
         </View>
       </View>
     </View>

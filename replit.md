@@ -187,7 +187,22 @@ Full design system documented in `design_guidelines.md`:
 
 ## Recent Changes
 
-**2024-11-22 (Latest - Wallet UX Improvements)**:
+**2024-11-22 (Latest - Header Updates)**:
+- ✅ **Removed Notifications Feature:**
+  - Removed notifications bell icon from Header component
+  - Deleted notificationsData.js file
+  - Removed all onNotificationsPress navigation references
+- ✅ **Updated Header Greeting:**
+  - Replaced "👍 Sidi Find the best for your holiday" with random greeting messages
+  - Added 5 different greeting variations that change on each render:
+    - "Explore amazing places"
+    - "Discover your next adventure"
+    - "Find your perfect stay"
+    - "Your journey starts here"
+    - "Ready for new experiences"
+  - Cleaner, simpler header design
+
+**2024-11-22 (Earlier - Wallet UX Improvements)**:
 - ✅ **Wallet Balance Relocated to Settings/Profile Page:**
   - Moved wallet balance display from Account.js to Profile.js for better UX
   - Balance card now prominently featured on Settings page with real-time database fetching
