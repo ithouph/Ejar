@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Pressable, Image } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, Image, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -8,6 +8,7 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
 import { userService } from '../services/userService';
+import { walletService } from '../services/walletService';
 import { useState, useEffect } from 'react';
 
 export default function Profile({ navigation }) {
@@ -15,9 +16,12 @@ export default function Profile({ navigation }) {
   const insets = useScreenInsets();
   const { user } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loadingBalance, setLoadingBalance] = useState(true);
 
   useEffect(() => {
     loadUserProfile();
+    loadWalletBalance();
   }, [user]);
 
   const loadUserProfile = async () => {
@@ -32,6 +36,31 @@ export default function Profile({ navigation }) {
     } catch (error) {
       console.error('Error loading user profile:', error);
       setUserProfile(null);
+    }
+  };
+
+  const loadWalletBalance = async () => {
+    if (!user) {
+      setWalletBalance(0);
+      setLoadingBalance(false);
+      return;
+    }
+
+    try {
+      setLoadingBalance(true);
+      const wallet = await walletService.getWallet(user.id);
+      
+      if (wallet) {
+        const balance = parseFloat(wallet.balance) || 0;
+        setWalletBalance(balance);
+      } else {
+        setWalletBalance(0);
+      }
+    } catch (error) {
+      console.error('Error loading wallet balance:', error);
+      setWalletBalance(0);
+    } finally {
+      setLoadingBalance(false);
     }
   };
 
@@ -51,7 +80,7 @@ export default function Profile({ navigation }) {
         </ThemedText>
 
         <Pressable
-          onPress={() => navigation.navigate('Account')}
+          onPress={() => navigation.navigate('EditProfile')}
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
           <Image
@@ -69,6 +98,39 @@ export default function Profile({ navigation }) {
             </ThemedText>
           </View>
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+        </Pressable>
+
+        <Pressable
+          onPress={() => navigation.navigate('Balance')}
+          style={[styles.balanceCard, { backgroundColor: theme.primary }]}
+        >
+          <View style={styles.balanceContent}>
+            <View>
+              <ThemedText
+                type="caption"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceLabel}
+              >
+                Total Balance
+              </ThemedText>
+              {loadingBalance ? (
+                <ActivityIndicator size="small" color="#FFF" style={{ marginVertical: 8 }} />
+              ) : (
+                <ThemedText
+                  type="h1"
+                  lightColor="#FFF"
+                  darkColor="#FFF"
+                  style={styles.balanceAmount}
+                >
+                  ${walletBalance.toFixed(2)}
+                </ThemedText>
+              )}
+            </View>
+            <View style={styles.balanceIcon}>
+              <Feather name="dollar-sign" size={32} color="#FFF" />
+            </View>
+          </View>
         </Pressable>
 
         <View style={styles.gridContainer}>
@@ -219,5 +281,28 @@ const styles = StyleSheet.create({
   },
   gridTitle: {
     fontWeight: '600',
+  },
+  balanceCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.large,
+  },
+  balanceContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  balanceLabel: {
+    marginBottom: Spacing.sm,
+  },
+  balanceAmount: {
+    fontWeight: '700',
+  },
+  balanceIcon: {
+    width: 64,
+    height: 64,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
