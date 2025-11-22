@@ -179,15 +179,6 @@ export default function Balance({ navigation }) {
         </View>
 
         <View style={styles.actionsContainer}>
-          <Pressable style={[styles.actionButton, { backgroundColor: theme.surface }]}>
-            <View style={[styles.actionIcon, { backgroundColor: theme.backgroundRoot }]}>
-              <Feather name="arrow-up" size={20} color={theme.textPrimary} />
-            </View>
-            <ThemedText type="caption" style={styles.actionLabel}>
-              Send
-            </ThemedText>
-          </Pressable>
-
           <Pressable 
             onPress={() => setShowAddBalance(true)}
             style={[styles.actionButton, { backgroundColor: theme.surface }]}
@@ -197,24 +188,6 @@ export default function Balance({ navigation }) {
             </View>
             <ThemedText type="caption" style={styles.actionLabel}>
               Add balance
-            </ThemedText>
-          </Pressable>
-
-          <Pressable style={[styles.actionButton, { backgroundColor: theme.surface }]}>
-            <View style={[styles.actionIcon, { backgroundColor: theme.backgroundRoot }]}>
-              <Feather name="arrow-down" size={20} color={theme.textPrimary} />
-            </View>
-            <ThemedText type="caption" style={styles.actionLabel}>
-              Request
-            </ThemedText>
-          </Pressable>
-
-          <Pressable style={[styles.actionButton, { backgroundColor: theme.surface }]}>
-            <View style={[styles.actionIcon, { backgroundColor: theme.backgroundRoot }]}>
-              <Feather name="more-horizontal" size={20} color={theme.textPrimary} />
-            </View>
-            <ThemedText type="caption" style={styles.actionLabel}>
-              More
             </ThemedText>
           </Pressable>
         </View>
