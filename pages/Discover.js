@@ -59,7 +59,24 @@ export default function Discover({ navigation }) {
     try {
       setLoading(true);
       
-      let postsData = await postsApi.getAll();
+      const filters = {};
+      
+      if (selectedCategory !== 'all') {
+        filters.category = selectedCategory;
+      }
+
+      if (searchQuery.trim()) {
+        filters.search = searchQuery.trim();
+      }
+
+      if (priceRange[0] > 0) {
+        filters.minPrice = priceRange[0];
+      }
+      if (priceRange[1] < 5000) {
+        filters.maxPrice = priceRange[1];
+      }
+
+      let postsData = await postsApi.getAll(filters);
 
       const favoriteIds = user 
         ? await savedPostsApi.getIds(user.id)
@@ -83,29 +100,12 @@ export default function Discover({ navigation }) {
   const getFilteredData = () => {
     let filtered = posts;
     
-    if (selectedCategory !== 'all') {
-      if (selectedCategory === 'others') {
-        filtered = filtered.filter(item => 
-          ['cars', 'laptops'].includes(item.category)
-        );
-      } else {
-        filtered = filtered.filter(item => item.category === selectedCategory);
-      }
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.title?.toLowerCase().includes(query) ||
-        item.text?.toLowerCase().includes(query) ||
-        item.location?.toLowerCase().includes(query)
-      );
-    }
-
-    if (priceRange[0] > 0 || priceRange[1] < 5000) {
+    if (selectedAmenities.length > 0) {
       filtered = filtered.filter(item => {
-        const price = item.price || 0;
-        return price >= priceRange[0] && price <= priceRange[1];
+        const postAmenities = item.amenities || [];
+        return selectedAmenities.every(amenity => 
+          postAmenities.includes(amenity)
+        );
       });
     }
     

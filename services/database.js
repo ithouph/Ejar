@@ -744,17 +744,87 @@ export const balanceRequests = {
 // 8. SOCIAL POSTS (Feed & Sharing)
 // ════════════════════════════════════════════════════════════════════
 
+// Specification validation helper
+function validateAndNormalizeSpecifications(category, listingType, propertyType, specifications) {
+  const specs = { ...specifications };
+
+  if (category === 'property') {
+    if (propertyType === 'land') {
+      if (!specs.land_size) {
+        throw new Error('Land properties must include land_size in specifications');
+      }
+      specs.property_type = 'land';
+      delete specs.bedrooms;
+      delete specs.bathrooms;
+      delete specs.size_sqft;
+    } else if (['house', 'apartment'].includes(propertyType)) {
+      if (listingType === 'rent') {
+        if (!specs.nearby_amenities) {
+          specs.nearby_amenities = [];
+        }
+        if (!Array.isArray(specs.nearby_amenities)) {
+          throw new Error('nearby_amenities must be an array');
+        }
+      }
+      specs.property_type = propertyType;
+    } else if (propertyType === 'villa') {
+      delete specs.nearby_amenities;
+      specs.property_type = 'villa';
+    }
+  }
+
+  return specs;
+}
+
 export const posts = {
-  // Get all posts
-  async getAll(limit = 50) {
-    const { data, error } = await supabase
+  // Get all posts with optional filters
+  async getAll(filters = {}, limit = 50) {
+    let query = supabase
       .from('posts')
       .select(`
         *,
         users (full_name, photo_url)
-      `)
+      `);
+
+    // Apply category filter
+    if (filters.category && filters.category !== 'all') {
+      if (filters.category === 'others') {
+        // "Others" includes cars and laptops
+        query = query.in('category', ['cars', 'laptops']);
+      } else {
+        query = query.eq('category', filters.category);
+      }
+    }
+
+    // Apply price range filter
+    if (filters.minPrice !== undefined && filters.minPrice !== null) {
+      query = query.gte('price', filters.minPrice);
+    }
+    if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
+      query = query.lte('price', filters.maxPrice);
+    }
+
+    // Apply listing type filter (for property category)
+    if (filters.listingType) {
+      query = query.eq('listing_type', filters.listingType);
+    }
+
+    // Apply property type filter (for property category)
+    if (filters.propertyType) {
+      query = query.eq('property_type', filters.propertyType);
+    }
+
+    // Apply search query (title, content, location)
+    if (filters.search && filters.search.trim()) {
+      const searchTerm = `%${filters.search.trim()}%`;
+      query = query.or(`title.ilike.${searchTerm},content.ilike.${searchTerm},location.ilike.${searchTerm}`);
+    }
+
+    query = query
       .order('created_at', { ascending: false })
       .limit(limit);
+
+    const { data, error } = await query;
 
     if (error) throw error;
 
@@ -776,6 +846,7 @@ export const posts = {
       price: post.price,
       listingType: post.listing_type,
       category: post.category,
+      specifications: post.specifications || {},
       rating: post.rating,
       reviewText: post.review_text,
     }));
@@ -795,6 +866,28 @@ export const posts = {
 
   // Create new post
   async create(userId, post) {
+    if (!post.category) {
+      throw new Error('Post category is required');
+    }
+
+    if (!post.title || !post.title.trim()) {
+      throw new Error('Post title is required');
+    }
+
+    let listingType = post.listingType;
+    if (post.category !== 'property') {
+      listingType = null;
+    } else if (!listingType) {
+      listingType = 'rent';
+    }
+
+    const validatedSpecs = validateAndNormalizeSpecifications(
+      post.category,
+      listingType,
+      post.propertyType,
+      post.specifications || {}
+    );
+
     const { data, error } = await supabase
       .from('posts')
       .insert({
@@ -804,12 +897,12 @@ export const posts = {
         description: post.description,
         images: post.images || [],
         image_url: post.images?.[0] || post.image_url,
-        property_type: post.propertyType,
+        property_type: post.propertyType || null,
         price: post.price,
         location: post.location,
         amenities: post.amenities || [],
-        specifications: post.specifications || {},
-        listing_type: post.listingType || 'rent',
+        specifications: validatedSpecs,
+        listing_type: listingType,
         category: post.category,
         likes_count: 0,
         comments_count: 0,
@@ -823,14 +916,60 @@ export const posts = {
 
   // Update post
   async update(postId, userId, updates) {
+    const updateData = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.title !== undefined) {
+      if (!updates.title || !updates.title.trim()) {
+        throw new Error('Post title is required');
+      }
+      updateData.title = updates.title;
+    }
+
+    if (updates.content !== undefined) {
+      updateData.content = updates.content;
+    }
+
+    if (updates.image_url !== undefined) {
+      updateData.image_url = updates.image_url;
+    }
+
+    if (updates.images !== undefined) {
+      updateData.images = updates.images;
+    }
+
+    if (updates.price !== undefined) {
+      updateData.price = updates.price;
+    }
+
+    if (updates.location !== undefined) {
+      updateData.location = updates.location;
+    }
+
+    if (updates.amenities !== undefined) {
+      updateData.amenities = updates.amenities;
+    }
+
+    if (updates.specifications !== undefined && updates.category) {
+      let listingType = updates.listingType;
+      if (updates.category !== 'property') {
+        listingType = null;
+      }
+
+      updateData.specifications = validateAndNormalizeSpecifications(
+        updates.category,
+        listingType,
+        updates.propertyType,
+        updates.specifications
+      );
+    } else if (updates.specifications !== undefined) {
+      updateData.specifications = updates.specifications;
+    }
+
     const { data, error } = await supabase
       .from('posts')
-      .update({
-        title: updates.title,
-        content: updates.content,
-        image_url: updates.image_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', postId)
       .eq('user_id', userId)
       .select()
@@ -940,6 +1079,17 @@ export const savedPosts = {
       rating: item.posts.rating,
       reviewText: item.posts.review_text,
     }));
+  },
+
+  // Get array of saved post IDs for a user
+  async getIds(userId) {
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select('post_id')
+      .eq('user_id', userId);
+
+    if (error) return [];
+    return (data || []).map(item => item.post_id);
   },
 
   // Check if a post is saved
