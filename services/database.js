@@ -147,6 +147,7 @@ export const users = {
         date_of_birth: profile.date_of_birth,
         gender: profile.gender,
         mobile: profile.mobile,
+        whatsapp: profile.whatsapp,
         weight: profile.weight,
         height: profile.height,
       })
@@ -165,6 +166,7 @@ export const users = {
         date_of_birth: profile.date_of_birth,
         gender: profile.gender,
         mobile: profile.mobile,
+        whatsapp: profile.whatsapp,
         weight: profile.weight,
         height: profile.height,
         updated_at: new Date().toISOString(),
@@ -175,6 +177,30 @@ export const users = {
 
     if (error) throw error;
     return data;
+  },
+
+  // Upload profile picture
+  async uploadProfilePicture(userId, imageUri) {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    const fileName = `${userId}_${Date.now()}.jpg`;
+    const filePath = `profile-pictures/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, blob, {
+        contentType: 'image/jpeg',
+        upsert: true,
+      });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   },
 };
 
