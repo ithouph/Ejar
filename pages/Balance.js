@@ -9,6 +9,7 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
 import { walletService } from '../services/walletService';
+import { balanceRequestService } from '../services/balanceRequestService';
 
 function TransactionItem({ transaction, theme }) {
   const isCredit = transaction.type === 'credit';
@@ -46,9 +47,11 @@ function TransactionItem({ transaction, theme }) {
         ]}>
           ${parseFloat(transaction.amount).toFixed(2)}
         </ThemedText>
-        <ThemedText type="caption" style={{ color: theme.textSecondary, textAlign: 'right' }}>
-          ${parseFloat(transaction.balance_after).toFixed(2)}
-        </ThemedText>
+        {transaction.balance_after !== undefined && transaction.balance_after !== null ? (
+          <ThemedText type="caption" style={{ color: theme.textSecondary, textAlign: 'right' }}>
+            ${parseFloat(transaction.balance_after).toFixed(2)}
+          </ThemedText>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -132,9 +135,16 @@ export default function Balance({ navigation }) {
     try {
       setAddingBalance(true);
       
+      await balanceRequestService.createBalanceRequest(
+        user.id,
+        wallet.id,
+        amount,
+        transactionImage
+      );
+      
       Alert.alert(
         'Request Submitted!', 
-        `Your balance top-up request for $${amount.toFixed(2)} has been submitted for review. You'll receive the balance once approved.`,
+        `Your balance top-up request for $${amount.toFixed(2)} has been submitted for review. You'll receive the balance once approved (usually within 24 hours).`,
         [{ text: 'OK' }]
       );
       
