@@ -774,6 +774,10 @@ export const posts = {
       amenities: post.amenities || [],
       propertyType: post.property_type,
       price: post.price,
+      listingType: post.listing_type,
+      category: post.category,
+      rating: post.rating,
+      reviewText: post.review_text,
     }));
   },
 
@@ -805,6 +809,10 @@ export const posts = {
         location: post.location,
         amenities: post.amenities || [],
         specifications: post.specifications || {},
+        listing_type: post.listingType || 'rent',
+        category: post.category,
+        rating: post.rating,
+        review_text: post.reviewText,
         likes_count: 0,
         comments_count: 0,
       })
@@ -889,6 +897,90 @@ export const posts = {
     }
 
     return [];
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 9. SAVED POSTS (User Saved Posts)
+// ════════════════════════════════════════════════════════════════════
+
+export const savedPosts = {
+  // Get all saved posts for a user
+  async getAll(userId) {
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select(`
+        *,
+        posts (
+          *,
+          users (full_name, photo_url)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return (data || []).map(item => ({
+      id: item.posts.id,
+      userId: item.posts.user_id,
+      userName: item.posts.users?.full_name || 'Anonymous User',
+      userPhoto: item.posts.users?.photo_url || 'https://via.placeholder.com/40',
+      image: item.posts.images?.[0] || item.posts.image_url,
+      images: item.posts.images || (item.posts.image_url ? [item.posts.image_url] : []),
+      text: item.posts.content || item.posts.description,
+      title: item.posts.title,
+      location: item.posts.location || 'Location',
+      timeAgo: formatTimeAgo(item.posts.created_at),
+      likes: item.posts.likes_count || 0,
+      comments: item.posts.comments_count || 0,
+      amenities: item.posts.amenities || [],
+      propertyType: item.posts.property_type,
+      price: item.posts.price,
+      listingType: item.posts.listing_type,
+      category: item.posts.category,
+      rating: item.posts.rating,
+      reviewText: item.posts.review_text,
+    }));
+  },
+
+  // Check if a post is saved
+  async isSaved(userId, postId) {
+    const { data, error } = await supabase
+      .from('saved_posts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('post_id', postId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return !!data;
+  },
+
+  // Toggle save/unsave a post
+  async toggle(userId, postId) {
+    const isSaved = await this.isSaved(userId, postId);
+
+    if (isSaved) {
+      const { error } = await supabase
+        .from('saved_posts')
+        .delete()
+        .eq('user_id', userId)
+        .eq('post_id', postId);
+
+      if (error) throw error;
+      return false;
+    } else {
+      const { error } = await supabase
+        .from('saved_posts')
+        .insert({
+          user_id: userId,
+          post_id: postId,
+        });
+
+      if (error) throw error;
+      return true;
+    }
   },
 };
 
