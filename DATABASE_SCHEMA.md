@@ -165,11 +165,30 @@ CREATE TABLE wallet_transactions (
   description TEXT,
   category TEXT, -- 'booking', 'refund', 'deposit', etc.
   status TEXT DEFAULT 'completed',
+  balance_after NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-### 12. service_categories
+### 12. balance_requests
+Balance top-up requests pending admin approval
+```sql
+CREATE TABLE balance_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
+  amount NUMERIC NOT NULL,
+  transaction_image_url TEXT NOT NULL,
+  status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+  admin_notes TEXT,
+  reviewed_by UUID REFERENCES users(id),
+  reviewed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### 13. service_categories
 Service offerings
 ```sql
 CREATE TABLE service_categories (
