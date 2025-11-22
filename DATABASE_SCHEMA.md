@@ -27,6 +27,7 @@ CREATE TABLE user_profiles (
   date_of_birth DATE,
   gender TEXT,
   mobile TEXT,
+  whatsapp TEXT,
   weight NUMERIC,
   height NUMERIC,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -126,7 +127,7 @@ CREATE TABLE reviews (
 ```
 
 ### 9. posts
-Social posts/feed
+Social posts/feed with marketplace functionality
 ```sql
 CREATE TABLE posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,6 +135,10 @@ CREATE TABLE posts (
   title TEXT,
   content TEXT,
   image_url TEXT,
+  listing_type TEXT DEFAULT 'rent', -- 'rent' or 'sell'
+  category TEXT, -- 'phones', 'laptops', 'electronics', 'cars', 'property', etc.
+  rating INT CHECK (rating >= 1 AND rating <= 5),
+  review_text TEXT,
   likes_count INT DEFAULT 0,
   comments_count INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -188,7 +193,19 @@ CREATE TABLE balance_requests (
 );
 ```
 
-### 13. service_categories
+### 13. saved_posts
+User's saved/favorited posts
+```sql
+CREATE TABLE saved_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
+);
+```
+
+### 14. service_categories
 Service offerings
 ```sql
 CREATE TABLE service_categories (

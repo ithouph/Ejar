@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Pressable, Image, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -102,9 +103,11 @@ export default function EditProfile({ navigation }) {
   const [dateOfBirth, setDateOfBirth] = useState('Select date');
   const [gender, setGender] = useState('Male');
   const [mobileNumber, setMobileNumber] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [email, setEmail] = useState('');
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
+  const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -130,14 +133,17 @@ export default function EditProfile({ navigation }) {
         setDateOfBirth(profile.date_of_birth || 'Select date');
         setGender(profile.gender || 'Male');
         setMobileNumber(profile.mobile || '');
+        setWhatsappNumber(profile.whatsapp || '');
         setWeight(profile.weight || '');
         setHeight(profile.height || '');
       }
       
       if (userDetails) {
         setFullName(userDetails.full_name || user.email || '');
+        setProfilePicture(userDetails.photo_url || user?.user_metadata?.avatar_url || null);
       } else {
         setFullName(user.user_metadata?.full_name || user.email || '');
+        setProfilePicture(user?.user_metadata?.avatar_url || null);
       }
       
       setEmail(user.email || '');
@@ -145,6 +151,26 @@ export default function EditProfile({ navigation }) {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const pickProfilePicture = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photos to update your profile picture.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setProfilePicture(result.assets[0].uri);
     }
   };
 
@@ -168,6 +194,12 @@ export default function EditProfile({ navigation }) {
       } else if (!existingProfile) {
         profileData.mobile = null;
       }
+
+      if (whatsappNumber && whatsappNumber.trim()) {
+        profileData.whatsapp = whatsappNumber;
+      } else if (!existingProfile) {
+        profileData.whatsapp = null;
+      }
       
       if (existingProfile) {
         await usersApi.updateProfile(user.id, profileData);
@@ -175,10 +207,19 @@ export default function EditProfile({ navigation }) {
         await usersApi.createProfile(user.id, profileData);
       }
 
+      const userUpdateData = {};
+      
       if (fullName) {
-        await usersApi.updateUser(user.id, {
-          full_name: fullName,
-        });
+        userUpdateData.full_name = fullName;
+      }
+
+      if (profilePicture && profilePicture !== user?.user_metadata?.avatar_url) {
+        const photoUrl = await usersApi.uploadProfilePicture(user.id, profilePicture);
+        userUpdateData.photo_url = photoUrl;
+      }
+
+      if (Object.keys(userUpdateData).length > 0) {
+        await usersApi.updateUser(user.id, userUpdateData);
       }
 
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -220,19 +261,22 @@ export default function EditProfile({ navigation }) {
         <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
           <Image
             source={{ 
-              uri: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+              uri: profilePicture || 'https://via.placeholder.com/100'
             }}
             style={{ width: 100, height: 100, borderRadius: 50 }}
           />
-          <Pressable style={[buttonStyles.iconSmall, { 
-            backgroundColor: theme.primary,
-            position: 'absolute',
-            bottom: Spacing.xl,
-            right: '50%',
-            marginRight: -60,
-            borderWidth: 3,
-            borderColor: '#FFF',
-          }]}>
+          <Pressable 
+            onPress={pickProfilePicture}
+            style={[buttonStyles.iconSmall, { 
+              backgroundColor: theme.primary,
+              position: 'absolute',
+              bottom: Spacing.xl,
+              right: '50%',
+              marginRight: -60,
+              borderWidth: 3,
+              borderColor: '#FFF',
+            }]}
+          >
             <Feather name="edit-2" size={16} color="#FFF" />
           </Pressable>
         </View>
@@ -273,6 +317,15 @@ export default function EditProfile({ navigation }) {
             value={mobileNumber}
             onChangeText={setMobileNumber}
             placeholder="Enter mobile number"
+            keyboardType="phone-pad"
+            theme={theme}
+          />
+
+          <InputField
+            label="WhatsApp number"
+            value={whatsappNumber}
+            onChangeText={setWhatsappNumber}
+            placeholder="Enter WhatsApp number"
             keyboardType="phone-pad"
             theme={theme}
           />
