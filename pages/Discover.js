@@ -78,7 +78,7 @@ export default function Discover({ navigation }) {
 
       let propertiesData;
       if (searchQuery.trim()) {
-        propertiesData = await propertiesApi.search(searchQuery.trim());
+        propertiesData = await propertiesApi.search(searchQuery.trim(), filters);
       } else {
         propertiesData = await propertiesApi.getAll(filters);
       }

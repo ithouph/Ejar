@@ -194,6 +194,7 @@ export default function Posts({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('normal');
+  const [loading, setLoading] = useState(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -203,10 +204,14 @@ export default function Posts({ navigation }) {
 
   async function loadPosts() {
     try {
+      setLoading(true);
       const fetchedPosts = await postsApi.getAll();
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error loading posts:', error);
+      Alert.alert('Error', 'Unable to load posts. Please try again.');
+    } finally {
+      setLoading(false);
     }
   }
 

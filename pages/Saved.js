@@ -60,19 +60,25 @@ export default function Saved({ navigation }) {
   const [viewMode, setViewMode] = useState('normal');
 
   useEffect(() => {
-    loadFavorites();
+    if (user) {
+      loadFavorites();
+    } else {
+      setLoading(false);
+      setSavedProperties([]);
+      setFavorites([]);
+    }
   }, [user]);
 
   const loadFavorites = async () => {
+    if (!user) {
+      setLoading(false);
+      setSavedProperties([]);
+      setFavorites([]);
+      return;
+    }
+
     try {
       setLoading(true);
-      if (!user) {
-        setSavedProperties([]);
-        setFavorites([]);
-        setLoading(false);
-        return;
-      }
-
       const favs = await favoritesApi.getAll(user.id);
       const properties = favs.map(fav => ({
         ...fav.properties,
