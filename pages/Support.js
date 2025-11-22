@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Pressable } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, Linking, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -31,29 +31,65 @@ function HelpItem({ icon, title, description, onPress }) {
   );
 }
 
-export default function Support() {
+export default function Support({ navigation }) {
   const insets = useScreenInsets();
+
+  const handleWhatsApp = async () => {
+    const phoneNumber = '1234567890';
+    const message = 'Hi, I need support with Ejar';
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'WhatsApp is not installed on your device');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open WhatsApp');
+    }
+  };
+
+  const handleEmail = async () => {
+    const email = 'support@ejar.com';
+    const subject = 'Support Request';
+    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Email app is not available');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to open email');
+    }
+  };
+
+  const handleFAQ = () => {
+    navigation.navigate('FAQ');
+  };
 
   const helpItems = [
     {
       icon: 'message-circle',
-      title: 'Live Chat',
-      description: 'Chat with our support team',
+      title: 'WhatsApp Support',
+      description: 'Chat with us on WhatsApp',
+      onPress: handleWhatsApp,
     },
     {
       icon: 'mail',
       title: 'Email Support',
       description: 'Send us an email',
-    },
-    {
-      icon: 'phone',
-      title: 'Phone Support',
-      description: 'Call us for help',
+      onPress: handleEmail,
     },
     {
       icon: 'help-circle',
       title: 'FAQ',
       description: 'Find answers to common questions',
+      onPress: handleFAQ,
     },
   ];
 
@@ -83,7 +119,7 @@ export default function Support() {
               icon={item.icon}
               title={item.title}
               description={item.description}
-              onPress={() => {}}
+              onPress={item.onPress}
             />
           ))}
         </View>

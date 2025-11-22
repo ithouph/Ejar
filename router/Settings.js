@@ -7,6 +7,7 @@ import Balance from '../pages/Balance';
 import AddBalance from '../pages/AddBalance';
 import Review from '../pages/Review';
 import Support from '../pages/Support';
+import FAQ from '../pages/FAQ';
 import Terms from '../pages/Terms';
 import Privacy from '../pages/Privacy';
 
@@ -26,6 +27,7 @@ export default function SettingsNavigator() {
       <Stack.Screen name="AddBalance" component={AddBalance} />
       <Stack.Screen name="Review" component={Review} />
       <Stack.Screen name="Support" component={Support} />
+      <Stack.Screen name="FAQ" component={FAQ} />
       <Stack.Screen name="Terms" component={Terms} />
       <Stack.Screen name="Privacy" component={Privacy} />
     </Stack.Navigator>
