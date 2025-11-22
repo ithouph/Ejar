@@ -1,0 +1,88 @@
+═══════════════════════════════════════════════════════════════════
+  🔐 GOOGLE OAUTH SETUP CHECKLIST - EJAR APP
+═══════════════════════════════════════════════════════════════════
+
+STEP 1: GET YOUR KEYS FROM GOOGLE CLOUD CONSOLE
+───────────────────────────────────────────────────────────────────
+📍 Link: https://console.cloud.google.com/apis/credentials
+
+□ Create iOS OAuth Client:
+  - Application type: iOS
+  - Name: Ejar iOS
+  - Bundle ID: com.ejar.app
+  - Click CREATE
+  - 📋 COPY the iOS Client ID
+
+□ Create Android OAuth Client:
+  - Application type: Android
+  - Name: Ejar Android
+  - Package name: com.ejar.app
+  - SHA-1 fingerprint: (from your keystore)
+  - Click CREATE
+  - 📋 COPY the Android Client ID
+
+
+STEP 2: PASTE KEYS IN SUPABASE DASHBOARD
+───────────────────────────────────────────────────────────────────
+📍 Link: https://supabase.com/dashboard
+
+□ Navigate to:
+  Authentication → Providers → Google
+
+□ In "Authorized Client IDs" field, paste:
+  YOUR_IOS_ID.apps.googleusercontent.com,YOUR_ANDROID_ID.apps.googleusercontent.com
+  
+  (Replace YOUR_IOS_ID and YOUR_ANDROID_ID with actual values from Step 1)
+
+□ In "Redirect URLs" field, type:
+  com.ejar.app://auth/callback
+
+□ Click SAVE
+
+□ Wait 5 minutes for changes to propagate
+
+
+STEP 3: TEST ON YOUR DEVICE
+───────────────────────────────────────────────────────────────────
+□ Open Expo Go app on your phone
+
+□ Scan QR code from terminal
+
+□ Tap "Sign up with Google"
+
+□ Google login page should open
+
+□ After login, should redirect back to Ejar app
+
+□ You're logged in! ✅
+
+
+EXAMPLE (Replace with your actual IDs):
+───────────────────────────────────────────────────────────────────
+Authorized Client IDs field:
+123456789-abc123.apps.googleusercontent.com,987654321-xyz789.apps.googleusercontent.com
+
+Redirect URLs field:
+com.ejar.app://auth/callback
+
+
+TROUBLESHOOTING:
+───────────────────────────────────────────────────────────────────
+❌ "Invalid redirect URI"
+   → Check redirect URL is exactly: com.ejar.app://auth/callback
+
+❌ "Sign in failed"
+   → Wait 5 more minutes, changes still propagating
+
+❌ "Client not found"
+   → Verify both Client IDs are pasted in "Authorized Client IDs"
+
+❌ Still not working?
+   → Double-check bundle ID is com.ejar.app (not com.travelstay.app)
+   → Verify comma separates the two Client IDs (no spaces)
+   → Clear Expo cache and reload app
+
+
+═══════════════════════════════════════════════════════════════════
+  ✅ TOTAL TIME: ~10 MINUTES
+═══════════════════════════════════════════════════════════════════
