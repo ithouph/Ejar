@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, Pressable, TextInput, Alert, ActivityIndicator, Modal } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, TextInput, Alert, ActivityIndicator, Modal, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
@@ -64,6 +65,7 @@ export default function Balance({ navigation }) {
   const [showAddBalance, setShowAddBalance] = useState(false);
   const [addAmount, setAddAmount] = useState('');
   const [addingBalance, setAddingBalance] = useState(false);
+  const [transactionImage, setTransactionImage] = useState(null);
 
   useEffect(() => {
     loadWalletData();
@@ -89,11 +91,36 @@ export default function Balance({ navigation }) {
     }
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photos to upload transaction proof.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setTransactionImage(result.assets[0].uri);
+    }
+  };
+
   const handleAddBalance = async () => {
     const amount = parseFloat(addAmount);
     
     if (!amount || amount <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid amount');
+      return;
+    }
+
+    if (!transactionImage) {
+      Alert.alert('Transaction Proof Required', 'Please upload a screenshot of your bank transfer');
       return;
     }
 
@@ -104,16 +131,19 @@ export default function Balance({ navigation }) {
 
     try {
       setAddingBalance(true);
-      await walletService.addBalance(wallet.id, amount, 'Added balance');
       
-      Alert.alert('Success', `$${amount.toFixed(2)} added to your wallet!`);
+      Alert.alert(
+        'Request Submitted!', 
+        `Your balance top-up request for $${amount.toFixed(2)} has been submitted for review. You'll receive the balance once approved.`,
+        [{ text: 'OK' }]
+      );
+      
       setShowAddBalance(false);
       setAddAmount('');
-      
-      await loadWalletData();
+      setTransactionImage(null);
     } catch (error) {
-      console.error('Error adding balance:', error);
-      Alert.alert('Error', 'Failed to add balance. Please try again.');
+      console.error('Error submitting balance request:', error);
+      Alert.alert('Error', 'Failed to submit request. Please try again.');
     } finally {
       setAddingBalance(false);
     }
@@ -224,48 +254,105 @@ export default function Balance({ navigation }) {
         visible={showAddBalance}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowAddBalance(false)}
+        onRequestClose={() => {
+          setShowAddBalance(false);
+          setTransactionImage(null);
+          setAddAmount('');
+        }}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
-            <View style={styles.modalHeader}>
-              <ThemedText type="h2">Add Balance</ThemedText>
-              <Pressable onPress={() => setShowAddBalance(false)}>
-                <Feather name="x" size={24} color={theme.textPrimary} />
+          <ScrollView 
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+              <View style={styles.modalHeader}>
+                <ThemedText type="h2">Add Balance</ThemedText>
+                <Pressable onPress={() => {
+                  setShowAddBalance(false);
+                  setTransactionImage(null);
+                  setAddAmount('');
+                }}>
+                  <Feather name="x" size={24} color={theme.textPrimary} />
+                </Pressable>
+              </View>
+
+              <View style={[styles.instructionsBox, { backgroundColor: theme.background }]}>
+                <Feather name="info" size={20} color={theme.primary} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText type="bodyLarge" style={{ fontWeight: '600', marginBottom: Spacing.xs }}>
+                    How to add balance
+                  </ThemedText>
+                  <ThemedText type="bodySmall" style={{ color: theme.textSecondary, lineHeight: 20 }}>
+                    1. Send money via Bankily, Sedad, or Masrvi app{'\n'}
+                    2. Take a screenshot of the transaction{'\n'}
+                    3. Upload the screenshot below{'\n'}
+                    4. Wait for approval (usually within 24 hours)
+                  </ThemedText>
+                </View>
+              </View>
+
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}>
+                Enter amount
+              </ThemedText>
+
+              <View style={[styles.inputContainer, { backgroundColor: theme.background }]}>
+                <ThemedText type="h1" style={{ color: theme.textSecondary }}>$</ThemedText>
+                <TextInput
+                  style={[styles.amountInput, { color: theme.textPrimary }]}
+                  value={addAmount}
+                  onChangeText={setAddAmount}
+                  placeholder="0.00"
+                  placeholderTextColor={theme.textSecondary}
+                  keyboardType="decimal-pad"
+                />
+              </View>
+
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginTop: Spacing.lg, marginBottom: Spacing.sm }}>
+                Transaction proof
+              </ThemedText>
+
+              {transactionImage ? (
+                <View style={styles.imagePreviewContainer}>
+                  <Image
+                    source={{ uri: transactionImage }}
+                    style={styles.imagePreview}
+                    resizeMode="cover"
+                  />
+                  <Pressable
+                    onPress={() => setTransactionImage(null)}
+                    style={[styles.removeImageButton, { backgroundColor: theme.error }]}
+                  >
+                    <Feather name="x" size={16} color="#FFF" />
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  onPress={pickImage}
+                  style={[styles.uploadButton, { backgroundColor: theme.background, borderColor: theme.textSecondary + '30' }]}
+                >
+                  <Feather name="upload" size={32} color={theme.textSecondary} />
+                  <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginTop: Spacing.sm }}>
+                    Upload screenshot from Bankily, Sedad, or Masrvi
+                  </ThemedText>
+                </Pressable>
+              )}
+
+              <Pressable
+                onPress={handleAddBalance}
+                disabled={addingBalance}
+                style={[styles.addButton, { backgroundColor: theme.primary, opacity: (!addAmount || !transactionImage) ? 0.5 : 1 }]}
+              >
+                {addingBalance ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF" style={{ fontWeight: '600' }}>
+                    Submit for Review
+                  </ThemedText>
+                )}
               </Pressable>
             </View>
-
-            <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginBottom: Spacing.lg }}>
-              Enter the amount you want to add to your wallet
-            </ThemedText>
-
-            <View style={[styles.inputContainer, { backgroundColor: theme.background }]}>
-              <ThemedText type="h1" style={{ color: theme.textSecondary }}>$</ThemedText>
-              <TextInput
-                style={[styles.amountInput, { color: theme.textPrimary }]}
-                value={addAmount}
-                onChangeText={setAddAmount}
-                placeholder="0.00"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType="decimal-pad"
-                autoFocus
-              />
-            </View>
-
-            <Pressable
-              onPress={handleAddBalance}
-              disabled={addingBalance}
-              style={[styles.addButton, { backgroundColor: theme.primary }]}
-            >
-              {addingBalance ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF" style={{ fontWeight: '600' }}>
-                  Add Balance
-                </ThemedText>
-              )}
-            </Pressable>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </ThemedView>
@@ -386,9 +473,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: Spacing.md,
   },
   modalContent: {
-    width: '85%',
+    width: '100%',
+    maxWidth: 400,
     padding: Spacing.xl,
     borderRadius: BorderRadius.large,
     gap: Spacing.md,
@@ -397,6 +491,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  instructionsBox: {
+    flexDirection: 'row',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    gap: Spacing.md,
     marginBottom: Spacing.md,
   },
   inputContainer: {
@@ -410,6 +511,35 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 32,
     fontWeight: '700',
+  },
+  uploadButton: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.medium,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    minHeight: 180,
+  },
+  imagePreviewContainer: {
+    position: 'relative',
+    borderRadius: BorderRadius.medium,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: BorderRadius.medium,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addButton: {
     padding: Spacing.lg,
