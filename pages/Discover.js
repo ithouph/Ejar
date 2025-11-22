@@ -11,11 +11,29 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
-import { userData } from '../data/userData';
-import { hotelsData, apartmentsData, allPropertiesData } from '../data/cardsData';
-import { filterOptions } from '../data/filterData';
 import { propertiesService } from '../services/propertiesService';
 import { favoritesService } from '../services/favoritesService';
+
+const PROPERTY_TYPES = [
+  { id: 'all', label: 'All' },
+  { id: 'hotels', label: 'Hotels' },
+  { id: 'apartments', label: 'Apartments' },
+];
+
+const AMENITIES_OPTIONS = [
+  { id: 'Wi-Fi', label: 'Wi-Fi', icon: 'wifi' },
+  { id: 'Air Conditioning', label: 'Air conditioning', icon: 'wind' },
+  { id: 'Pool', label: 'Pool', icon: 'droplet' },
+  { id: 'Parking', label: 'Parking', icon: 'truck' },
+  { id: 'Gym', label: 'Gym', icon: 'activity' },
+  { id: 'Kitchen', label: 'Kitchen', icon: 'coffee' },
+];
+
+const RATING_OPTIONS = [
+  { id: '5', label: '5 Stars', value: 5 },
+  { id: '4', label: '4+ Stars', value: 4 },
+  { id: '3', label: '3+ Stars', value: 3 },
+];
 
 export default function Discover({ navigation }) {
   const { theme } = useTheme();
@@ -48,15 +66,20 @@ export default function Discover({ navigation }) {
       }
 
       const [propertiesData, favoriteIds] = await Promise.all([
-        propertiesService.getProperties(filters).catch(() => allPropertiesData),
-        user ? favoritesService.getFavoriteIds(user.id).catch(() => []) : Promise.resolve([]),
+        propertiesService.getProperties(filters),
+        user ? favoritesService.getFavoriteIds(user.id) : Promise.resolve([]),
       ]);
 
-      setProperties(propertiesData.length > 0 ? propertiesData : allPropertiesData);
-      setFavorites(favoriteIds);
+      setProperties(propertiesData || []);
+      setFavorites(favoriteIds || []);
     } catch (error) {
       console.error('Error loading data:', error);
-      setProperties(allPropertiesData);
+      Alert.alert(
+        'Error Loading Properties',
+        'Unable to load properties. Please check your internet connection and try again.',
+        [{ text: 'OK' }]
+      );
+      setProperties([]);
     } finally {
       setLoading(false);
     }
@@ -165,7 +188,10 @@ export default function Discover({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <Header
-          userData={userData}
+          userData={{
+            name: user?.user_metadata?.full_name || 'Guest',
+            photo: user?.user_metadata?.avatar_url || null,
+          }}
           onSettingsPress={() => navigation.navigate('Settings')}
           onFavoritePress={() => navigation.navigate('Saved')}
           onNotificationsPress={() => navigation.navigate('Notifications')}
@@ -200,7 +226,7 @@ export default function Discover({ navigation }) {
         </View>
 
         <CategoryTabs
-          categories={filterOptions.propertyTypes}
+          categories={PROPERTY_TYPES}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
@@ -330,7 +356,7 @@ export default function Discover({ navigation }) {
             <View style={modalStyles.modalSection}>
               <ThemedText type="h3" style={modalStyles.modalSubtitle}>Amenities</ThemedText>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
-                {filterOptions.amenities.map((amenity) => (
+                {AMENITIES_OPTIONS.map((amenity) => (
                   <Pressable
                     key={amenity.id}
                     style={[
@@ -368,7 +394,7 @@ export default function Discover({ navigation }) {
             <View style={modalStyles.modalSection}>
               <ThemedText type="h3" style={modalStyles.modalSubtitle}>Rating</ThemedText>
               <View style={spacingStyles.gapSm}>
-                {filterOptions.ratings.map((rating) => (
+                {RATING_OPTIONS.map((rating) => (
                   <Pressable
                     key={rating.id}
                     style={[
