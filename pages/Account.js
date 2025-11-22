@@ -7,8 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { walletService } from '../services/walletService';
-import { userService } from '../services/userService';
+import { wallet as walletApi, users as usersApi } from '../services/database';
 
 function ServiceCard({ icon, title, onPress, theme }) {
   return (
@@ -46,7 +45,7 @@ export default function Account({ navigation }) {
     }
 
     try {
-      const profile = await userService.getUser(user.id);
+      const profile = await usersApi.getUser(user.id);
       setUserProfile(profile);
     } catch (error) {
       console.error('Error loading user profile:', error);
@@ -63,10 +62,10 @@ export default function Account({ navigation }) {
 
     try {
       setLoadingBalance(true);
-      const wallet = await walletService.getWallet(user.id);
+      const walletData = await walletApi.get(user.id);
       
-      if (wallet) {
-        const balance = parseFloat(wallet.balance) || 0;
+      if (walletData) {
+        const balance = parseFloat(walletData.balance) || 0;
         setWalletBalance(balance);
       } else {
         setWalletBalance(0);

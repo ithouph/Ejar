@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
-import { userService } from '../services/userService';
+import { users as usersApi } from '../services/database';
 import { Alert, ActivityIndicator } from 'react-native';
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
@@ -122,8 +122,8 @@ export default function EditProfile({ navigation }) {
       setLoading(true);
       
       const [profile, userDetails] = await Promise.all([
-        userService.getProfile(user.id),
-        userService.getUser(user.id)
+        usersApi.getProfile(user.id),
+        usersApi.getUser(user.id)
       ]);
       
       if (profile) {
@@ -154,7 +154,7 @@ export default function EditProfile({ navigation }) {
     try {
       setSaving(true);
       
-      const existingProfile = await userService.getProfile(user.id);
+      const existingProfile = await usersApi.getProfile(user.id);
       
       const profileData = {
         date_of_birth: dateOfBirth === 'Select date' ? null : dateOfBirth,
@@ -170,13 +170,13 @@ export default function EditProfile({ navigation }) {
       }
       
       if (existingProfile) {
-        await userService.updateProfile(user.id, profileData);
+        await usersApi.updateProfile(user.id, profileData);
       } else {
-        await userService.createProfile(user.id, profileData);
+        await usersApi.createProfile(user.id, profileData);
       }
 
       if (fullName) {
-        await userService.updateUser(user.id, {
+        await usersApi.updateUser(user.id, {
           full_name: fullName,
         });
       }

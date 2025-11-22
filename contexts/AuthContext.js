@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authService } from '../services/authService';
+import { auth as authApi } from '../services/database';
 
 const AuthContext = createContext({});
 
@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     loadSession();
 
-    const { data: { subscription } } = authService.onAuthStateChange(
+    const { data: { subscription } } = authApi.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
 
   async function loadSession() {
     try {
-      const session = await authService.getSession();
+      const session = await authApi.getSession();
       setSession(session);
       setUser(session?.user ?? null);
     } catch (error) {
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
   async function signInWithGoogle() {
     try {
       setLoading(true);
-      const { user, session } = await authService.signInWithGoogle();
+      const { user, session } = await authApi.signInWithGoogle();
       setUser(user);
       setSession(session);
       return { user, session };
@@ -54,7 +54,7 @@ export function AuthProvider({ children }) {
   async function signOut() {
     try {
       setLoading(true);
-      await authService.signOut();
+      await authApi.signOut();
       setUser(null);
       setSession(null);
     } catch (error) {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
 
   async function refreshUser() {
     try {
-      const session = await authService.getSession();
+      const session = await authApi.getSession();
       if (session?.user) {
         setSession(session);
         setUser({ ...session.user, _refreshTrigger: Date.now() });

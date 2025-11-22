@@ -8,8 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { walletService } from '../services/walletService';
-import { balanceRequestService } from '../services/balanceRequestService';
+import { wallet as walletApi, balanceRequests as balanceRequestsApi } from '../services/database';
 
 export default function AddBalance({ navigation }) {
   const { theme } = useTheme();
@@ -27,7 +26,7 @@ export default function AddBalance({ navigation }) {
   const loadWallet = async () => {
     if (!user) return;
     try {
-      const walletData = await walletService.getWallet(user.id);
+      const walletData = await walletApi.get(user.id);
       setWallet(walletData);
     } catch (error) {
       console.error('Error loading wallet:', error);
@@ -75,7 +74,7 @@ export default function AddBalance({ navigation }) {
     try {
       setSubmitting(true);
       
-      await balanceRequestService.createBalanceRequest(
+      await balanceRequestsApi.create(
         user.id,
         wallet.id,
         amountValue,

@@ -10,7 +10,7 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing, BorderRadius } from '../theme/global';
-import { favoritesService } from '../services/favoritesService';
+import { favorites as favoritesApi } from '../services/database';
 
 function CompactCard({ item, onPress, onFavoritePress, isFavorite, theme }) {
   return (
@@ -73,7 +73,7 @@ export default function Saved({ navigation }) {
         return;
       }
 
-      const favs = await favoritesService.getFavorites(user.id);
+      const favs = await favoritesApi.getAll(user.id);
       const properties = favs.map(fav => ({
         ...fav.properties,
         id: fav.property_id,
@@ -110,7 +110,7 @@ export default function Saved({ navigation }) {
       );
 
       if (user) {
-        await favoritesService.toggleFavorite(user.id, id);
+        await favoritesApi.toggle(user.id, id);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

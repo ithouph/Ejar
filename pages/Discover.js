@@ -11,8 +11,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
-import { propertiesService } from '../services/propertiesService';
-import { favoritesService } from '../services/favoritesService';
+import { properties as propertiesApi, favorites as favoritesApi } from '../services/database';
 
 const PROPERTY_TYPES = [
   { id: 'all', label: 'All' },
@@ -79,13 +78,13 @@ export default function Discover({ navigation }) {
 
       let propertiesData;
       if (searchQuery.trim()) {
-        propertiesData = await propertiesService.searchProperties(searchQuery.trim());
+        propertiesData = await propertiesApi.search(searchQuery.trim());
       } else {
-        propertiesData = await propertiesService.getProperties(filters);
+        propertiesData = await propertiesApi.getAll(filters);
       }
 
       const favoriteIds = user 
-        ? await favoritesService.getFavoriteIds(user.id)
+        ? await favoritesApi.getIds(user.id)
         : [];
 
       setProperties(propertiesData || []);
@@ -130,7 +129,7 @@ export default function Discover({ navigation }) {
       );
 
       if (user) {
-        await favoritesService.toggleFavorite(user.id, id);
+        await favoritesApi.toggle(user.id, id);
       } else if (wasAdding) {
         setFavorites(previousFavorites);
         Alert.alert(

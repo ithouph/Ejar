@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { walletService } from '../services/walletService';
+import { wallet as walletApi } from '../services/database';
 
 function TransactionItem({ transaction, theme }) {
   const isCredit = transaction.type === 'credit';
@@ -73,11 +73,11 @@ export default function Balance({ navigation }) {
 
     try {
       setLoading(true);
-      const walletData = await walletService.getWallet(user.id);
+      const walletData = await walletApi.get(user.id);
       setWallet(walletData);
 
       if (walletData) {
-        const transactionsData = await walletService.getTransactions(walletData.id);
+        const transactionsData = await walletApi.getTransactions(walletData.id);
         setTransactions(transactionsData);
       }
     } catch (error) {
