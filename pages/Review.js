@@ -6,7 +6,9 @@ import { StarRating } from '../components/Review';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { reviewsData } from '../data/reviewsData';
+import { useAuth } from '../contexts/AuthContext';
+import { reviewsService } from '../services/reviewsService';
+import { useState, useEffect } from 'react';
 
 function ReviewItem({ review }) {
   const { theme } = useTheme();
@@ -31,11 +33,37 @@ function ReviewItem({ review }) {
 
 export default function Review() {
   const insets = useScreenInsets();
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadReviews();
+  }, [user]);
+
+  const loadReviews = async () => {
+    if (!user) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userReviews = await reviewsService.getUserReviews(user.id);
+      setReviews(userReviews || []);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={reviewsData}
+        data={reviews}
         renderItem={({ item }) => <ReviewItem review={item} />}
         keyExtractor={item => item.id}
         contentContainerStyle={[
