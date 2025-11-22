@@ -202,7 +202,7 @@ export default function Discover({ navigation }) {
                 color: theme.textPrimary,
                 paddingVertical: 0,
               }}
-              placeholder="Find the best for your holiday"
+              placeholder={`Hi ${user?.user_metadata?.full_name?.split(' ')[0] || 'there'}, where to today?`}
               placeholderTextColor={theme.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -231,16 +231,6 @@ export default function Discover({ navigation }) {
             <ThemedText type="h2">
               {searchQuery.trim() ? `Search results (${getFilteredData().length})` : 'Popular hotels'}
             </ThemedText>
-            {!searchQuery.trim() ? (
-              <Pressable>
-                <View style={[layoutStyles.rowCenter, spacingStyles.gapXs]}>
-                  <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                    See all
-                  </ThemedText>
-                  <Feather name="chevron-right" size={16} color={theme.textSecondary} />
-                </View>
-              </Pressable>
-            ) : null}
           </View>
 
           {loading ? (
