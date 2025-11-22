@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, Pressable, Image, FlatList, Alert, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, Image, FlatList, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
@@ -186,44 +186,6 @@ function EmptyState({ theme, onCreatePost }) {
   );
 }
 
-const CATEGORY_FILTERS = [
-  { id: 'all', label: 'All', icon: 'grid' },
-  { id: 'phones', label: 'Phones', icon: 'smartphone' },
-  { id: 'laptops', label: 'Laptops', icon: 'monitor' },
-  { id: 'electronics', label: 'Electronics', icon: 'zap' },
-  { id: 'cars', label: 'Cars', icon: 'truck' },
-  { id: 'property', label: 'Property', icon: 'home' },
-];
-
-function CategoryFilterCard({ category, selected, onPress, theme }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.categoryCard,
-        { 
-          backgroundColor: selected ? theme.primary : theme.surface,
-          borderColor: selected ? theme.primary : theme.border,
-        }
-      ]}
-    >
-      <Feather 
-        name={category.icon} 
-        size={20} 
-        color={selected ? '#FFFFFF' : theme.textPrimary} 
-      />
-      <ThemedText 
-        type="bodySmall" 
-        lightColor={selected ? '#FFFFFF' : theme.textPrimary}
-        darkColor={selected ? '#FFFFFF' : theme.textPrimary}
-        style={styles.categoryLabel}
-      >
-        {category.label}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
 export default function Posts({ navigation }) {
   const { theme } = useTheme();
   const { user } = useAuth();
@@ -233,7 +195,6 @@ export default function Posts({ navigation }) {
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('normal');
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -338,18 +299,6 @@ export default function Posts({ navigation }) {
     navigation.navigate('AddPost');
   };
 
-  const filteredPosts = selectedCategory === 'all' 
-    ? posts 
-    : posts.filter(post => post.category === selectedCategory);
-
-  const popularPosts = filteredPosts.filter(post => post.likes >= 10);
-  const regularPosts = filteredPosts.filter(post => post.likes < 10);
-
-  const handleCategorySelect = (categoryId) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedCategory(categoryId);
-  };
-
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.navbarContainer, { paddingTop: insets.top }]}>
@@ -363,128 +312,62 @@ export default function Posts({ navigation }) {
         />
       </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          {
-            paddingBottom: insets.bottom + Spacing.xl,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      >
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersContainer}
+      {posts.length === 0 ? (
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
         >
-          {CATEGORY_FILTERS.map(category => (
-            <CategoryFilterCard
-              key={category.id}
-              category={category}
-              selected={selectedCategory === category.id}
-              onPress={() => handleCategorySelect(category.id)}
-              theme={theme}
-            />
-          ))}
-        </ScrollView>
-
-        {posts.length === 0 ? (
           <EmptyState theme={theme} onCreatePost={handleCreateFirstPost} />
-        ) : filteredPosts.length === 0 ? (
-          <View style={styles.emptyFilterContainer}>
-            <Feather name="search" size={48} color={theme.textSecondary} />
-            <ThemedText type="h3" style={{ marginTop: Spacing.md, color: theme.textSecondary }}>
-              No posts found
-            </ThemedText>
-            <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-              Try selecting a different category
-            </ThemedText>
-          </View>
-        ) : (
-          <>
-            {popularPosts.length > 0 ? (
-              <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                  <Feather name="star" size={20} color={theme.primary} />
-                  <ThemedText type="h3" style={styles.sectionTitle}>
-                    Popular
-                  </ThemedText>
-                </View>
-                {popularPosts.map(post => (
-                  viewMode === 'compact' ? (
-                    <CompactPostCard
-                      key={post.id}
-                      post={post}
-                      theme={theme}
-                      currentUserId={user?.id}
-                      onDelete={handleDeletePost}
-                      isSaved={savedPosts.has(post.id)}
-                      onToggleSave={() => handleToggleSave(post.id)}
-                      onPress={() => navigation.navigate('PostDetail', { post })}
-                    />
-                  ) : (
-                    <PostCard 
-                      key={post.id}
-                      post={post} 
-                      theme={theme} 
-                      currentUserId={user?.id}
-                      onDelete={handleDeletePost}
-                      isSaved={savedPosts.has(post.id)}
-                      onToggleSave={() => handleToggleSave(post.id)}
-                      onPress={() => navigation.navigate('PostDetail', { post })}
-                    />
-                  )
-                ))}
-              </View>
-            ) : null}
-
-            {regularPosts.length > 0 ? (
-              <View style={styles.section}>
-                {popularPosts.length > 0 ? (
-                  <View style={styles.sectionHeader}>
-                    <Feather name="layout" size={20} color={theme.textPrimary} />
-                    <ThemedText type="h3" style={styles.sectionTitle}>
-                      All Posts
-                    </ThemedText>
-                  </View>
-                ) : null}
-                {viewMode === 'compact' ? (
-                  <View style={styles.gridLayout}>
-                    {regularPosts.map(post => (
-                      <CompactPostCard
-                        key={post.id}
-                        post={post}
-                        theme={theme}
-                        currentUserId={user?.id}
-                        onDelete={handleDeletePost}
-                        isSaved={savedPosts.has(post.id)}
-                        onToggleSave={() => handleToggleSave(post.id)}
-                        onPress={() => navigation.navigate('PostDetail', { post })}
-                      />
-                    ))}
-                  </View>
-                ) : (
-                  regularPosts.map(post => (
-                    <PostCard 
-                      key={post.id}
-                      post={post} 
-                      theme={theme} 
-                      currentUserId={user?.id}
-                      onDelete={handleDeletePost}
-                      isSaved={savedPosts.has(post.id)}
-                      onToggleSave={() => handleToggleSave(post.id)}
-                      onPress={() => navigation.navigate('PostDetail', { post })}
-                    />
-                  ))
-                )}
-              </View>
-            ) : null}
-          </>
-        )}
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <FlatList
+          data={posts}
+          numColumns={viewMode === 'compact' ? 2 : 1}
+          key={viewMode}
+          contentContainerStyle={[
+            viewMode === 'compact' ? styles.gridContent : styles.listContent,
+            {
+              paddingBottom: insets.bottom + Spacing.xl,
+            },
+          ]}
+          columnWrapperStyle={viewMode === 'compact' ? styles.row : null}
+          renderItem={({ item }) => {
+            if (viewMode === 'compact') {
+              return (
+                <CompactPostCard
+                  post={item}
+                  theme={theme}
+                  currentUserId={user?.id}
+                  onDelete={handleDeletePost}
+                  isSaved={savedPosts.has(item.id)}
+                  onToggleSave={() => handleToggleSave(item.id)}
+                  onPress={() => navigation.navigate('PostDetail', { post: item })}
+                />
+              );
+            }
+            return (
+              <PostCard 
+                post={item} 
+                theme={theme} 
+                currentUserId={user?.id}
+                onDelete={handleDeletePost}
+                isSaved={savedPosts.has(item.id)}
+                onToggleSave={() => handleToggleSave(item.id)}
+                onPress={() => navigation.navigate('PostDetail', { post: item })}
+              />
+            );
+          }}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
     </ThemedView>
   );
 }
@@ -649,47 +532,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  filtersContainer: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
-  },
-  categoryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-  },
-  categoryLabel: {
-    fontWeight: '600',
-  },
-  section: {
-    gap: Spacing.md,
-    marginTop: Spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-  },
-  sectionTitle: {
-    fontWeight: '700',
-  },
-  gridLayout: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.md,
-  },
-  emptyFilterContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.xxl * 2,
   },
 });
