@@ -56,6 +56,35 @@ const CONDITION_OPTIONS = ['Excellent', 'Good', 'Fair', 'Poor'];
 const FUEL_TYPES = ['Petrol', 'Diesel', 'Electric', 'Hybrid'];
 const GEAR_TYPES = ['Automatic', 'Manual'];
 
+const LOCATIONS = [
+  'Adel Bagrou',
+  'Akjoujt',
+  'Aleg',
+  'Atar',
+  'Ayoun el Atrous (Aiún el Atrus)',
+  'Bassikounou',
+  'Bir Moghrein',
+  'Bogué',
+  'Bou Mdeid',
+  'Boutilimit',
+  'Chinguetti',
+  'Fdérik',
+  'Guerou',
+  'Kaédi',
+  'Kiffa',
+  'M\'bout',
+  'Néma',
+  'Nouadhibou (Port-Étienne)',
+  'Nouakchott (Capital city)',
+  'Ouadane',
+  'Oualata',
+  'Rosso',
+  'Sélibaby',
+  'Tidjikdja',
+  'Timbédra',
+  'Zouerat',
+];
+
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
   return (
     <View style={styles.inputContainer}>
@@ -97,6 +126,75 @@ function SelectButton({ label, selected, onPress, theme }) {
         {label}
       </ThemedText>
     </Pressable>
+  );
+}
+
+function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredLocations, setFilteredLocations] = useState([]);
+
+  const handleTextChange = (text) => {
+    onChangeText(text);
+    
+    if (text.trim().length > 0) {
+      const filtered = LOCATIONS.filter(location =>
+        location.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredLocations(filtered);
+      setShowDropdown(true);
+    } else {
+      setFilteredLocations([]);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleSelect = (location) => {
+    onSelect(location);
+    setShowDropdown(false);
+    setFilteredLocations([]);
+  };
+
+  return (
+    <View style={styles.inputContainer}>
+      <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+        {label}
+      </ThemedText>
+      <TextInput
+        value={value}
+        onChangeText={handleTextChange}
+        placeholder="Search for a location..."
+        placeholderTextColor={theme.textSecondary}
+        style={[styles.input, { 
+          backgroundColor: theme.surface,
+          color: theme.textPrimary,
+          borderColor: theme.border 
+        }]}
+      />
+      {showDropdown && filteredLocations.length > 0 ? (
+        <View style={[styles.dropdown, { 
+          backgroundColor: theme.surface,
+          borderColor: theme.border 
+        }]}>
+          <ScrollView 
+            style={styles.dropdownScroll}
+            nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            {filteredLocations.map((location, index) => (
+              <Pressable
+                key={index}
+                onPress={() => handleSelect(location)}
+                style={[styles.dropdownItem, { borderBottomColor: theme.border }]}
+              >
+                <ThemedText type="body" style={{ color: theme.textPrimary }}>
+                  {location}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -718,11 +816,11 @@ export default function AddPost({ navigation }) {
             theme={theme}
           />
 
-          <InputField
+          <LocationAutocomplete
             label="Location"
             value={location}
             onChangeText={setLocation}
-            placeholder="e.g., Dubai Marina"
+            onSelect={setLocation}
             theme={theme}
           />
         </View>
@@ -784,6 +882,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     gap: Spacing.xs,
+    zIndex: 1,
   },
   label: {
     fontWeight: '500',
@@ -794,6 +893,29 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.small,
     borderWidth: 1,
     fontSize: 16,
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    borderWidth: 1,
+    borderRadius: BorderRadius.small,
+    marginTop: Spacing.xs,
+    maxHeight: 200,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
   },
   textArea: {
     minHeight: 100,
