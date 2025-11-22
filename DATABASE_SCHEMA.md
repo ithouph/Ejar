@@ -35,23 +35,7 @@ CREATE TABLE user_profiles (
 );
 ```
 
-### 3. wedding_events
-Couple details for wedding/event planning
-```sql
-CREATE TABLE wedding_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  partner1_name TEXT DEFAULT 'Christine',
-  partner2_name TEXT DEFAULT 'Duncan',
-  event_date DATE,
-  location TEXT,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-### 4. properties
+### 3. properties
 Hotel and apartment listings
 ```sql
 CREATE TABLE properties (
@@ -348,17 +332,25 @@ CREATE TABLE saved_posts (
 );
 ```
 
-### 14. service_categories
-Service offerings
+### 14. payment_requests
+Payment requests for member approval
 ```sql
-CREATE TABLE service_categories (
+CREATE TABLE payment_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  icon TEXT, -- Feather icon name
+  member_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  amount NUMERIC NOT NULL,
   description TEXT,
-  active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  requester_name TEXT,
+  requester_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  approved_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Index for fast lookup by member
+CREATE INDEX idx_payment_requests_member_id ON payment_requests(member_id);
+CREATE INDEX idx_payment_requests_status ON payment_requests(status);
 ```
 
 ## Setup Instructions

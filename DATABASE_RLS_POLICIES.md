@@ -175,21 +175,31 @@ CREATE POLICY "Users can delete own transactions" ON wallet_transactions
   );
 ```
 
-### 11. Wedding Events Table
+### 11. Payment Requests Table (Member-Only Access)
 ```sql
-ALTER TABLE wedding_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own events" ON wedding_events
-  FOR SELECT USING (auth.uid() = user_id);
+-- Members can view only payment requests assigned to them
+CREATE POLICY "Members can view own payment requests" ON payment_requests
+  FOR SELECT USING (auth.uid() = member_id);
 
-CREATE POLICY "Users can insert own events" ON wedding_events
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Members can update (approve/reject) only their assigned payment requests
+CREATE POLICY "Members can update own payment requests" ON payment_requests
+  FOR UPDATE USING (auth.uid() = member_id);
 
-CREATE POLICY "Users can update own events" ON wedding_events
-  FOR UPDATE USING (auth.uid() = user_id);
+-- Users can create payment requests where they are the requester
+-- This prevents privilege escalation (can't create requests for other users)
+-- Also prevents self-approval (requester cannot be the member)
+CREATE POLICY "Users can create payment requests as requester" ON payment_requests
+  FOR INSERT WITH CHECK (
+    auth.uid() = requester_id
+    AND member_id != requester_id
+  );
 
-CREATE POLICY "Users can delete own events" ON wedding_events
-  FOR DELETE USING (auth.uid() = user_id);
+-- Add constraint to prevent invalid status values
+ALTER TABLE payment_requests 
+ADD CONSTRAINT check_status_values 
+CHECK (status IN ('pending', 'approved', 'rejected'));
 ```
 
 ### 12. Saved Posts Table
@@ -245,14 +255,6 @@ CREATE POLICY "Users can insert own balance requests" ON balance_requests
 -- Users can update their own balance requests (e.g., cancel pending)
 CREATE POLICY "Users can update own balance requests" ON balance_requests
   FOR UPDATE USING (auth.uid() = user_id);
-```
-
-### 15. Service Categories (Public Read)
-```sql
-ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Service categories are viewable by everyone" ON service_categories
-  FOR SELECT USING (true);
 ```
 
 ## Required Database Functions
@@ -328,7 +330,8 @@ $$;
 
 ## Important Notes
 
-- **Public Tables**: Properties, property_photos, amenities, service_categories, reviews, and posts are readable by everyone (including unauthenticated users)
-- **User-Scoped Tables**: Favorites, wallet, transactions, wedding_events, and profiles are strictly user-scoped
+- **Public Tables**: Properties, property_photos, amenities, reviews, and posts are readable by everyone (including unauthenticated users)
+- **User-Scoped Tables**: Favorites, wallet, transactions, and profiles are strictly user-scoped
+- **Member-Scoped Tables**: Payment requests are scoped to assigned members only
 - **Atomic Operations**: Wallet transactions use a database function to ensure balance updates are atomic and prevent race conditions
 - **Security**: All policies use `auth.uid()` to ensure users can only access/modify their own data
