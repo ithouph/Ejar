@@ -52,23 +52,41 @@ export default function Discover({ navigation }) {
 
   useEffect(() => {
     loadData();
-  }, [user, selectedCategory]);
+  }, [user, selectedCategory, priceRange, selectedRating, searchQuery]);
 
   const loadData = async () => {
     try {
       setLoading(true);
       
       const filters = {};
+      
       if (selectedCategory === 'hotels') {
         filters.type = 'Hotel';
       } else if (selectedCategory === 'apartments') {
         filters.type = 'Apartment';
       }
 
-      const [propertiesData, favoriteIds] = await Promise.all([
-        propertiesService.getProperties(filters),
-        user ? favoritesService.getFavoriteIds(user.id) : Promise.resolve([]),
-      ]);
+      if (priceRange[0] > 0) {
+        filters.minPrice = priceRange[0];
+      }
+      if (priceRange[1] < 5000) {
+        filters.maxPrice = priceRange[1];
+      }
+
+      if (selectedRating) {
+        filters.minRating = selectedRating;
+      }
+
+      let propertiesData;
+      if (searchQuery.trim()) {
+        propertiesData = await propertiesService.searchProperties(searchQuery.trim());
+      } else {
+        propertiesData = await propertiesService.getProperties(filters);
+      }
+
+      const favoriteIds = user 
+        ? await favoritesService.getFavoriteIds(user.id)
+        : [];
 
       setProperties(propertiesData || []);
       setFavorites(favoriteIds || []);
@@ -88,37 +106,13 @@ export default function Discover({ navigation }) {
   const getFilteredData = () => {
     let filtered = properties;
     
-    if (selectedCategory === 'hotels') {
-      filtered = filtered.filter(item => item.type === 'Hotel');
-    } else if (selectedCategory === 'apartments') {
-      filtered = filtered.filter(item => item.type === 'Apartment');
-    }
-    
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(item => 
-        item.title?.toLowerCase().includes(query) ||
-        item.location?.toLowerCase().includes(query) ||
-        item.description?.toLowerCase().includes(query)
-      );
-    }
-    
-    if (priceRange[0] > 0 || priceRange[1] < 5000) {
-      filtered = filtered.filter(item => 
-        item.price >= priceRange[0] && item.price <= priceRange[1]
-      );
-    }
-    
     if (selectedAmenities.length > 0) {
-      filtered = filtered.filter(item => 
-        selectedAmenities.every(amenity => 
-          item.amenities?.includes(amenity)
-        )
-      );
-    }
-    
-    if (selectedRating) {
-      filtered = filtered.filter(item => item.rating >= selectedRating);
+      filtered = filtered.filter(item => {
+        const propertyAmenities = item.amenities?.map(a => a.name || a) || [];
+        return selectedAmenities.every(amenity => 
+          propertyAmenities.includes(amenity)
+        );
+      });
     }
     
     return filtered;
@@ -175,6 +169,7 @@ export default function Discover({ navigation }) {
 
   const applyFilters = () => {
     setShowFilters(false);
+    loadData();
   };
 
   return (
