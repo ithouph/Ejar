@@ -97,4 +97,36 @@ export const walletService = {
       throw error;
     }
   },
+
+  async addBalance(walletId, amount, description = 'Added balance') {
+    try {
+      const result = await this.addTransaction(walletId, {
+        type: 'credit',
+        amount: parseFloat(amount),
+        description,
+        category: 'deposit',
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Error adding balance:', error);
+      throw error;
+    }
+  },
+
+  async deductBalance(walletId, amount, description = 'Deducted balance') {
+    try {
+      const result = await this.addTransaction(walletId, {
+        type: 'debit',
+        amount: parseFloat(amount),
+        description,
+        category: 'withdrawal',
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Error deducting balance:', error);
+      throw error;
+    }
+  },
 };
