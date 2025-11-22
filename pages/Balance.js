@@ -131,10 +131,8 @@ export default function Balance({ navigation }) {
         >
           <Feather name="arrow-left" size={24} color={theme.textPrimary} />
         </Pressable>
-        <ThemedText type="bodyLarge">Welcome back</ThemedText>
-        <Pressable style={styles.headerButton}>
-          <Feather name="bell" size={24} color={theme.textPrimary} />
-        </Pressable>
+        <ThemedText type="bodyLarge">Balance</ThemedText>
+        <View style={styles.headerButton} />
       </View>
 
       <ScrollView
