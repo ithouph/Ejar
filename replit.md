@@ -187,8 +187,28 @@ Full design system documented in `design_guidelines.md`:
 
 ## Recent Changes
 
-**2024-11-22 (Latest)**:
-- ✅ **Complete Database Integration - All Pages Now Fetch from Supabase:**
+**2024-11-22 (Latest - Wallet UX Improvements)**:
+- ✅ **Wallet Balance Relocated to Settings/Profile Page:**
+  - Moved wallet balance display from Account.js to Profile.js for better UX
+  - Balance card now prominently featured on Settings page with real-time database fetching
+  - Added navigation from Profile to Balance page for transaction history
+- ✅ **Add Balance Functionality Implemented:**
+  - Created modal in Balance.js for adding funds to wallet
+  - Modal includes amount input with dollar sign prefix and "Add Balance" button
+  - Integrated with `walletService.addBalance()` for database persistence
+  - Added loading states and error handling
+  - Fixed navigation bug (removed SupportChat reference)
+- ✅ **Discover Page UI Refinements:**
+  - Changed search placeholder to personalized greeting: "Hi [name], where to today?"
+  - Removed unused "See all" button next to "Popular hotels" heading
+  - Cleaner, more focused user experience
+- ✅ **Transaction History Enhanced:**
+  - Added loading, empty, and error states to Balance.js transaction list
+  - Displays "No transactions yet" when user has no transaction history
+  - Smooth loading indicators during data fetch
+
+**2024-11-22 (Earlier - Complete Database Integration)**:
+- ✅ **All Pages Now Fetch from Supabase:**
   - Removed all remaining local/static data imports from Account.js, Profile.js, EditProfile.js, Review.js
   - Implemented real wallet balance fetching using `walletService.getWallet()` with proper parseFloat handling
   - Added loading/empty/error states to Review.js for better UX
