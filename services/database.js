@@ -230,18 +230,27 @@ export const properties = {
     return data;
   },
 
-  // Search properties
-  async search(searchTerm) {
-    const { data, error } = await supabase
+  // Search properties with optional filters
+  async search(searchTerm, filters = {}) {
+    let query = supabase
       .from('properties')
       .select(`
         *,
         property_photos (url, category, order_index),
         amenities (name, icon)
       `)
-      .or(`title.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-      .order('created_at', { ascending: false });
+      .or(`title.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
 
+    // Apply filters to search results
+    if (filters.type) query = query.eq('type', filters.type);
+    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
+    if (filters.minPrice) query = query.gte('price_per_night', filters.minPrice);
+    if (filters.maxPrice) query = query.lte('price_per_night', filters.maxPrice);
+    if (filters.minRating) query = query.gte('rating', filters.minRating);
+
+    query = query.order('created_at', { ascending: false});
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   },

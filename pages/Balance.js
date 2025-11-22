@@ -65,11 +65,18 @@ export default function Balance({ navigation }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadWalletData();
+    if (user) {
+      loadWalletData();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   const loadWalletData = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
