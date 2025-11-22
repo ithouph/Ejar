@@ -13,7 +13,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
-import MapPicker from '../components/MapPicker';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenInsets } from '../hooks/useScreenInsets';
@@ -139,9 +138,6 @@ export default function AddPost({ navigation }) {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
-  const [locationLat, setLocationLat] = useState(null);
-  const [locationLng, setLocationLng] = useState(null);
-  const [showMapPicker, setShowMapPicker] = useState(false);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -213,12 +209,6 @@ export default function AddPost({ navigation }) {
         ? prev.filter(id => id !== amenityId)
         : [...prev, amenityId]
     );
-  }
-
-  function handleLocationSelect(selectedLocation) {
-    setLocation(selectedLocation.locationText);
-    setLocationLat(selectedLocation.latitude);
-    setLocationLng(selectedLocation.longitude);
   }
 
   function getCategorySpecifications() {
@@ -324,8 +314,6 @@ export default function AddPost({ navigation }) {
         description: description.trim(),
         price: price ? parseFloat(price) : null,
         location: location.trim(),
-        locationLat,
-        locationLng,
         images,
         listingType,
         category,
@@ -730,45 +718,17 @@ export default function AddPost({ navigation }) {
             theme={theme}
           />
 
-          <View style={styles.inputContainer}>
-            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-              Location
-            </ThemedText>
-            <View style={styles.locationRow}>
-              <TextInput
-                value={location}
-                onChangeText={setLocation}
-                placeholder="e.g., Dubai Marina"
-                placeholderTextColor={theme.textSecondary}
-                style={[
-                  styles.input,
-                  styles.locationInput,
-                  { 
-                    backgroundColor: theme.surface,
-                    color: theme.textPrimary,
-                    borderColor: theme.border 
-                  }
-                ]}
-              />
-              <Pressable
-                onPress={() => setShowMapPicker(true)}
-                style={[styles.mapButton, { backgroundColor: theme.primary }]}
-              >
-                <Feather name="map-pin" size={20} color="#FFFFFF" />
-              </Pressable>
-            </View>
-          </View>
+          <InputField
+            label="Location"
+            value={location}
+            onChangeText={setLocation}
+            placeholder="e.g., Dubai Marina"
+            theme={theme}
+          />
         </View>
 
         {renderCategoryFields()}
       </KeyboardAwareScrollView>
-
-      <MapPicker
-        visible={showMapPicker}
-        onClose={() => setShowMapPicker(false)}
-        onSelect={handleLocationSelect}
-        initialLocation={locationLat && locationLng ? { latitude: locationLat, longitude: locationLng } : null}
-      />
     </ThemedView>
   );
 }
@@ -834,21 +794,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.small,
     borderWidth: 1,
     fontSize: 16,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-    alignItems: 'center',
-  },
-  locationInput: {
-    flex: 1,
-  },
-  mapButton: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.small,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   textArea: {
     minHeight: 100,
