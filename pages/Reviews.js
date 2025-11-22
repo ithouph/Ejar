@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi } from '../services/database';
+import { postReviews as postReviewsApi } from '../services/database';
 
 function ReviewCard({ review, theme }) {
   const renderStars = (rating) => {
@@ -26,40 +26,40 @@ function ReviewCard({ review, theme }) {
     );
   };
 
+  const userName = review.users?.full_name || 'Unknown User';
+  const userPhoto = review.users?.photo_url || 'https://via.placeholder.com/40';
+  const postTitle = review.posts?.title || 'Untitled Post';
+  const postCategory = review.posts?.category || '';
+
   return (
     <View style={[styles.reviewCard, { backgroundColor: theme.surface }]}>
       <View style={styles.reviewHeader}>
         <Image
-          source={{ uri: review.userPhoto || 'https://via.placeholder.com/40' }}
+          source={{ uri: userPhoto }}
           style={styles.avatar}
         />
         <View style={styles.reviewInfo}>
           <ThemedText type="bodyLarge" style={styles.userName}>
-            {review.userName}
+            {userName}
           </ThemedText>
           {renderStars(review.rating)}
         </View>
-        <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-          {review.timeAgo}
-        </ThemedText>
       </View>
 
-      {review.title && (
-        <ThemedText type="bodyLarge" style={styles.reviewTitle}>
-          {review.title}
-        </ThemedText>
-      )}
+      <ThemedText type="bodyLarge" style={styles.reviewTitle}>
+        Review for: {postTitle}
+      </ThemedText>
 
-      {review.reviewText && (
+      {review.comment && (
         <ThemedText type="body" style={{ color: theme.textSecondary }}>
-          {review.reviewText}
+          {review.comment}
         </ThemedText>
       )}
 
-      {review.category && (
+      {postCategory && (
         <View style={styles.categoryBadge}>
           <ThemedText type="caption" style={{ color: theme.primary }}>
-            {review.category.charAt(0).toUpperCase() + review.category.slice(1)}
+            {postCategory.charAt(0).toUpperCase() + postCategory.slice(1)}
           </ThemedText>
         </View>
       )}
@@ -82,9 +82,8 @@ export default function Reviews() {
   async function loadReviews() {
     try {
       setLoading(true);
-      const allPosts = await postsApi.getAll(100);
-      const reviewPosts = allPosts.filter(post => post.rating && post.rating > 0);
-      setReviews(reviewPosts);
+      const allReviews = await postReviewsApi.getAll();
+      setReviews(allReviews);
     } catch (error) {
       console.error('Error loading reviews:', error);
     } finally {
