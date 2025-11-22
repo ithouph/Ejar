@@ -7,11 +7,33 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
+import { userService } from '../services/userService';
+import { useState, useEffect } from 'react';
 
 export default function Profile({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
   const { user } = useAuth();
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+
+    try {
+      const profile = await userService.getUser(user.id);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setUserProfile(null);
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -34,13 +56,13 @@ export default function Profile({ navigation }) {
         >
           <Image
             source={{ 
-              uri: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+              uri: userProfile?.photo_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
             }}
             style={styles.profilePhoto}
           />
           <View style={styles.profileInfo}>
             <ThemedText type="bodyLarge" style={styles.profileName}>
-              {user?.user_metadata?.full_name || user?.email || 'Guest User'}
+              {userProfile?.full_name || user?.user_metadata?.full_name || user?.email || 'Guest User'}
             </ThemedText>
             <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
               {user?.email || 'guest@ejar.com'}

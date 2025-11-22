@@ -65,6 +65,20 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function refreshUser() {
+    try {
+      const session = await authService.getSession();
+      if (session?.user) {
+        setSession(session);
+        setUser({ ...session.user, _refreshTrigger: Date.now() });
+      }
+      return session?.user || null;
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      return null;
+    }
+  }
+
   // TEMPORARY: Guest login for testing without Supabase setup
   // This creates a fake user session so you can test the app
   // REMOVE THIS when you set up real authentication
@@ -105,6 +119,7 @@ export function AuthProvider({ children }) {
     signInWithGoogle,
     signInAsGuest,
     signOut,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

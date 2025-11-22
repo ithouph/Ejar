@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Pressable, Image, TextInput } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { Feather } from '@expo/vector-icons';
@@ -8,6 +8,8 @@ import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
+import { userService } from '../services/userService';
+import { Alert, ActivityIndicator } from 'react-native';
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
   return (
@@ -94,19 +96,105 @@ function GenderSelector({ value, onSelect, theme }) {
 export default function EditProfile({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   
-  const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '');
-  const [dateOfBirth, setDateOfBirth] = useState(user?.user_metadata?.date_of_birth || 'Select date');
-  const [gender, setGender] = useState(user?.user_metadata?.gender || 'Male');
-  const [mobileNumber, setMobileNumber] = useState(user?.user_metadata?.phone || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [weight, setWeight] = useState(user?.user_metadata?.weight || '');
-  const [height, setHeight] = useState(user?.user_metadata?.height || '');
+  const [fullName, setFullName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('Select date');
+  const [gender, setGender] = useState('Male');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    console.log('Saving profile...');
-    navigation.goBack();
+  useEffect(() => {
+    loadUserProfile();
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const [profile, userDetails] = await Promise.all([
+        userService.getProfile(user.id),
+        userService.getUser(user.id)
+      ]);
+      
+      if (profile) {
+        setDateOfBirth(profile.date_of_birth || 'Select date');
+        setGender(profile.gender || 'Male');
+        setMobileNumber(profile.mobile || '');
+        setWeight(profile.weight || '');
+        setHeight(profile.height || '');
+      }
+      
+      if (userDetails) {
+        setFullName(userDetails.full_name || user.email || '');
+      } else {
+        setFullName(user.user_metadata?.full_name || user.email || '');
+      }
+      
+      setEmail(user.email || '');
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      
+      const existingProfile = await userService.getProfile(user.id);
+      
+      const profileData = {
+        date_of_birth: dateOfBirth === 'Select date' ? null : dateOfBirth,
+        gender,
+        weight,
+        height,
+      };
+
+      if (mobileNumber && mobileNumber.trim()) {
+        profileData.mobile = mobileNumber;
+      } else if (!existingProfile) {
+        profileData.mobile = null;
+      }
+      
+      if (existingProfile) {
+        await userService.updateProfile(user.id, profileData);
+      } else {
+        await userService.createProfile(user.id, profileData);
+      }
+
+      if (fullName) {
+        await userService.updateUser(user.id, {
+          full_name: fullName,
+        });
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      await refreshUser();
+      await loadUserProfile();
+
+      Alert.alert('Success', 'Profile updated successfully!');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      const message = error.message || 'Failed to update profile. Please try again.';
+      Alert.alert('Error', message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -225,19 +313,25 @@ export default function EditProfile({ navigation }) {
 
         <Pressable
           onPress={handleSave}
+          disabled={saving}
           style={[buttonStyles.primaryLarge, spacingStyles.mxLg, spacingStyles.mtMd, { 
-            backgroundColor: theme.primary,
-            marginBottom: Spacing['2xl']
+            backgroundColor: saving ? theme.textSecondary : theme.primary,
+            marginBottom: Spacing['2xl'],
+            opacity: saving ? 0.7 : 1
           }]}
         >
-          <ThemedText 
-            type="bodyLarge" 
-            lightColor="#FFF" 
-            darkColor="#FFF"
-            style={{ fontWeight: '600' }}
-          >
-            Save
-          </ThemedText>
+          {saving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <ThemedText 
+              type="bodyLarge" 
+              lightColor="#FFF" 
+              darkColor="#FFF"
+              style={{ fontWeight: '600' }}
+            >
+              Save
+            </ThemedText>
+          )}
         </Pressable>
       </KeyboardAwareScrollView>
     </ThemedView>
