@@ -12,6 +12,13 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 - **Authentication**: Google OAuth only
 - **Design**: iOS 26 liquid glass, auto dark/light mode
 
+## Recent Changes
+
+### November 22, 2025
+- **Combined Search and Filter Functionality**: Updated `properties.search()` in `services/database.js` to accept and apply filters (type, price range, rating) alongside search terms, allowing users to search and filter simultaneously
+- **Improved Auth Guards**: Added proper authentication guards and loading states in Balance, Saved, and Posts pages to prevent errors when user is not logged in
+- **Consolidated Backend Services**: All database operations unified in `services/database.js` with "Api" suffix naming convention to prevent naming collisions
+
 ## System Architecture
 
 The application is built using Expo React Native for the frontend and Supabase (PostgreSQL) as the backend. Authentication is handled via Google OAuth using `expo-auth-session`. State management relies on React Context, specifically `AuthContext` for authentication state. Styling is managed through a centralized theme system located in the `theme/` folder, adopting a Bootstrap-like utility approach rather than inline styles.
