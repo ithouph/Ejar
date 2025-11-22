@@ -187,22 +187,29 @@ Full design system documented in `design_guidelines.md`:
 
 ## Recent Changes
 
-**2024-11-22 (Latest - Settings Page Improvements)**:
-- ✅ **Removed Wallet from Settings Page:**
-  - Removed large wallet balance card from Profile.js
-  - Removed wallet grid item from settings
-  - Removed notifications grid item from settings
-  - Cleaned up unused wallet service imports
-- ✅ **Added Useful Pages:**
-  - Created Terms of Service page with complete legal information
-  - Created Privacy Policy page with data protection details
-  - Updated Support page navigation
-  - All pages properly integrated with Settings router
-- ✅ **Settings Grid Now Shows:**
-  - My Reviews - View your feedback
-  - Help & Support - Get help anytime
-  - Terms of Service - Legal information
-  - Privacy Policy - Your data protection
+**2024-11-22 (Latest - Balance Request System with Image Upload)**:
+- ✅ **Restored Wallet Balance to Settings:**
+  - Wallet balance card back on Profile page with real-time data
+  - Wallet grid item in settings for quick access
+- ✅ **Implemented Balance Top-Up Request System:**
+  - Users upload transaction proof from Bankily, Sedad, or Masrvi apps
+  - Image picker integration with expo-image-picker
+  - Step-by-step instructions shown in modal
+  - Request submission for admin approval workflow
+  - Users notified that approval takes ~24 hours
+- ✅ **Created Balance Requests Database Schema:**
+  - Added balance_requests table to DATABASE_SCHEMA.md
+  - Tracks pending/approved/rejected top-up requests
+  - Stores transaction image URL and admin review notes
+  - Linked to wallet_accounts and users tables
+- ✅ **Added Legal Pages:**
+  - Terms of Service page with 6 comprehensive sections
+  - Privacy Policy page with 8 data protection sections
+  - Both pages properly integrated in Settings router
+- ✅ **Reviews Page:**
+  - Confirmed working with Supabase integration
+  - Loading, empty, and error states implemented
+  - Displays user reviews with ratings and dates
 
 **2024-11-22 (Earlier - Balance Page Updates)**:
 - ✅ **Updated Balance Page Header:**
