@@ -5,9 +5,9 @@ The app has Google OAuth authentication code ready to go. To complete the setup,
 ## Important App Information
 
 Your app is configured with:
-- **Bundle Identifier (iOS)**: `com.travelstay.app`
-- **Package Name (Android)**: `com.travelstay.app`
-- **App Scheme**: `com.travelstay.app`
+- **Bundle Identifier (iOS)**: `com.ejar.app`
+- **Package Name (Android)**: `com.ejar.app`
+- **App Scheme**: `com.ejar.app`
 
 ---
 
@@ -56,7 +56,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 3. Select **iOS** as the application type
 4. Fill in:
    - **Name**: Ejar iOS
-   - **Bundle ID**: `com.travelstay.app`
+   - **Bundle ID**: `com.ejar.app`
 5. Click **Create**
 6. **Copy the iOS Client ID** - you'll need this for Supabase
 7. Keep this page open in a tab
@@ -68,7 +68,7 @@ You need to create **3 separate OAuth client IDs** for iOS, Android, and Web.
 3. Select **Android** as the application type
 4. Fill in:
    - **Name**: Ejar Android
-   - **Package name**: `com.travelstay.app`
+   - **Package name**: `com.ejar.app`
    - **SHA-1 certificate fingerprint**: See instructions below
 
 #### How to Get SHA-1 Fingerprint:
@@ -116,7 +116,7 @@ Copy the SHA-1 fingerprint and paste it into Google Cloud Console.
    - **Android Client ID**: Paste the Android Client ID from Part 2D
 4. **Authorized Client IDs**: Add all three Client IDs (iOS, Android, Web) separated by commas
 5. **Redirect URLs**: Should already include your app scheme:
-   - `com.travelstay.app://auth/callback`
+   - `com.ejar.app://auth/callback`
 6. Click **Save**
 
 ---
@@ -157,7 +157,7 @@ The Ejar app already includes:
 - ✅ **AuthContext** for managing authentication state across the app
 - ✅ **Google OAuth service** using expo-auth-session
 - ✅ **Session persistence** with AsyncStorage (stays logged in)
-- ✅ **Proper redirect URI configuration** (`com.travelstay.app://auth/callback`)
+- ✅ **Proper redirect URI configuration** (`com.ejar.app://auth/callback`)
 - ✅ **Loading states** and error handling
 - ✅ **User profile creation** in Supabase after first sign-in
 
@@ -189,10 +189,10 @@ The Ejar app already includes:
 
 **Solutions:**
 1. Check your `app.json`:
-   - iOS Bundle ID should be: `com.travelstay.app`
-   - Android Package should be: `com.travelstay.app`
-   - Scheme should be: `com.travelstay.app`
-2. In Supabase, verify Redirect URL is: `com.travelstay.app://auth/callback`
+   - iOS Bundle ID should be: `com.ejar.app`
+   - Android Package should be: `com.ejar.app`
+   - Scheme should be: `com.ejar.app`
+2. In Supabase, verify Redirect URL is: `com.ejar.app://auth/callback`
 3. Restart your app after making changes
 
 ### Issue: Stuck on Google Sign-In Page
@@ -256,7 +256,7 @@ When you're ready to publish Ejar to the App Store and Google Play:
 ### For iOS:
 
 1. Build your app with EAS Build
-2. The bundle identifier `com.travelstay.app` will be used
+2. The bundle identifier `com.ejar.app` will be used
 3. No changes needed to Google OAuth (same iOS Client ID works)
 
 ### For Android:
@@ -265,7 +265,7 @@ When you're ready to publish Ejar to the App Store and Google Play:
 2. Get the **production SHA-1 fingerprint** from Google Play Console
 3. Go to Google Cloud Console → Credentials
 4. Create a **new Android OAuth client** for production:
-   - Package name: `com.travelstay.app`
+   - Package name: `com.ejar.app`
    - SHA-1: Production fingerprint from Google Play
 5. Add this new production Client ID to Supabase (Additional Client IDs)
 6. Keep the development Client ID for testing
@@ -314,7 +314,7 @@ Before testing, make sure you have:
 - [ ] Added iOS Client ID to Supabase (Additional Client IDs)
 - [ ] Added Android Client ID to Supabase (Additional Client IDs)
 - [ ] Added all three Client IDs to "Authorized Client IDs"
-- [ ] Verified redirect URL is `com.travelstay.app://auth/callback`
+- [ ] Verified redirect URL is `com.ejar.app://auth/callback`
 - [ ] Saved all changes in Supabase
 - [ ] Waited 5-10 minutes for changes to propagate
 - [ ] Restarted the app
