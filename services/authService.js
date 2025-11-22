@@ -8,7 +8,7 @@ export const authService = {
   async signInWithGoogle() {
     try {
       const redirectUrl = makeRedirectUri({
-        scheme: 'com.travelstay.app',
+        scheme: 'com.ejar.app',
         path: 'auth/callback',
       });
 
