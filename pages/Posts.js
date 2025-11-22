@@ -8,7 +8,7 @@ import { PageHeader } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi } from '../services/database';
+import { posts as postsApi, savedPosts as savedPostsApi } from '../services/database';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -199,7 +199,10 @@ export default function Posts({ navigation }) {
   useFocusEffect(
     React.useCallback(() => {
       loadPosts();
-    }, [])
+      if (user) {
+        loadSavedPosts();
+      }
+    }, [user])
   );
 
   async function loadPosts() {
@@ -212,6 +215,18 @@ export default function Posts({ navigation }) {
       Alert.alert('Error', 'Unable to load posts. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadSavedPosts() {
+    if (!user) return;
+
+    try {
+      const saved = await savedPostsApi.getAll(user.id);
+      const savedIds = new Set(saved.map(post => post.id));
+      setSavedPosts(savedIds);
+    } catch (error) {
+      console.error('Error loading saved posts:', error);
     }
   }
 
@@ -232,16 +247,43 @@ export default function Posts({ navigation }) {
     }
   }
 
-  function handleToggleSave(postId) {
-    setSavedPosts(prev => {
-      const newSaved = new Set(prev);
-      if (newSaved.has(postId)) {
-        newSaved.delete(postId);
-      } else {
-        newSaved.add(postId);
-      }
-      return newSaved;
-    });
+  async function handleToggleSave(postId) {
+    if (!user) {
+      Alert.alert('Login Required', 'Please login to save posts');
+      return;
+    }
+
+    try {
+      const wasSaved = savedPosts.has(postId);
+      
+      setSavedPosts(prev => {
+        const newSaved = new Set(prev);
+        if (wasSaved) {
+          newSaved.delete(postId);
+        } else {
+          newSaved.add(postId);
+        }
+        return newSaved;
+      });
+
+      await savedPostsApi.toggle(user.id, postId);
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (error) {
+      console.error('Error toggling save:', error);
+      
+      setSavedPosts(prev => {
+        const newSaved = new Set(prev);
+        if (savedPosts.has(postId)) {
+          newSaved.delete(postId);
+        } else {
+          newSaved.add(postId);
+        }
+        return newSaved;
+      });
+
+      Alert.alert('Error', 'Failed to save post. Please try again.');
+    }
   }
 
   const handleViewToggle = () => {
