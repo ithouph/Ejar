@@ -10,14 +10,16 @@ This guide shows you where all the backend files are and how to customize the lo
 │   └── supabase.js              ✅ Supabase database connection
 │
 ├── services/                     ✅ ALL BACKEND LOGIC HERE
-│   ├── authService.js           🔐 Login/logout functions
-│   ├── userService.js           👤 User profile get/update
-│   ├── propertiesService.js     🏨 Hotels and apartments
-│   ├── favoritesService.js      ❤️ Favorite properties
-│   ├── walletService.js         💰 Balance and transactions
-│   ├── reviewsService.js        ⭐ Property reviews
-│   ├── postsService.js          📱 Social posts feed
-│   └── weddingService.js        💍 Event planning data
+│   └── database.js              📦 Unified backend service
+│       ├── Auth functions       🔐 Login/logout
+│       ├── User profiles        👤 Profile get/update
+│       ├── Properties           🏨 Hotels and apartments
+│       ├── Favorites            ❤️ Favorite properties
+│       ├── Wallet               💰 Balance and transactions
+│       ├── Reviews              ⭐ Property reviews
+│       ├── Posts                📱 Social marketplace feed
+│       ├── Balance Requests     💵 Top-up requests
+│       └── Payment Requests     ✅ Member payment approvals
 │
 ├── contexts/
 │   └── AuthContext.js           🔒 Manages login state globally
