@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { reviewsService } from '../services/reviewsService';
+import { reviews as reviewsApi } from '../services/database';
 
 function ReviewItem({ review }) {
   const { theme } = useTheme();
@@ -50,7 +50,7 @@ export default function Review() {
 
     try {
       setLoading(true);
-      const userReviews = await reviewsService.getUserReviews(user.id);
+      const userReviews = await reviewsApi.getByUser(user.id);
       setReviews(userReviews || []);
     } catch (error) {
       console.error('Error loading reviews:', error);

@@ -17,7 +17,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { postsService } from '../services/postsService';
+import { posts as postsApi } from '../services/database';
 
 /**
  * ═══════════════════════════════════════════════════════════════════
@@ -95,7 +95,7 @@ export default function AddPost({ navigation }) {
 
   async function handlePickImages() {
     try {
-      const selectedImages = await postsService.pickImages(5);
+      const selectedImages = await postsApi.pickImages(5);
       if (selectedImages.length > 0) {
         setImages(selectedImages);
       }
@@ -157,7 +157,7 @@ export default function AddPost({ navigation }) {
         userPhoto: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/40',
       };
 
-      await postsService.createPost(user?.id || 'guest', postData);
+      await postsApi.create(user?.id || 'guest', postData);
 
       Alert.alert(
         'Success',

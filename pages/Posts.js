@@ -8,7 +8,7 @@ import { PageHeader } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { postsService } from '../services/postsService';
+import { posts as postsApi } from '../services/database';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -203,7 +203,7 @@ export default function Posts({ navigation }) {
 
   async function loadPosts() {
     try {
-      const fetchedPosts = await postsService.getPosts();
+      const fetchedPosts = await postsApi.getAll();
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error loading posts:', error);
@@ -218,7 +218,7 @@ export default function Posts({ navigation }) {
 
   async function handleDeletePost(postId) {
     try {
-      await postsService.deletePost(postId, user?.id || 'guest');
+      await postsApi.delete(postId, user?.id || 'guest');
       setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
       Alert.alert('Success', 'Post deleted successfully');
     } catch (error) {
