@@ -6,11 +6,12 @@ import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { userData } from '../data/userData';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Profile({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
+  const { user } = useAuth();
 
   return (
     <ThemedView style={styles.container}>
@@ -32,15 +33,17 @@ export default function Profile({ navigation }) {
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
           <Image
-            source={{ uri: userData.profile.photo }}
+            source={{ 
+              uri: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+            }}
             style={styles.profilePhoto}
           />
           <View style={styles.profileInfo}>
             <ThemedText type="bodyLarge" style={styles.profileName}>
-              {userData.profile.fullName}
+              {user?.user_metadata?.full_name || user?.email || 'Guest User'}
             </ThemedText>
             <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-              {userData.profile.email}
+              {user?.email || 'guest@ejar.com'}
             </ThemedText>
           </View>
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />

@@ -7,7 +7,7 @@ import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles } from '../theme';
-import { userData } from '../data/userData';
+import { useAuth } from '../contexts/AuthContext';
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
   return (
@@ -94,14 +94,15 @@ function GenderSelector({ value, onSelect, theme }) {
 export default function EditProfile({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
   
-  const [fullName, setFullName] = useState(userData.profile.fullName);
-  const [dateOfBirth, setDateOfBirth] = useState(userData.profile.dateOfBirth);
-  const [gender, setGender] = useState(userData.profile.gender);
-  const [mobileNumber, setMobileNumber] = useState(userData.profile.phone);
-  const [email, setEmail] = useState(userData.profile.email);
-  const [weight, setWeight] = useState(userData.profile.weight);
-  const [height, setHeight] = useState(userData.profile.height);
+  const [fullName, setFullName] = useState(user?.user_metadata?.full_name || '');
+  const [dateOfBirth, setDateOfBirth] = useState(user?.user_metadata?.date_of_birth || 'Select date');
+  const [gender, setGender] = useState(user?.user_metadata?.gender || 'Male');
+  const [mobileNumber, setMobileNumber] = useState(user?.user_metadata?.phone || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [weight, setWeight] = useState(user?.user_metadata?.weight || '');
+  const [height, setHeight] = useState(user?.user_metadata?.height || '');
 
   const handleSave = () => {
     console.log('Saving profile...');
@@ -130,7 +131,9 @@ export default function EditProfile({ navigation }) {
       >
         <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
           <Image
-            source={{ uri: userData.profile.photo }}
+            source={{ 
+              uri: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+            }}
             style={{ width: 100, height: 100, borderRadius: 50 }}
           />
           <Pressable style={[buttonStyles.iconSmall, { 
