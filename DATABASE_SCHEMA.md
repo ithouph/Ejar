@@ -154,8 +154,6 @@ CREATE TABLE posts (
   property_type TEXT,
   price NUMERIC,
   location TEXT,
-  location_lat NUMERIC, -- Latitude coordinate from map picker
-  location_lng NUMERIC, -- Longitude coordinate from map picker
   amenities JSONB DEFAULT '[]'::jsonb,
   specifications JSONB DEFAULT '{}'::jsonb, -- Category-specific features
   listing_type TEXT DEFAULT 'rent', -- 'rent' or 'sell'
