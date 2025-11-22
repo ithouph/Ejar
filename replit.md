@@ -15,9 +15,16 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
+- **Complete Backend Marketplace Overhaul**: Implemented comprehensive backend enforcement of marketplace rules
+  - **Server-Side Specification Validation**: Created `validateAndNormalizeSpecifications()` helper in posts service that enforces category-specific requirements (nearby_amenities for rent house/apartment, land_size for land properties)
+  - **Backend Filtering**: Updated Discover page to pass filters (category, search, price range) to `posts.getAll()` for server-side filtering via Supabase, improving performance and scalability
+  - **Database Constraints & Triggers**: Added PostgreSQL constraints and triggers to enforce data integrity at database level:
+    - listing_type and property_type constraints (only for property category)
+    - Database trigger validates nearby_amenities and land_size requirements
+    - Safe migration with backfill for existing data
+  - **Complete Documentation**: Updated DATABASE_SCHEMA.md, DATABASE_MIGRATIONS.sql, and DATABASE_RLS_POLICIES.md with comprehensive examples and security policies
 - **Nearby Amenities for Property Posts**: Added "Nearby" section (Mosque, Laundry, Gym) that only appears for Rent + House/Apartment property types; Land property type now shows Land Size field instead of Bedrooms/Bathrooms/Size
 - **Discover Page Updated to Marketplace**: Changed Discover (home) page from showing properties to showing marketplace posts with category filters (All, Property, Phones, Electronics, Others)
-- **Combined Search and Filter Functionality**: Updated `properties.search()` in `services/database.js` to accept and apply filters (type, price range, rating) alongside search terms, allowing users to search and filter simultaneously
 - **Improved Auth Guards**: Added proper authentication guards and loading states in Balance, Saved, and Posts pages to prevent errors when user is not logged in
 - **Consolidated Backend Services**: All database operations unified in `services/database.js` with "Api" suffix naming convention to prevent naming collisions
 
