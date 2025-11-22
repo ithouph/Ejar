@@ -15,6 +15,7 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
+- **Location Autocomplete Dropdown**: Added searchable dropdown for location field in Add Post page with 27 Mauritanian cities. Users can type to filter and select from the list, with case-insensitive search and proper theme styling.
 - **Complete Backend Marketplace Overhaul**: Implemented comprehensive backend enforcement of marketplace rules
   - **Server-Side Specification Validation**: Created `validateAndNormalizeSpecifications()` helper in posts service that enforces category-specific requirements (nearby_amenities for rent house/apartment, land_size for land properties)
   - **Backend Filtering**: Updated Discover page to pass filters (category, search, price range) to `posts.getAll()` for server-side filtering via Supabase, improving performance and scalability
