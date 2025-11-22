@@ -15,6 +15,7 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
+- **Dummy Data Seed Script**: Created SEED_DATA.sql with 10 realistic records for each table (users, posts, wallet_accounts, saved_posts, property_reviews, wallet_transactions, balance_requests, wedding_events, service_categories). Uses deterministic UUIDs and follows all database constraints.
 - **Location Autocomplete Dropdown**: Added searchable dropdown for location field in Add Post page with 27 Mauritanian cities. Users can type to filter and select from the list, with case-insensitive search and proper theme styling.
 - **Complete Backend Marketplace Overhaul**: Implemented comprehensive backend enforcement of marketplace rules
   - **Server-Side Specification Validation**: Created `validateAndNormalizeSpecifications()` helper in posts service that enforces category-specific requirements (nearby_amenities for rent house/apartment, land_size for land properties)
