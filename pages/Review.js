@@ -1,5 +1,6 @@
-import React from 'react';
-import { StyleSheet, FlatList, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, View, ActivityIndicator } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { StarRating } from '../components/Review';
@@ -8,7 +9,6 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
 import { reviewsService } from '../services/reviewsService';
-import { useState, useEffect } from 'react';
 
 function ReviewItem({ review }) {
   const { theme } = useTheme();
@@ -60,6 +60,35 @@ export default function Review() {
     }
   };
 
+  const renderEmptyState = () => {
+    const { theme } = useTheme();
+    return (
+      <View style={styles.emptyContainer}>
+        <Feather name="star" size={64} color={theme.textSecondary} />
+        <ThemedText type="h2" style={{ marginTop: Spacing.md, color: theme.textSecondary }}>
+          No Reviews Yet
+        </ThemedText>
+        <ThemedText type="body" style={{ marginTop: Spacing.sm, color: theme.textSecondary, textAlign: 'center' }}>
+          You haven't written any reviews yet. Book a property and share your experience!
+        </ThemedText>
+      </View>
+    );
+  };
+
+  if (loading) {
+    const { theme } = useTheme();
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.loadingContainer, { paddingTop: insets.top + Spacing.xl }]}>
+          <ThemedText type="h1" style={styles.title}>
+            My Reviews
+          </ThemedText>
+          <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: Spacing.xl }} />
+        </View>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <FlatList
@@ -78,6 +107,7 @@ export default function Review() {
             My Reviews
           </ThemedText>
         }
+        ListEmptyComponent={renderEmptyState}
       />
     </ThemedView>
   );
@@ -110,5 +140,15 @@ const styles = StyleSheet.create({
   },
   comment: {
     lineHeight: 22,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xl * 3,
+    paddingHorizontal: Spacing.lg,
+  },
+  loadingContainer: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
 });

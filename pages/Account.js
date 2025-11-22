@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View, Pressable, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, View, Pressable, Image, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -7,6 +7,8 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
+import { walletService } from '../services/walletService';
+import { userService } from '../services/userService';
 
 function ServiceCard({ icon, title, onPress, theme }) {
   return (
@@ -28,6 +30,54 @@ export default function Account({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
   const { user } = useAuth();
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loadingBalance, setLoadingBalance] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    loadWalletBalance();
+    loadUserProfile();
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+
+    try {
+      const profile = await userService.getUser(user.id);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      setUserProfile(null);
+    }
+  };
+
+  const loadWalletBalance = async () => {
+    if (!user) {
+      setWalletBalance(0);
+      setLoadingBalance(false);
+      return;
+    }
+
+    try {
+      setLoadingBalance(true);
+      const wallet = await walletService.getWallet(user.id);
+      
+      if (wallet) {
+        const balance = parseFloat(wallet.balance) || 0;
+        setWalletBalance(balance);
+      } else {
+        setWalletBalance(0);
+      }
+    } catch (error) {
+      console.error('Error loading wallet balance:', error);
+      setWalletBalance(0);
+    } finally {
+      setLoadingBalance(false);
+    }
+  };
 
   const services = [
     { icon: 'scissors', title: 'Hairdresser' },
@@ -65,13 +115,13 @@ export default function Account({ navigation }) {
         >
           <Image
             source={{ 
-              uri: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+              uri: userProfile?.photo_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
             }}
             style={styles.profilePhoto}
           />
           <View style={styles.profileInfo}>
             <ThemedText type="h2" style={styles.profileName}>
-              {user?.user_metadata?.full_name || user?.email || 'Guest User'}
+              {userProfile?.full_name || user?.user_metadata?.full_name || user?.email || 'Guest User'}
             </ThemedText>
             <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
               {user?.email || 'guest@ejar.com'}
@@ -94,14 +144,18 @@ export default function Account({ navigation }) {
               >
                 Total Balance
               </ThemedText>
-              <ThemedText
-                type="h1"
-                lightColor="#FFF"
-                darkColor="#FFF"
-                style={styles.balanceAmount}
-              >
-                $2,850.00
-              </ThemedText>
+              {loadingBalance ? (
+                <ActivityIndicator size="small" color="#FFF" style={{ marginVertical: 8 }} />
+              ) : (
+                <ThemedText
+                  type="h1"
+                  lightColor="#FFF"
+                  darkColor="#FFF"
+                  style={styles.balanceAmount}
+                >
+                  ${walletBalance.toFixed(2)}
+                </ThemedText>
+              )}
             </View>
             <View style={styles.balanceIcon}>
               <Feather name="dollar-sign" size={32} color="#FFF" />
