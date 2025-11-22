@@ -42,12 +42,10 @@ const PROPERTY_TYPES = [
 const AMENITIES = [
   { id: 'wifi', label: 'Wi-Fi', icon: 'wifi' },
   { id: 'parking', label: 'Parking', icon: 'truck' },
-  { id: 'pool', label: 'Pool', icon: 'droplet' },
   { id: 'gym', label: 'Gym', icon: 'activity' },
   { id: 'ac', label: 'Air Conditioning', icon: 'wind' },
   { id: 'kitchen', label: 'Kitchen', icon: 'coffee' },
   { id: 'laundry', label: 'Laundry', icon: 'refresh-cw' },
-  { id: 'pets', label: 'Pet Friendly', icon: 'heart' },
 ];
 
 const CONDITION_OPTIONS = ['Excellent', 'Good', 'Fair', 'Poor'];
