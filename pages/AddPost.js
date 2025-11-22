@@ -442,6 +442,23 @@ export default function AddPost({ navigation }) {
           <>
             <View style={styles.section}>
               <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+                Listing Type
+              </ThemedText>
+              <View style={styles.optionsRow}>
+                {LISTING_TYPES.map(type => (
+                  <SelectButton 
+                    key={type.id} 
+                    label={type.label} 
+                    selected={listingType === type.id} 
+                    onPress={() => setListingType(type.id)} 
+                    theme={theme} 
+                  />
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
                 Property Details
               </ThemedText>
               
@@ -538,23 +555,6 @@ export default function AddPost({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
-          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-            Listing Type
-          </ThemedText>
-          <View style={styles.optionsRow}>
-            {LISTING_TYPES.map(type => (
-              <SelectButton 
-                key={type.id} 
-                label={type.label} 
-                selected={listingType === type.id} 
-                onPress={() => setListingType(type.id)} 
-                theme={theme} 
-              />
-            ))}
-          </View>
-        </View>
-
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>
             Category
