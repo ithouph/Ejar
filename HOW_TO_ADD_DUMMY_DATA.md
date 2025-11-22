@@ -19,112 +19,132 @@
 ### Step 3: Verify
 
 The script will add:
-- ✅ **10 new properties** (hotels & apartments)
-- ✅ **30+ amenities** (Wi-Fi, Pool, Parking, etc.)
+- ✅ **10 users** (Ahmed, Fatima, Ibrahim, etc.)
+- ✅ **10 marketplace posts** (phones, laptops, property, cars)
+- ✅ **10 wallet accounts** with balances
+- ✅ **10 saved posts**
+- ✅ **10 reviews**
+- ✅ **10 wallet transactions**
+- ✅ **10 balance requests**
+- ✅ **10 payment requests**
 - ✅ **Verification queries** (automatically run at the end)
 
 You should see:
 ```
-total_properties: 12
-total_amenities: 30+
+Users: 10
+Posts: 10
+Wallet Accounts: 10
+Saved Posts: 10
+Property Reviews: 10
+Wallet Transactions: 10
+Balance Requests: 10
+Payment Requests: 10
 ```
 
 ---
 
 ## What Gets Added:
 
-### 🏨 Properties (10 new):
-1. **Beachfront Villa Paradise** - Bali, Indonesia ($350/night)
-2. **Downtown Luxury Apartment** - Dubai, UAE ($280/night)
-3. **Mountain Retreat Chalet** - Aspen, Colorado ($420/night)
-4. **Historic City Center Hotel** - Paris, France ($195/night)
-5. **Tropical Island Resort** - Maldives ($680/night)
-6. **Urban Loft Studio** - New York, USA ($160/night)
-7. **Santorini Cliffside Suite** - Santorini, Greece ($520/night)
-8. **Safari Lodge & Spa** - Serengeti, Tanzania ($890/night)
-9. **Lakeside Cabin Retreat** - Lake Tahoe, USA ($240/night)
-10. **Tokyo Capsule Hotel** - Tokyo, Japan ($45/night)
+### 👥 Users (10 accounts):
+- Ahmed Hassan, Fatima Mohamed, Ibrahim Ali, Mariam Abdullah
+- Omar Salem, Aisha Mohammed, Hassan Omar, Khadija Ahmed
+- Youssef Ibrahim, Zainab Hassan
 
-### ✨ Amenities for each property:
-- Wi-Fi
-- Pool / Hot Tub (for luxury properties)
-- Parking / Kitchen (for apartments)
-- Air Conditioning
-- Spa / Gym (for hotels)
-- Breakfast / Restaurant
-- Beach Access (for coastal properties)
+### 📱 Marketplace Posts (10 posts):
+1. **iPhone 14 Pro** - Phones category (450,000 MRU)
+2. **MacBook Pro 2023** - Laptops category (1,200,000 MRU)
+3. **Sony 65" 4K Smart TV** - Electronics (550,000 MRU)
+4. **Toyota Camry 2020** - Cars (2,500,000 MRU)
+5. **Modern 3BR Apartment** - Property Rent (80,000 MRU/month)
+6. **Beautiful Family House** - Property Sell (3,500,000 MRU)
+7. **Cozy 2BR House** - Property Rent (60,000 MRU/month)
+8. **Prime Land 500 sqm** - Property Sell (1,500,000 MRU)
+9. **Samsung Galaxy S23 Ultra** - Phones (500,000 MRU)
+10. **Luxury Villa** - Property Rent (150,000 MRU/month)
 
----
-
-## User-Specific Data (Requires Login):
-
-These tables need **authenticated users**, so they can't be seeded with SQL:
-
-### ❤️ Favorites
-- Log in with Google OAuth
-- Browse properties
-- Tap the heart icon to save favorites
-
-### ⭐ Reviews
-- Log in with Google OAuth
-- Open a property
-- Tap "Write a Review"
-- Add rating and comment
-
-### 💰 Wallet
-- Log in with Google OAuth
-- Go to Wallet tab
-- Add balance
-- Transactions will be saved automatically
-
-### 📱 Social Posts
-- Log in with Google OAuth
-- Go to Social tab
-- Create a marketplace post
-- Add title, description, price, and images
+### 💰 Wallet Features:
+- All users have wallet accounts with balances
+- Transaction history (deposits, payments)
+- Balance top-up requests (some approved, some pending)
+- Payment requests system (member approvals)
 
 ---
 
-## Alternative: Test with Guest Login
+## What the Dummy Data Includes:
 
-**Don't want to set up Google OAuth yet?**
+All dummy data is created with **deterministic UUIDs** for reproducibility.
 
-1. Open the Ejar app
-2. Tap **"I have an account"** (guest login)
-3. Browse all 12 properties ✅
-4. View amenities ✅
-5. See ratings and reviews ✅
+### Sample User Data
+- **Email addresses**: ahmed.hassan@email.com, fatima.mohamed@email.com, etc.
+- **Profile pictures**: From Unsplash (sample avatars)
+- **Wallet balances**: Range from 30,000 to 200,000 MRU
 
-**Note:** Guest login is read-only - you can't create reviews, favorites, or posts without Google OAuth.
+### Sample Marketplace Posts
+- **Phones**: iPhone 14 Pro, Samsung Galaxy S23 Ultra
+- **Laptops**: MacBook Pro 2023
+- **Electronics**: Sony 65" 4K Smart TV
+- **Cars**: Toyota Camry 2020
+- **Property**: Apartments, houses, land (rent/sell)
+
+### Sample Transactions
+- **Wallet transactions**: Deposits and payments
+- **Balance requests**: Mix of approved, pending, rejected
+- **Payment requests**: Member approval workflow examples
+
+---
+
+## Testing with Real Users
+
+After adding dummy data, you can test with:
+
+### Option 1: Google OAuth (Recommended)
+1. Set up Google OAuth ([GOOGLE_AUTH_SETUP.md](GOOGLE_AUTH_SETUP.md))
+2. Sign in with your Google account
+3. Create your own posts, reviews, and transactions
+
+### Option 2: Use Dummy Data
+1. Browse the 10 sample posts
+2. View wallet balances and transactions
+3. See payment request examples
+4. Test the marketplace filtering
+
+**Note:** To create new data (posts, reviews), you need Google OAuth authentication.
 
 ---
 
 ## Troubleshooting:
 
 ### ❌ "Duplicate key value" error
-**Solution:** The property already exists. This is normal - the script uses `ON CONFLICT DO NOTHING` to skip duplicates.
+**Solution:** Data already exists. This is normal - the script uses `BEGIN/COMMIT` transaction.
 
-### ❌ "Permission denied for table properties"
+### ❌ "Permission denied" error
 **Solution:** Make sure you're logged into Supabase as the project owner with admin access.
 
-### ❌ "relation 'properties' does not exist"
-**Solution:** Your database tables aren't created yet. Run the `DATABASE_SETUP_CLEAN.sql` script first.
+### ❌ "Relation does not exist" error
+**Solution:** Tables aren't created yet. Run `DATABASE_SETUP_CLEAN.sql` first.
+
+### ❌ Column name mismatch error
+**Solution:** Make sure you ran the latest `DATABASE_SETUP_CLEAN.sql` which has the correct schema.
 
 ---
 
 ## Summary:
 
 **To add dummy data:**
-1. Open Supabase Dashboard → SQL Editor
-2. Paste `SEED_DATA.sql` content
-3. Click RUN
+1. Run `DATABASE_SETUP_CLEAN.sql` first (creates all tables)
+2. Run `SEED_DATA.sql` to add sample data
+3. Verify with the verification queries
 4. Done! ✅
 
 **Result:**
-- 12 properties to browse
-- 30+ amenities displayed
-- Ready to test with guest login
-- Ready for real users with Google OAuth
+- 10 users with profiles and avatars
+- 10 marketplace posts (phones, laptops, cars, property)
+- 10 wallet accounts with balances
+- 10 saved posts
+- 10 reviews
+- 10 wallet transactions
+- 10 balance requests (approved/pending/rejected)
+- 10 payment requests (pending/approved/rejected)
 
 ---
 
@@ -132,10 +152,10 @@ These tables need **authenticated users**, so they can't be seeded with SQL:
 
 ### Test the App:
 1. Restart the Expo app
-2. Guest login or Google sign-in
-3. Browse **Discover** tab → See all 12 properties ✅
-4. Check property details → See amenities ✅
-5. Save favorites (requires login) ❤️
-6. Write reviews (requires login) ⭐
+2. Sign in with Google OAuth
+3. Browse **Discover** tab → See 10 marketplace posts ✅
+4. Filter by category (phones, laptops, cars, property) ✅
+5. Check wallet → See balance and transactions ✅
+6. View payment requests → See member approvals ✅
 
 The app is now populated with realistic data! 🎉
