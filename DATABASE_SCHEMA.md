@@ -146,28 +146,36 @@ Social posts/feed with marketplace functionality
 CREATE TABLE posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT,
+  title TEXT NOT NULL,
   content TEXT,
   description TEXT,
   images JSONB DEFAULT '[]'::jsonb,
   image_url TEXT,
-  property_type TEXT,
+  property_type TEXT, -- 'house', 'apartment', 'villa', 'land' (for property category only)
   price NUMERIC,
   location TEXT,
-  amenities JSONB DEFAULT '[]'::jsonb,
-  specifications JSONB DEFAULT '{}'::jsonb, -- Category-specific features
-  listing_type TEXT DEFAULT 'rent', -- 'rent' or 'sell'
-  category TEXT, -- 'phones', 'laptops', 'electronics', 'cars', 'property'
+  amenities JSONB DEFAULT '[]'::jsonb, -- Main amenities: Wi-Fi, Parking, AC, Kitchen
+  specifications JSONB DEFAULT '{}'::jsonb, -- Category-specific features (see below)
+  listing_type TEXT, -- 'rent' or 'sell' (for property category only, NULL for other categories)
+  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
   likes_count INT DEFAULT 0,
   comments_count INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add indexes for performance
+CREATE INDEX idx_posts_category ON posts(category);
+CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX idx_posts_price ON posts(price);
 ```
 
 **Category-Specific Specifications Structure:**
 
-**Phones:**
+> **Note:** The `specifications` JSONB field stores category-specific details. The structure varies based on `category` and `listing_type`.
+
+#### **Phones** (category='phones')
 ```json
 {
   "battery_health": "95%",
@@ -178,7 +186,7 @@ CREATE TABLE posts (
 }
 ```
 
-**Laptops:**
+#### **Laptops** (category='laptops')
 ```json
 {
   "processor": "M2 Pro",
@@ -189,7 +197,7 @@ CREATE TABLE posts (
 }
 ```
 
-**Electronics:**
+#### **Electronics** (category='electronics')
 ```json
 {
   "brand": "Sony",
@@ -198,7 +206,7 @@ CREATE TABLE posts (
 }
 ```
 
-**Cars:**
+#### **Cars** (category='cars')
 ```json
 {
   "make": "Toyota Camry",
@@ -211,32 +219,72 @@ CREATE TABLE posts (
 }
 ```
 
-**Property (Rent):**
+#### **Property - Rent House/Apartment** (category='property', listing_type='rent', property_type in ['house', 'apartment'])
 ```json
 {
   "bedrooms": "3",
   "bathrooms": "2",
   "size_sqft": "1500",
   "property_type": "apartment",
-  "amenities": ["wifi", "parking", "pool"],
   "monthly_rent": "2500",
   "deposit": "5000",
   "min_contract_duration": "12 months",
-  "furnished": "Yes"
+  "furnished": "Yes",
+  "nearby_amenities": ["mosque", "laundry", "gym"]
 }
 ```
+**Important:** `nearby_amenities` array only appears for rent listings with property_type='house' or 'apartment'. Main amenities (Wi-Fi, Parking, AC, Kitchen) are stored in the `amenities` JSONB field at the root level.
 
-**Property (Sell):**
+#### **Property - Rent Villa** (category='property', listing_type='rent', property_type='villa')
+```json
+{
+  "bedrooms": "5",
+  "bathrooms": "4",
+  "size_sqft": "3000",
+  "property_type": "villa",
+  "monthly_rent": "5000",
+  "deposit": "10000",
+  "min_contract_duration": "12 months",
+  "furnished": "Partially"
+}
+```
+**Note:** Villas do NOT include `nearby_amenities` array.
+
+#### **Property - Rent Land** (category='property', listing_type='rent', property_type='land')
+```json
+{
+  "property_type": "land",
+  "land_size": "500",
+  "monthly_rent": "1000",
+  "min_contract_duration": "12 months",
+  "zoning": "Residential"
+}
+```
+**Note:** Land listings use `land_size` (in sq meters) instead of bedrooms/bathrooms/size_sqft. No nearby amenities.
+
+#### **Property - Sell House/Apartment** (category='property', listing_type='sell', property_type in ['house', 'apartment'])
 ```json
 {
   "bedrooms": "4",
   "bathrooms": "3",
   "size_sqft": "2000",
-  "property_type": "villa",
-  "amenities": ["wifi", "parking", "gym"],
+  "property_type": "house",
   "sale_price": "500000",
   "ownership_type": "Freehold",
   "property_age": "5 years",
+  "payment_options": "Cash, Installments"
+}
+```
+**Note:** Sell listings do NOT include `nearby_amenities` (only for rent).
+
+#### **Property - Sell Land** (category='property', listing_type='sell', property_type='land')
+```json
+{
+  "property_type": "land",
+  "land_size": "1000",
+  "sale_price": "300000",
+  "ownership_type": "Freehold",
+  "zoning": "Commercial",
   "payment_options": "Cash, Installments"
 }
 ```

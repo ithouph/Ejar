@@ -192,7 +192,62 @@ CREATE POLICY "Users can delete own events" ON wedding_events
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
-### 12. Service Categories (Public Read)
+### 12. Saved Posts Table
+```sql
+ALTER TABLE saved_posts ENABLE ROW LEVEL SECURITY;
+
+-- Users can view their own saved posts
+CREATE POLICY "Users can view own saved posts" ON saved_posts
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Users can insert their own saved posts
+CREATE POLICY "Users can insert own saved posts" ON saved_posts
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can delete their own saved posts
+CREATE POLICY "Users can delete own saved posts" ON saved_posts
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+### 13. Property Reviews Table
+```sql
+ALTER TABLE property_reviews ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can read property reviews
+CREATE POLICY "Property reviews are viewable by everyone" ON property_reviews
+  FOR SELECT USING (true);
+
+-- Users can insert their own property reviews
+CREATE POLICY "Users can insert own property reviews" ON property_reviews
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own property reviews
+CREATE POLICY "Users can update own property reviews" ON property_reviews
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Users can delete their own property reviews
+CREATE POLICY "Users can delete own property reviews" ON property_reviews
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+### 14. Balance Requests Table
+```sql
+ALTER TABLE balance_requests ENABLE ROW LEVEL SECURITY;
+
+-- Users can view their own balance requests
+CREATE POLICY "Users can view own balance requests" ON balance_requests
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Users can insert their own balance requests
+CREATE POLICY "Users can insert own balance requests" ON balance_requests
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own balance requests (e.g., cancel pending)
+CREATE POLICY "Users can update own balance requests" ON balance_requests
+  FOR UPDATE USING (auth.uid() = user_id);
+```
+
+### 15. Service Categories (Public Read)
 ```sql
 ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
 
