@@ -13,22 +13,13 @@ import { Spacing } from '../theme/global';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const icons = [
-  { name: 'home', top: '8%', left: '10%', size: 40 },
-  { name: 'dollar-sign', top: '12%', right: '15%', size: 36 },
-  { name: 'shopping-bag', top: '18%', left: '20%', size: 32 },
-  { name: 'search', top: '22%', right: '25%', size: 38 },
-  { name: 'heart', top: '28%', left: '15%', size: 34 },
-  { name: 'star', top: '32%', right: '18%', size: 30 },
-  { name: 'tag', top: '38%', left: '25%', size: 36 },
-  { name: 'smartphone', top: '42%', right: '20%', size: 32 },
-  { name: 'key', top: '48%', left: '12%', size: 34 },
-  { name: 'send', top: '52%', right: '22%', size: 30 },
-  { name: 'map-pin', top: '58%', left: '18%', size: 36 },
-  { name: 'credit-card', top: '62%', right: '16%', size: 32 },
-  { name: 'package', top: '68%', left: '22%', size: 34 },
-  { name: 'shopping-cart', top: '72%', right: '20%', size: 30 },
-  { name: 'truck', top: '78%', left: '15%', size: 36 },
-  { name: 'gift', top: '82%', right: '18%', size: 32 },
+  { name: 'home', top: '10%', left: '15%' },
+  { name: 'dollar-sign', top: '20%', right: '20%' },
+  { name: 'shopping-bag', top: '35%', left: '10%' },
+  { name: 'search', top: '50%', right: '15%' },
+  { name: 'heart', top: '60%', left: '20%' },
+  { name: 'star', top: '70%', right: '25%' },
+  { name: 'truck', top: '80%', left: '15%' },
 ];
 
 export default function Welcome({ navigation }) {
@@ -40,7 +31,7 @@ export default function Welcome({ navigation }) {
       {icons.map((icon, index) => (
         <Animated.View
           key={index}
-          entering={FadeIn.delay(index * 50)}
+          entering={FadeIn.delay(index * 100)}
           style={[
             styles.icon,
             {
@@ -50,7 +41,7 @@ export default function Welcome({ navigation }) {
             },
           ]}
         >
-          <Feather name={icon.name} size={icon.size} color={theme.textSecondary} opacity={0.15} />
+          <Feather name={icon.name} size={24} color={theme.textSecondary} opacity={0.3} />
         </Animated.View>
       ))}
       
