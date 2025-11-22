@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
-import { StyleSheet, ScrollView, View, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, ScrollView, View, Pressable, TextInput, Alert, ActivityIndicator, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
+import { useAuth } from '../contexts/AuthContext';
+import { walletService } from '../services/walletService';
 
 function TransactionItem({ transaction, theme }) {
-  const isReceived = transaction.type === 'received';
+  const isCredit = transaction.type === 'credit';
+  const date = new Date(transaction.created_at);
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   
   return (
     <Pressable
@@ -16,33 +20,33 @@ function TransactionItem({ transaction, theme }) {
     >
       <View style={[
         styles.transactionIcon,
-        { backgroundColor: isReceived ? theme.success + '15' : theme.textSecondary + '10' }
+        { backgroundColor: isCredit ? theme.success + '15' : theme.textSecondary + '10' }
       ]}>
         <Feather
-          name={isReceived ? 'arrow-down' : 'arrow-up'}
+          name={isCredit ? 'arrow-down' : 'arrow-up'}
           size={20}
-          color={isReceived ? theme.success : theme.textPrimary}
+          color={isCredit ? theme.success : theme.textPrimary}
         />
       </View>
       
       <View style={styles.transactionContent}>
         <ThemedText type="bodyLarge" style={styles.transactionName}>
-          {transaction.name}
+          {transaction.description || (isCredit ? 'Received' : 'Sent')}
         </ThemedText>
         <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-          {transaction.description}
+          {transaction.category} • {formattedDate}
         </ThemedText>
       </View>
       
       <View style={styles.transactionAmount}>
         <ThemedText type="bodyLarge" style={[
           styles.amount,
-          { color: isReceived ? theme.success : theme.textPrimary }
+          { color: isCredit ? theme.success : theme.textPrimary }
         ]}>
-          ${transaction.amount.toLocaleString()}
+          ${parseFloat(transaction.amount).toFixed(2)}
         </ThemedText>
         <ThemedText type="caption" style={{ color: theme.textSecondary, textAlign: 'right' }}>
-          ${transaction.balance.toLocaleString()}
+          ${parseFloat(transaction.balance_after).toFixed(2)}
         </ThemedText>
       </View>
     </Pressable>
@@ -52,45 +56,71 @@ function TransactionItem({ transaction, theme }) {
 export default function Balance({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
+  const { user } = useAuth();
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [wallet, setWallet] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddBalance, setShowAddBalance] = useState(false);
+  const [addAmount, setAddAmount] = useState('');
+  const [addingBalance, setAddingBalance] = useState(false);
 
-  const transactions = [
-    {
-      id: '1',
-      name: 'Ada Femi',
-      description: 'Sent by you • Nov 12',
-      amount: 1923,
-      balance: 12945,
-      type: 'sent',
-    },
-    {
-      id: '2',
-      name: 'Musa Adebayo',
-      description: 'Received by you • Nov 14',
-      amount: 1532,
-      balance: 14922,
-      type: 'received',
-    },
-    {
-      id: '3',
-      name: 'Nneka Malik',
-      description: 'Sent by you • Nov 12',
-      amount: 950,
-      balance: 12945,
-      type: 'sent',
-    },
-    {
-      id: '4',
-      name: 'Tunde Ugo',
-      description: 'Sent by you • May 26',
-      amount: 190,
-      balance: 12945,
-      type: 'sent',
-    },
-  ];
+  useEffect(() => {
+    loadWalletData();
+  }, [user]);
 
-  const balance = 34567.90;
-  const accountNumber = '1289440585';
+  const loadWalletData = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const walletData = await walletService.getWallet(user.id);
+      setWallet(walletData);
+
+      if (walletData) {
+        const transactionsData = await walletService.getTransactions(walletData.id);
+        setTransactions(transactionsData);
+      }
+    } catch (error) {
+      console.error('Error loading wallet data:', error);
+      Alert.alert('Error', 'Failed to load wallet data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddBalance = async () => {
+    const amount = parseFloat(addAmount);
+    
+    if (!amount || amount <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount');
+      return;
+    }
+
+    if (!wallet) {
+      Alert.alert('Error', 'Wallet not found');
+      return;
+    }
+
+    try {
+      setAddingBalance(true);
+      await walletService.addBalance(wallet.id, amount, 'Added balance');
+      
+      Alert.alert('Success', `$${amount.toFixed(2)} added to your wallet!`);
+      setShowAddBalance(false);
+      setAddAmount('');
+      
+      await loadWalletData();
+    } catch (error) {
+      console.error('Error adding balance:', error);
+      Alert.alert('Error', 'Failed to add balance. Please try again.');
+    } finally {
+      setAddingBalance(false);
+    }
+  };
+
+  const balance = wallet ? parseFloat(wallet.balance) : 0;
+  const accountNumber = wallet ? wallet.id.substring(0, 10) : '----------';
 
   return (
     <ThemedView style={styles.container}>
@@ -159,7 +189,7 @@ export default function Balance({ navigation }) {
           </Pressable>
 
           <Pressable 
-            onPress={() => navigation.navigate('SupportChat')}
+            onPress={() => setShowAddBalance(true)}
             style={[styles.actionButton, { backgroundColor: theme.surface }]}
           >
             <View style={[styles.actionIcon, { backgroundColor: theme.backgroundRoot }]}>
@@ -200,16 +230,73 @@ export default function Balance({ navigation }) {
           </View>
 
           <View style={styles.transactionsList}>
-            {transactions.map((transaction) => (
-              <TransactionItem
-                key={transaction.id}
-                transaction={transaction}
-                theme={theme}
-              />
-            ))}
+            {loading ? (
+              <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: Spacing.xl }} />
+            ) : transactions.length === 0 ? (
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary, textAlign: 'center', marginTop: Spacing.xl }}>
+                No transactions yet
+              </ThemedText>
+            ) : (
+              transactions.map((transaction) => (
+                <TransactionItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  theme={theme}
+                />
+              ))
+            )}
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={showAddBalance}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAddBalance(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h2">Add Balance</ThemedText>
+              <Pressable onPress={() => setShowAddBalance(false)}>
+                <Feather name="x" size={24} color={theme.textPrimary} />
+              </Pressable>
+            </View>
+
+            <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginBottom: Spacing.lg }}>
+              Enter the amount you want to add to your wallet
+            </ThemedText>
+
+            <View style={[styles.inputContainer, { backgroundColor: theme.background }]}>
+              <ThemedText type="h1" style={{ color: theme.textSecondary }}>$</ThemedText>
+              <TextInput
+                style={[styles.amountInput, { color: theme.textPrimary }]}
+                value={addAmount}
+                onChangeText={setAddAmount}
+                placeholder="0.00"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="decimal-pad"
+                autoFocus
+              />
+            </View>
+
+            <Pressable
+              onPress={handleAddBalance}
+              disabled={addingBalance}
+              style={[styles.addButton, { backgroundColor: theme.primary }]}
+            >
+              {addingBalance ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF" style={{ fontWeight: '600' }}>
+                  Add Balance
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -322,5 +409,41 @@ const styles = StyleSheet.create({
   amount: {
     fontWeight: '600',
     marginBottom: Spacing.xs,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.large,
+    gap: Spacing.md,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    gap: Spacing.sm,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 32,
+    fontWeight: '700',
+  },
+  addButton: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    alignItems: 'center',
+    marginTop: Spacing.md,
   },
 });
