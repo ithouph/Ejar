@@ -10,7 +10,6 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing, BorderRadius } from '../theme/global';
-import { savedList } from '../data/savedList';
 import { favoritesService } from '../services/favoritesService';
 
 function CompactCard({ item, onPress, onFavoritePress, isFavorite, theme }) {
@@ -67,22 +66,29 @@ export default function Saved({ navigation }) {
   const loadFavorites = async () => {
     try {
       setLoading(true);
-      if (user) {
-        const favs = await favoritesService.getFavorites(user.id);
-        const properties = favs.map(fav => ({
-          ...fav.properties,
-          id: fav.property_id,
-        }));
-        setSavedProperties(properties.length > 0 ? properties : savedList);
-        setFavorites(properties.map(p => p.id));
-      } else {
-        setSavedProperties(savedList);
-        setFavorites(savedList.map(item => item.id));
+      if (!user) {
+        setSavedProperties([]);
+        setFavorites([]);
+        setLoading(false);
+        return;
       }
+
+      const favs = await favoritesService.getFavorites(user.id);
+      const properties = favs.map(fav => ({
+        ...fav.properties,
+        id: fav.property_id,
+      }));
+      setSavedProperties(properties);
+      setFavorites(properties.map(p => p.id));
     } catch (error) {
       console.error('Error loading favorites:', error);
-      setSavedProperties(savedList);
-      setFavorites(savedList.map(item => item.id));
+      Alert.alert(
+        'Error Loading Favorites',
+        'Unable to load your saved properties. Please check your internet connection and try again.',
+        [{ text: 'OK' }]
+      );
+      setSavedProperties([]);
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
