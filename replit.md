@@ -14,6 +14,18 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 
 ## Recent Changes
 
+### November 23, 2025
+- **Authentication Update: Sign-Up Flow**: Changed authentication from sign-in to sign-up terminology
+  - Renamed `signInWithGoogle()` → `signUpWithGoogle()` across entire codebase (services/database.js, contexts/AuthContext.js, pages/Login.js)
+  - Updated button text: "Sign up with Google" to emphasize account creation
+  - Updated error messages and comments throughout to reflect sign-up flow
+  - Note: OAuth automatically handles both new user registration and existing user login
+- **Backend Schema Alignment**: Fixed all CRUD functions in `services/database.js` to match database schema
+  - Changed all `photo_url` references to `avatar_url` (users table)
+  - Removed `whatsapp` column from user_profiles operations
+  - Fixed `postReviews` functions to use `property_reviews` table with `review_text` column
+  - Updated all Supabase queries to use correct column names
+
 ### November 22, 2025
 - **Payment Requests System**: Implemented secure member-only payment request approval system
   - **Database**: Added `payment_requests` table with comprehensive RLS policies and constraints
