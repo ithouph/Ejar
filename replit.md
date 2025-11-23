@@ -15,6 +15,14 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 23, 2025
+- **PostDetail Navigation & Layout Improvements**: Fixed card navigation and enhanced detail page layout
+  - Added PostDetail screen to DiscoverNavigator (router/Discover.js) to enable navigation from home page cards
+  - Redesigned PostDetail layout with full-width hero images (350px height)
+  - Added floating back button over images with semi-transparent background
+  - Implemented horizontal image scrolling with pagination for multiple images
+  - Enhanced HotelCard component to display title, price, and category badge
+  - Fixed heart icon to show filled state when favorited
+  - Improved visual hierarchy and spacing throughout detail page
 - **Local Development Setup**: Created comprehensive guides for running app outside Replit
   - Created `LOCAL_SETUP_GUIDE.md` - Step-by-step guide for local development
   - Created `README.md` - Complete project documentation

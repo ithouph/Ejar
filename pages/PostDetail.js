@@ -185,32 +185,51 @@ export default function PostDetail({ route, navigation }) {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <Feather name="arrow-left" size={24} color={theme.textPrimary} />
-        </Pressable>
-        <ThemedText type="bodyLarge" style={styles.headerTitle}>
-          Post Details
-        </ThemedText>
-        <View style={styles.headerButton} />
-      </View>
-
       <ScrollView
         contentContainerStyle={[
-          styles.scrollContent,
           { paddingBottom: insets.bottom + Spacing.xl }
         ]}
         showsVerticalScrollIndicator={false}
       >
         {post.images && post.images.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageGallery}>
-            {post.images.map((img, index) => (
-              <Image key={index} source={{ uri: img }} style={styles.postImage} />
-            ))}
-          </ScrollView>
+          <View style={styles.imageContainer}>
+            <Pressable 
+              onPress={() => navigation.goBack()} 
+              style={[styles.backButton, { top: insets.top + Spacing.md }]}
+            >
+              <View style={[styles.backButtonCircle, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                <Feather name="arrow-left" size={24} color="#FFF" />
+              </View>
+            </Pressable>
+            <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
+              {post.images.map((img, index) => (
+                <Image key={index} source={{ uri: img }} style={styles.heroImage} />
+              ))}
+            </ScrollView>
+          </View>
         ) : post.image ? (
-          <Image source={{ uri: post.image }} style={styles.postImage} />
-        ) : null}
+          <View style={styles.imageContainer}>
+            <Pressable 
+              onPress={() => navigation.goBack()} 
+              style={[styles.backButton, { top: insets.top + Spacing.md }]}
+            >
+              <View style={[styles.backButtonCircle, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                <Feather name="arrow-left" size={24} color="#FFF" />
+              </View>
+            </Pressable>
+            <Image source={{ uri: post.image }} style={styles.heroImage} />
+          </View>
+        ) : (
+          <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+            <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
+              <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+            </Pressable>
+            <ThemedText type="bodyLarge" style={styles.headerTitle}>
+              Post Details
+            </ThemedText>
+            <View style={styles.headerButton} />
+          </View>
+        )}
 
         <View style={styles.contentSection}>
           <View style={styles.postHeader}>
@@ -394,17 +413,26 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  scrollContent: {
-    gap: Spacing.lg,
+  imageContainer: {
+    position: 'relative',
+    height: 350,
+    marginBottom: Spacing.md,
   },
-  imageGallery: {
-    maxHeight: 300,
+  heroImage: {
+    width: '100%',
+    height: 350,
   },
-  postImage: {
-    width: 300,
-    height: 300,
-    marginRight: Spacing.sm,
-    borderRadius: BorderRadius.medium,
+  backButton: {
+    position: 'absolute',
+    left: Spacing.lg,
+    zIndex: 10,
+  },
+  backButtonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   contentSection: {
     paddingHorizontal: Spacing.lg,
