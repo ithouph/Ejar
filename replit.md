@@ -15,6 +15,11 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 23, 2025
+- **Guest Mode Limitations Documented**: Clarified guest authentication behavior
+  - Guest mode uses deterministic UUID for data consistency with seed data
+  - Guest mode suitable for browsing and viewing marketplace content
+  - Wallet features require Google OAuth due to Supabase RLS policies
+  - Users encouraged to sign in with Google for full app functionality
 - **PostDetail Navigation & Layout Improvements**: Fixed card navigation and enhanced detail page layout
   - Added PostDetail screen to DiscoverNavigator (router/Discover.js) to enable navigation from home page cards
   - Redesigned PostDetail layout with full-width hero images (350px height)
