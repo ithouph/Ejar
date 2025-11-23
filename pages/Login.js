@@ -34,36 +34,37 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signInWithGoogle, signInAsGuest } = useAuth();
+  const { signUpWithGoogle, signInAsGuest } = useAuth();
   const [loading, setLoading] = useState(false);
 
   /**
-   * GOOGLE SIGN IN HANDLER
+   * GOOGLE SIGN UP HANDLER
    * 
    * This uses real Google OAuth authentication through Supabase.
+   * Automatically creates a new account for first-time users, or signs in existing users.
    * Requires Supabase setup (see SUPABASE_SETUP_GUIDE.md)
    */
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     try {
       setLoading(true);
       
-      // Call Google OAuth - this opens browser for login
-      const result = await signInWithGoogle();
+      // Call Google OAuth - this opens browser for sign up/login
+      const result = await signUpWithGoogle();
       
-      // Check if login was successful
+      // Check if sign up was successful
       if (!result || !result.user) {
-        throw new Error('Login cancelled or failed');
+        throw new Error('Sign up cancelled or failed');
       }
       
       // Success! App.js will automatically redirect to Main
       
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Sign up error:', error);
       
       // Show error message and stay on login screen
       Alert.alert(
-        'Sign In Failed',
-        'Unable to sign in with Google. Please try again.',
+        'Sign Up Failed',
+        'Unable to sign up with Google. Please try again.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -121,9 +122,9 @@ export default function Login({ navigation }) {
             LOGIN BUTTONS - Customize this!
             ═══════════════════════════════════════════════════════════ */}
         <Animated.View entering={FadeInDown.delay(400)} style={styles.buttonsContainer}>
-          {/* Google Sign In Button (Real OAuth) */}
+          {/* Google Sign Up Button (Real OAuth) */}
           <Pressable
-            onPress={handleGoogleSignIn}
+            onPress={handleGoogleSignUp}
             disabled={loading}
             style={[styles.googleButton, { backgroundColor: theme.textPrimary, opacity: loading ? 0.6 : 1 }]}
           >
