@@ -114,7 +114,7 @@ export default function Account({ navigation }) {
         >
           <Image
             source={{ 
-              uri: userProfile?.avatar_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/150'
+              uri: userProfile?.photo_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
             }}
             style={styles.profilePhoto}
           />

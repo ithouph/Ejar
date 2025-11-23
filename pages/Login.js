@@ -34,37 +34,36 @@ import { useAuth } from '../contexts/AuthContext';
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signUpWithGoogle, signInAsGuest } = useAuth();
+  const { signInWithGoogle, signInAsGuest } = useAuth();
   const [loading, setLoading] = useState(false);
 
   /**
-   * GOOGLE SIGN UP HANDLER
+   * GOOGLE SIGN IN HANDLER
    * 
    * This uses real Google OAuth authentication through Supabase.
-   * Automatically creates a new account for first-time users, or signs in existing users.
    * Requires Supabase setup (see SUPABASE_SETUP_GUIDE.md)
    */
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       
-      // Call Google OAuth - this opens browser for sign up/login
-      const result = await signUpWithGoogle();
+      // Call Google OAuth - this opens browser for login
+      const result = await signInWithGoogle();
       
-      // Check if sign up was successful
+      // Check if login was successful
       if (!result || !result.user) {
-        throw new Error('Sign up cancelled or failed');
+        throw new Error('Login cancelled or failed');
       }
       
       // Success! App.js will automatically redirect to Main
       
     } catch (error) {
-      console.error('Sign up error:', error);
+      console.error('Login error:', error);
       
       // Show error message and stay on login screen
       Alert.alert(
-        'Sign Up Failed',
-        'Unable to sign up with Google. Please try again.',
+        'Sign In Failed',
+        'Unable to sign in with Google. Please try again.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -108,13 +107,13 @@ export default function Login({ navigation }) {
             ═══════════════════════════════════════════════════════════ */}
         <Animated.View entering={FadeInDown.delay(200)} style={styles.header}>
           <ThemedText type="display" style={styles.title}>
-            Ejar
+            TravelStay
           </ThemedText>
           <ThemedText type="h1" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Your marketplace
+            Discover your
           </ThemedText>
           <ThemedText type="h1" style={styles.title}>
-            for everything
+            perfect stay
           </ThemedText>
         </Animated.View>
 
@@ -122,9 +121,9 @@ export default function Login({ navigation }) {
             LOGIN BUTTONS - Customize this!
             ═══════════════════════════════════════════════════════════ */}
         <Animated.View entering={FadeInDown.delay(400)} style={styles.buttonsContainer}>
-          {/* Google Sign Up Button (Real OAuth) */}
+          {/* Google Sign In Button (Real OAuth) */}
           <Pressable
-            onPress={handleGoogleSignUp}
+            onPress={handleGoogleSignIn}
             disabled={loading}
             style={[styles.googleButton, { backgroundColor: theme.textPrimary, opacity: loading ? 0.6 : 1 }]}
           >
@@ -143,20 +142,20 @@ export default function Login({ navigation }) {
             )}
           </Pressable>
 
-          {/* Continue as Guest Button */}
+          {/* "I Have Account" Button (TEMPORARY: Goes to homepage for testing) */}
           <Pressable
             onPress={handleGuestLogin}
             disabled={loading}
-            style={[styles.guestButton, { borderColor: theme.border, opacity: loading ? 0.6 : 1 }]}
+            style={[styles.accountButton, { backgroundColor: theme.surface, opacity: loading ? 0.6 : 1 }]}
           >
-            <ThemedText type="body" style={{ color: theme.textSecondary }}>
-              Continue as Guest
+            <ThemedText type="body">
+              I have an account
             </ThemedText>
           </Pressable>
 
           {/* Terms Text */}
           <ThemedText type="caption" style={[styles.terms, { color: theme.textSecondary }]}>
-            By continuing you agree to our Terms of Service and Privacy Policy.
+            By continuing you agree to our Terms of Service and Privacy Policy. Book your dream vacation with TravelStay.
           </ThemedText>
         </Animated.View>
       </View>
@@ -198,12 +197,11 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: BorderRadius.medium,
   },
-  guestButton: {
+  accountButton: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
     borderRadius: BorderRadius.medium,
-    borderWidth: 1,
   },
   buttonText: {
     fontWeight: '600',

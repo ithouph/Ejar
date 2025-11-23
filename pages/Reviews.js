@@ -27,7 +27,7 @@ function ReviewCard({ review, theme }) {
   };
 
   const userName = review.users?.full_name || 'Unknown User';
-  const userPhoto = review.users?.avatar_url || 'https://via.placeholder.com/150';
+  const userPhoto = review.users?.photo_url || 'https://via.placeholder.com/40';
   const postTitle = review.posts?.title || 'Untitled Post';
   const postCategory = review.posts?.category || '';
 

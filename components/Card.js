@@ -52,35 +52,25 @@ export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
             name={isFavorite ? 'heart' : 'heart'}
             size={20}
             color={isFavorite ? theme.error : '#FFF'}
-            fill={isFavorite ? theme.error : 'transparent'}
+            style={{ fontWeight: isFavorite ? 'bold' : 'normal' }}
           />
         </Pressable>
         <View style={styles.content}>
-          <ThemedText type="bodyLarge" style={styles.name} lightColor="#FFF" darkColor="#FFF" numberOfLines={2}>
-            {item.title || item.name}
+          <ThemedText type="bodyLarge" style={styles.name} lightColor="#FFF" darkColor="#FFF">
+            {item.name}
           </ThemedText>
-          {item.location ? (
-            <View style={styles.locationRow}>
-              <Feather name="map-pin" size={14} color="#FFF" />
-              <ThemedText type="bodySmall" style={styles.location} lightColor="#FFF" darkColor="#FFF">
-                {item.location}
-              </ThemedText>
-            </View>
-          ) : null}
-          {item.price ? (
-            <View style={styles.priceRow}>
-              <ThemedText type="body" style={styles.price} lightColor="#FFF" darkColor="#FFF">
-                ${item.price}
-              </ThemedText>
-            </View>
-          ) : null}
-          {item.category ? (
-            <View style={[styles.categoryBadge, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-              <ThemedText type="caption" style={styles.categoryText} lightColor="#FFF" darkColor="#FFF">
-                {item.category.charAt(0).toUpperCase() + item.category.slice(1)}
-              </ThemedText>
-            </View>
-          ) : null}
+          <View style={styles.locationRow}>
+            <Feather name="map-pin" size={14} color="#FFF" />
+            <ThemedText type="bodySmall" style={styles.location} lightColor="#FFF" darkColor="#FFF">
+              {item.location}
+            </ThemedText>
+          </View>
+          <View style={styles.ratingRow}>
+            <Feather name="star" size={14} color="#FBBF24" />
+            <ThemedText type="bodySmall" style={styles.rating} lightColor="#FFF" darkColor="#FFF">
+              {item.rating}
+            </ThemedText>
+          </View>
         </View>
       </View>
     </AnimatedPressable>
@@ -141,24 +131,5 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontWeight: '600',
-  },
-  priceRow: {
-    marginTop: 4,
-  },
-  price: {
-    fontWeight: '700',
-    fontSize: 18,
-  },
-  categoryBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.small,
-    marginTop: 4,
-  },
-  categoryText: {
-    fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
   },
 });
