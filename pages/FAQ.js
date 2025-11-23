@@ -64,8 +64,8 @@ export default function FAQ() {
       answer: 'On each property listing, you\'ll find contact options including WhatsApp and email. Click the contact button to reach out directly.',
     },
     {
-      question: 'How do payment requests work?',
-      answer: 'Members can view and approve payment requests assigned to them. Each member sees only their own notifications and can approve or reject pending requests.',
+      question: 'What is the wedding planning feature?',
+      answer: 'Our wedding planning feature helps you organize your special day. You can manage guest lists, plan events, and coordinate wedding details all in one place.',
     },
     {
       question: 'How do I list my property?',

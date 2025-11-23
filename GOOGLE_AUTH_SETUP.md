@@ -283,8 +283,8 @@ Once a user successfully signs in with Google:
    - Save favorite properties
    - Leave reviews and ratings
    - Manage wallet and balance
-   - Create marketplace posts
-   - Request and approve payments
+   - Create social posts
+   - Plan events and weddings
 
 ---
 

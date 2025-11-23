@@ -5,7 +5,6 @@ import Account from '../pages/Account';
 import EditProfile from '../pages/EditProfile';
 import Balance from '../pages/Balance';
 import AddBalance from '../pages/AddBalance';
-import PaymentRequests from '../pages/PaymentRequests';
 import Review from '../pages/Review';
 import Support from '../pages/Support';
 import FAQ from '../pages/FAQ';
@@ -26,7 +25,6 @@ export default function SettingsNavigator() {
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="Balance" component={Balance} />
       <Stack.Screen name="AddBalance" component={AddBalance} />
-      <Stack.Screen name="PaymentRequests" component={PaymentRequests} />
       <Stack.Screen name="Review" component={Review} />
       <Stack.Screen name="Support" component={Support} />
       <Stack.Screen name="FAQ" component={FAQ} />

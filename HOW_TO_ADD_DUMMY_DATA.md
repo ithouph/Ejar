@@ -80,8 +80,13 @@ These tables need **authenticated users**, so they can't be seeded with SQL:
 ### 📱 Social Posts
 - Log in with Google OAuth
 - Go to Social tab
-- Create a marketplace post
-- Add title, description, price, and images
+- Create a post about a property
+- Add caption and images
+
+### 💒 Wedding Events
+- Log in with Google OAuth
+- Go to Profile → Wedding Planning
+- Add Christine & Duncan's wedding details
 
 ---
 

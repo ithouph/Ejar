@@ -14,12 +14,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const icons = [
   { name: 'home', top: '10%', left: '15%' },
-  { name: 'dollar-sign', top: '20%', right: '20%' },
-  { name: 'shopping-bag', top: '35%', left: '10%' },
-  { name: 'search', top: '50%', right: '15%' },
-  { name: 'heart', top: '60%', left: '20%' },
-  { name: 'star', top: '70%', right: '25%' },
-  { name: 'truck', top: '80%', left: '15%' },
+  { name: 'map-pin', top: '15%', right: '20%' },
+  { name: 'calendar', top: '25%', left: '25%' },
+  { name: 'heart', top: '30%', right: '15%' },
+  { name: 'star', top: '45%', left: '10%' },
+  { name: 'search', top: '50%', right: '25%' },
+  { name: 'globe', top: '65%', left: '20%' },
+  { name: 'sun', top: '70%', right: '18%' },
 ];
 
 export default function Welcome({ navigation }) {
@@ -52,7 +53,7 @@ export default function Welcome({ navigation }) {
             Welcome to Ejar
           </ThemedText>
           <ThemedText type="body" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Discover properties, buy and sell items, manage your wallet, and share your experiences in one place.
+            Immerse yourself in the world of hotels and communicate with friends using only quotes from famous works.
           </ThemedText>
         </Animated.View>
         

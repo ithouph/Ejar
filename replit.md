@@ -15,22 +15,6 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 22, 2025
-- **Payment Requests System**: Implemented secure member-only payment request approval system
-  - **Database**: Added `payment_requests` table with comprehensive RLS policies and constraints
-  - **Security Features**:
-    - Row-Level Security (RLS) enforcing member-only access (SELECT/UPDATE where member_id = auth.uid())
-    - Self-approval prevention (requester cannot be member)
-    - Status transition protection (only pending requests can be approved/rejected)
-    - Database constraints for valid status values
-  - **Backend Service**: Created secure `paymentRequests` service with auth-based access control
-  - **Frontend**: PaymentRequests page with filtering, statistics dashboard, and approval workflow
-  - **Navigation**: Added PaymentRequests to Settings stack and Profile page
-  - **Documentation**: Created PAYMENT_REQUESTS_SECURITY.md documenting security model and known limitations
-- **Wedding/Event Features Removed**: Removed all wedding/event planning functionality from the app
-  - **Database Cleanup**: Dropped `wedding_events` and `service_categories` tables via DATABASE_MIGRATIONS.sql
-  - **Backend Cleanup**: Removed `wedding` service from services/database.js
-  - **Frontend Cleanup**: Updated FAQ to replace wedding question with payment requests information
-- **Dummy Data Seed Script**: Created SEED_DATA.sql with 10 realistic records for each table (users, posts, wallet_accounts, saved_posts, property_reviews, wallet_transactions, balance_requests, payment_requests). Uses deterministic UUIDs and follows all database constraints.
 - **Location Autocomplete Dropdown**: Added searchable dropdown for location field in Add Post page with 27 Mauritanian cities. Users can type to filter and select from the list, with case-insensitive search and proper theme styling.
 - **Complete Backend Marketplace Overhaul**: Implemented comprehensive backend enforcement of marketplace rules
   - **Server-Side Specification Validation**: Created `validateAndNormalizeSpecifications()` helper in posts service that enforces category-specific requirements (nearby_amenities for rent house/apartment, land_size for land properties)
@@ -51,7 +35,7 @@ The application is built using Expo React Native for the frontend and Supabase (
 
 **Key Technical Implementations & Features:**
 
--   **Backend Services:** All backend interactions are consolidated into a single unified service file (`services/database.js`), organized by feature (Auth, Users, Properties, Favorites, Reviews, Wallet, Posts, Balance Requests, Payment Requests). A naming convention using an "Api" suffix (e.g., `wallet as walletApi`) is used to prevent naming collisions.
+-   **Backend Services:** All backend interactions are consolidated into a single unified service file (`services/database.js`), organized by feature (Auth, Users, Properties, Favorites, Reviews, Wallet, Posts, Balance Requests, Wedding). A naming convention using an "Api" suffix (e.g., `wallet as walletApi`) is used to prevent naming collisions.
 -   **Styling System:** A global, centralized styling system is enforced, with all styles defined in `theme/` files (`colors.js`, `global.js`, `utils.js`, `index.js`). No custom `StyleSheet.create()` is used within page components.
 -   **Data Flow:** The application prioritizes real-time data fetching and persistence with Supabase. In case of Supabase failure, static data from the `/data` folder serves as a fallback. Optimistic UI updates are implemented for immediate feedback.
 -   **Authentication Flow:** Google OAuth handles user signup/login, with session persistence managed via AsyncStorage and global state managed by `AuthContext`.
@@ -62,7 +46,7 @@ The application is built using Expo React Native for the frontend and Supabase (
     -   Property reviews and ratings.
     -   User wallet with transaction history and balance top-up request system (with image upload for proof).
     -   Social posts feed (CRUD).
-    -   Member-only payment request approval system.
+    -   Wedding/event planning features.
     -   User profile management.
     -   Legal pages (Terms of Service, Privacy Policy).
 

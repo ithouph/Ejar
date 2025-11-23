@@ -166,7 +166,36 @@ CREATE TABLE IF NOT EXISTS support_messages (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 6: INDEXES
+-- SECTION 6: EVENT TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS wedding_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  partner1_name TEXT DEFAULT 'Christine',
+  partner2_name TEXT DEFAULT 'Duncan',
+  event_date DATE,
+  location TEXT,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 7: SYSTEM TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS service_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  icon TEXT,
+  description TEXT,
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 8: INDEXES
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -197,6 +226,8 @@ ALTER TABLE wallet_accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wedding_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
 
 -- Users
 CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
@@ -251,6 +282,14 @@ CREATE POLICY "Users can update own payment requests" ON payment_requests FOR UP
 CREATE POLICY "Users can view own support messages" ON support_messages FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own support messages" ON support_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- Wedding events (USER-SPECIFIC)
+CREATE POLICY "Users can view own events" ON wedding_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own events" ON wedding_events FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own events" ON wedding_events FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own events" ON wedding_events FOR DELETE USING (auth.uid() = user_id);
+
+-- Service categories (PUBLIC)
+CREATE POLICY "Service categories are viewable by everyone" ON service_categories FOR SELECT USING (true);
 
 -- ═══════════════════════════════════════════════════════════════
 -- SECTION 10: FUNCTIONS
@@ -392,6 +431,19 @@ DROP TRIGGER IF EXISTS trigger_update_property_rating ON reviews;
 CREATE TRIGGER trigger_update_property_rating
   AFTER INSERT OR UPDATE OR DELETE ON reviews
   FOR EACH ROW EXECUTE FUNCTION update_property_rating();
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 12: SAMPLE DATA
+-- ═══════════════════════════════════════════════════════════════
+
+INSERT INTO service_categories (name, icon, description, active) VALUES
+  ('Flight', 'send', 'Book domestic and international flights', true),
+  ('Hotel', 'home', 'Find and book hotels worldwide', true),
+  ('Food', 'coffee', 'Restaurant reservations and food delivery', true),
+  ('Taxi', 'navigation', 'Ride sharing and taxi services', true),
+  ('Event', 'calendar', 'Event planning and management', true),
+  ('Tour', 'map', 'Guided tours and experiences', true)
+ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════
 -- ✅ SETUP COMPLETE!

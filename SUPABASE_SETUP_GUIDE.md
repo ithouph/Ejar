@@ -16,18 +16,16 @@ Go to your Supabase project → SQL Editor and execute the SQL from `DATABASE_SC
 This will create all required tables:
 - `users` - User authentication data
 - `user_profiles` - Extended user information
+- `wedding_events` - Wedding/event planning data
 - `properties` - Hotel and apartment listings
 - `property_photos` - Property images
 - `amenities` - Property features
 - `favorites` - User's saved properties
 - `reviews` - Property reviews
-- `posts` - Social marketplace posts
+- `posts` - Social feed posts
 - `wallet_accounts` - User wallet/balance
 - `wallet_transactions` - Transaction history
-- `saved_posts` - User's saved marketplace posts
-- `property_reviews` - Property review system
-- `balance_requests` - Balance top-up requests
-- `payment_requests` - Member payment approval system
+- `service_categories` - Service offerings
 
 ## Step 2: Set Up Row Level Security (RLS)
 
@@ -130,16 +128,13 @@ All CRUD services are implemented and ready:
 
 7. **Posts** (`services/postsService.js`)
    - Create/update/delete posts
-   - Social marketplace feed
-   - Category-based filtering
+   - Social feed with user info
+   - Like functionality
 
-8. **Balance Requests** (`services/database.js`)
-   - Top-up requests with proof images
-   - Request status tracking
-
-9. **Payment Requests** (`services/database.js`)
-   - Member-only payment approvals
-   - Secure RLS policies preventing self-approval
+8. **Wedding Events** (`services/weddingService.js`)
+   - Couple details (Christine & Duncan)
+   - Event date and location
+   - Update wedding information
 
 ### 🔄 Integrated Pages
 

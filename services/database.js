@@ -22,7 +22,7 @@ WebBrowser.maybeCompleteAuthSession();
  * 6. Wallet & Balance (money management)
  * 7. Balance Requests (top-up approval system)
  * 8. Social Posts (feed & sharing)
- * 9. Payment Requests (member-only payment approvals)
+ * 9. Wedding Events (event planning)
  * 10. Utility Functions (helpers)
  */
 
@@ -1133,79 +1133,39 @@ export const savedPosts = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 9. PAYMENT REQUESTS (Member-Only Payment Approvals)
+// 9. WEDDING EVENTS (Event Planning)
 // ════════════════════════════════════════════════════════════════════
 
-export const paymentRequests = {
-  // Get all payment requests for the current authenticated member
-  // RLS automatically filters to only show requests where member_id = auth.uid()
-  async getAll() {
+export const wedding = {
+  // Get wedding event
+  async get(userId) {
     const { data, error } = await supabase
-      .from('payment_requests')
-      .select(`
-        *,
-        requester:users!requester_id (full_name, email, avatar_url)
-      `)
-      .order('created_at', { ascending: false });
+      .from('wedding_events')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
 
     if (error) throw error;
-    return data || [];
-  },
 
-  // Get pending payment requests for the current authenticated member
-  // RLS automatically filters to only show requests where member_id = auth.uid()
-  async getPending() {
-    const { data, error } = await supabase
-      .from('payment_requests')
-      .select(`
-        *,
-        requester:users!requester_id (full_name, email, avatar_url)
-      `)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    // Create if doesn't exist
+    if (!data) {
+      return await this.create(userId);
+    }
 
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get a single payment request by ID
-  // RLS ensures only assigned member can access
-  async getById(requestId) {
-    const { data, error } = await supabase
-      .from('payment_requests')
-      .select(`
-        *,
-        requester:users!requester_id (full_name, email, avatar_url)
-      `)
-      .eq('id', requestId)
-      .single();
-
-    if (error) throw error;
     return data;
   },
 
-  // Create a new payment request
-  // Note: requester_id is automatically set to auth.uid() via RLS policy
-  // RLS policy prevents self-approval (requester cannot be the member)
-  async create(memberId, amount, description, requesterName) {
-    // Get the current authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Not authenticated');
-
-    // Prevent self-approval
-    if (memberId === user.id) {
-      throw new Error('Cannot create payment request for yourself');
-    }
-
+  // Create wedding event
+  async create(userId) {
     const { data, error } = await supabase
-      .from('payment_requests')
+      .from('wedding_events')
       .insert({
-        member_id: memberId,
-        amount,
-        description,
-        requester_name: requesterName,
-        requester_id: user.id,
-        status: 'pending',
+        user_id: userId,
+        partner1_name: 'Christine',
+        partner2_name: 'Duncan',
+        event_date: null,
+        location: null,
+        description: null,
       })
       .select()
       .single();
@@ -1214,72 +1174,24 @@ export const paymentRequests = {
     return data;
   },
 
-  // Approve a payment request
-  // RLS ensures only the assigned member can approve
-  // Only pending requests can be approved
-  async approve(requestId) {
+  // Update wedding event
+  async update(userId, updates) {
     const { data, error } = await supabase
-      .from('payment_requests')
+      .from('wedding_events')
       .update({
-        status: 'approved',
-        approved_at: new Date().toISOString(),
+        partner1_name: updates.partner1_name,
+        partner2_name: updates.partner2_name,
+        event_date: updates.event_date,
+        location: updates.location,
+        description: updates.description,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', requestId)
-      .eq('status', 'pending')
+      .eq('user_id', userId)
       .select()
       .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        throw new Error('Payment request not found or already processed');
-      }
-      throw error;
-    }
-    return data;
-  },
-
-  // Reject a payment request
-  // RLS ensures only the assigned member can reject
-  // Only pending requests can be rejected
-  async reject(requestId) {
-    const { data, error } = await supabase
-      .from('payment_requests')
-      .update({
-        status: 'rejected',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', requestId)
-      .eq('status', 'pending')
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') {
-        throw new Error('Payment request not found or already processed');
-      }
-      throw error;
-    }
-    return data;
-  },
-
-  // Get payment request statistics for the current authenticated member
-  // RLS automatically filters to only count requests where member_id = auth.uid()
-  async getStats() {
-    const { data, error } = await supabase
-      .from('payment_requests')
-      .select('status');
 
     if (error) throw error;
-
-    const stats = {
-      total: data.length,
-      pending: data.filter(r => r.status === 'pending').length,
-      approved: data.filter(r => r.status === 'approved').length,
-      rejected: data.filter(r => r.status === 'rejected').length,
-    };
-
-    return stats;
+    return data;
   },
 };
 
@@ -1457,7 +1369,7 @@ export const db = {
   wallet,
   balanceRequests,
   posts,
-  paymentRequests,
+  wedding,
   postReviews,
 };
 
