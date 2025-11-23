@@ -31,7 +31,51 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 2: PROPERTY TABLES
+-- SECTION 2: SOCIAL & MARKETPLACE TABLES (BEFORE REVIEWS)
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  content TEXT,
+  images JSONB DEFAULT '[]'::JSONB,
+  image_url TEXT,
+  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
+  property_type TEXT,
+  listing_type TEXT,
+  price NUMERIC,
+  location TEXT,
+  amenities JSONB DEFAULT '[]'::JSONB,
+  specifications JSONB DEFAULT '{}'::JSONB,
+  likes_count INT DEFAULT 0,
+  comments_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS saved_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, post_id)
+);
+
+CREATE TABLE IF NOT EXISTS property_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  rating INT NOT NULL,
+  review_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT valid_property_review_rating CHECK (rating >= 1 AND rating <= 5)
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 3: PROPERTY TABLES (LEGACY)
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS properties (
@@ -71,7 +115,7 @@ CREATE TABLE IF NOT EXISTS amenities (
 );
 
 -- ═══════════════════════════════════════════════════════════════
--- SECTION 3: USER INTERACTION TABLES
+-- SECTION 4: USER INTERACTION TABLES
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS favorites (
@@ -92,50 +136,6 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT valid_rating CHECK (rating >= 1 AND rating <= 5)
-);
-
-CREATE TABLE IF NOT EXISTS property_reviews (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  rating INT NOT NULL,
-  review_text TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT valid_property_review_rating CHECK (rating >= 1 AND rating <= 5)
-);
-
--- ═══════════════════════════════════════════════════════════════
--- SECTION 4: SOCIAL & MARKETPLACE TABLES
--- ═══════════════════════════════════════════════════════════════
-
-CREATE TABLE IF NOT EXISTS posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  description TEXT,
-  content TEXT,
-  images JSONB DEFAULT '[]'::JSONB,
-  image_url TEXT,
-  category TEXT NOT NULL CHECK (category IN ('phones', 'laptops', 'electronics', 'cars', 'property')),
-  property_type TEXT,
-  listing_type TEXT,
-  price NUMERIC,
-  location TEXT,
-  amenities JSONB DEFAULT '[]'::JSONB,
-  specifications JSONB DEFAULT '{}'::JSONB,
-  likes_count INT DEFAULT 0,
-  comments_count INT DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS saved_posts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  post_id UUID REFERENCES posts(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, post_id)
 );
 
 -- ═══════════════════════════════════════════════════════════════
