@@ -115,7 +115,7 @@ export const users = {
       .from('users')
       .update({
         full_name: updates.full_name,
-        photo_url: updates.photo_url,
+        avatar_url: updates.avatar_url,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId)
@@ -147,7 +147,6 @@ export const users = {
         date_of_birth: profile.date_of_birth,
         gender: profile.gender,
         mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
         weight: profile.weight,
         height: profile.height,
       })
@@ -166,7 +165,6 @@ export const users = {
         date_of_birth: profile.date_of_birth,
         gender: profile.gender,
         mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
         weight: profile.weight,
         height: profile.height,
         updated_at: new Date().toISOString(),
@@ -246,7 +244,7 @@ export const properties = {
           title,
           comment,
           created_at,
-          users (full_name, photo_url)
+          users (full_name, avatar_url)
         )
       `)
       .eq('id', id)
@@ -390,11 +388,11 @@ export const favorites = {
 export const reviews = {
   // Get all reviews for a property
   async getForProperty(propertyId) {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('reviews')
       .select(`
         *,
-        users (full_name, photo_url)
+        users (full_name, avatar_url)
       `)
       .eq('property_id', propertyId)
       .order('created_at', { ascending: false });
@@ -783,7 +781,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (full_name, photo_url)
+        users (full_name, avatar_url)
       `);
 
     // Apply category filter
@@ -832,7 +830,7 @@ export const posts = {
       id: post.id,
       userId: post.user_id,
       userName: post.users?.full_name || 'Anonymous User',
-      userPhoto: post.users?.photo_url || 'https://via.placeholder.com/40',
+      userPhoto: post.users?.avatar_url || 'https://via.placeholder.com/40',
       image: post.images?.[0] || post.image_url,
       images: post.images || (post.image_url ? [post.image_url] : []),
       text: post.content || post.description,
@@ -1050,7 +1048,7 @@ export const savedPosts = {
         *,
         posts (
           *,
-          users (full_name, photo_url)
+          users (full_name, avatar_url)
         )
       `)
       .eq('user_id', userId)
@@ -1062,7 +1060,7 @@ export const savedPosts = {
       id: item.posts.id,
       userId: item.posts.user_id,
       userName: item.posts.users?.full_name || 'Anonymous User',
-      userPhoto: item.posts.users?.photo_url || 'https://via.placeholder.com/40',
+      userPhoto: item.posts.users?.avatar_url || 'https://via.placeholder.com/40',
       image: item.posts.images?.[0] || item.posts.image_url,
       images: item.posts.images || (item.posts.image_url ? [item.posts.image_url] : []),
       text: item.posts.content || item.posts.description,
@@ -1333,11 +1331,11 @@ export const postReviews = {
   // Get all reviews across all posts
   async getAll() {
     const { data, error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .select(`
         *,
-        users (full_name, photo_url, email),
-        posts (title, category, image)
+        users (full_name, avatar_url, email),
+        posts (title, category, images, image_url)
       `)
       .order('created_at', { ascending: false });
 
@@ -1351,10 +1349,10 @@ export const postReviews = {
   // Get all reviews for a post
   async getForPost(postId) {
     const { data, error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .select(`
         *,
-        users (full_name, photo_url, email)
+        users (full_name, avatar_url, email)
       `)
       .eq('post_id', postId)
       .order('created_at', { ascending: false });
@@ -1369,7 +1367,7 @@ export const postReviews = {
   // Get all reviews by a user
   async getByUser(userId) {
     const { data, error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .select(`
         *,
         posts (title, category)
@@ -1387,12 +1385,12 @@ export const postReviews = {
   // Add a new review to a post
   async add(userId, postId, review) {
     const { data, error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .insert({
         user_id: userId,
         post_id: postId,
         rating: review.rating,
-        comment: review.comment,
+        review_text: review.comment || review.review_text,
       })
       .select()
       .single();
@@ -1408,10 +1406,10 @@ export const postReviews = {
   // Update existing review
   async update(reviewId, userId, updates) {
     const { data, error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .update({
         rating: updates.rating,
-        comment: updates.comment,
+        review_text: updates.comment || updates.review_text,
         updated_at: new Date().toISOString(),
       })
       .eq('id', reviewId)
@@ -1430,7 +1428,7 @@ export const postReviews = {
   // Delete review
   async delete(reviewId, userId) {
     const { error } = await supabase
-      .from('reviews')
+      .from('property_reviews')
       .delete()
       .eq('id', reviewId)
       .eq('user_id', userId);
