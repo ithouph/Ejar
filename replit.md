@@ -15,6 +15,12 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 ## Recent Changes
 
 ### November 23, 2025
+- **Local Development Setup**: Created comprehensive guides for running app outside Replit
+  - Created `LOCAL_SETUP_GUIDE.md` - Step-by-step guide for local development
+  - Created `README.md` - Complete project documentation
+  - Created `.env.example` - Template for environment variables
+  - Key fix: Users must use `npm start` (not `npm run dev`) when running locally
+  - `npm run dev` uses Replit-specific proxy variables that don't exist locally
 - **Authentication Update: Sign-Up Flow**: Changed authentication from sign-in to sign-up terminology
   - Renamed `signInWithGoogle()` → `signUpWithGoogle()` across entire codebase (services/database.js, contexts/AuthContext.js, pages/Login.js)
   - Updated button text: "Sign up with Google" to emphasize account creation
