@@ -29,12 +29,11 @@ Ejar is a React Native mobile application built with Expo designed for booking h
   - Login/Welcome page shows only "Sign Up with Google" button as per user requirement
   - Guest mode available via "Continue as Guest" button (creates session with guest@ejar.com)
   - Updated all guest branding from "TravelStay" to "Ejar"
-- **Complete Placeholder Image Removal**: Eliminated all placeholder.com image references
+- **Placeholder Image Implementation**: Standardized avatar fallback behavior across all pages
   - Updated 6 page files: Profile.js, Account.js, EditProfile.js, Reviews.js, PostDetail.js, AddPost.js
-  - Replaced all placeholder images with conditional rendering using Feather "user" icon
-  - Avatar display pattern: Shows image if `avatar_url` exists, otherwise shows icon with theme-colored background
+  - Avatar display pattern: Shows real image if `avatar_url` exists, otherwise displays https://via.placeholder.com/150
   - Fixed all `photo_url` references to `avatar_url` (aligns with database schema)
-  - Verified with grep: 0 placeholder.com references remain in codebase
+  - Ensures consistent user experience when avatar images are missing
 - **Backend Schema Alignment**: Fixed all CRUD functions in `services/database.js` to match database schema
   - Changed all `photo_url` references to `avatar_url` (users table)
   - Removed `whatsapp` column from user_profiles operations

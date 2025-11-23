@@ -259,18 +259,12 @@ export default function EditProfile({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
-          {profilePicture ? (
-            <Image
-              source={{ 
-                uri: profilePicture
-              }}
-              style={{ width: 100, height: 100, borderRadius: 50 }}
-            />
-          ) : (
-            <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' }}>
-              <Feather name="user" size={50} color={theme.textSecondary} />
-            </View>
-          )}
+          <Image
+            source={{ 
+              uri: profilePicture || 'https://via.placeholder.com/150'
+            }}
+            style={{ width: 100, height: 100, borderRadius: 50 }}
+          />
           <Pressable 
             onPress={pickProfilePicture}
             accessibilityLabel="Change Profile Picture"
