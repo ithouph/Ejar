@@ -100,6 +100,29 @@ export const auth = {
       callback(event, session);
     });
   },
+
+  // Sign in as guest
+  // NOTE: Guest mode has limitations with Supabase RLS policies
+  // For full functionality, users should sign in with Google OAuth
+  async signInAsGuest() {
+    const guestId = '00000000-0000-0000-0000-000000000001';
+    
+    const guestUser = {
+      id: guestId,
+      email: 'guest@ejar.com',
+      user_metadata: {
+        full_name: 'Guest User',
+        avatar_url: null,
+      },
+    };
+    
+    const guestSession = {
+      user: guestUser,
+      access_token: 'guest-token',
+    };
+    
+    return { user: guestUser, session: guestSession };
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════
