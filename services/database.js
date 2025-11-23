@@ -31,8 +31,8 @@ WebBrowser.maybeCompleteAuthSession();
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
-  // Sign up with Google (automatically creates new account or signs in existing user)
-  async signUpWithGoogle() {
+  // Helper function for Google OAuth (used by both sign up and sign in)
+  async _googleOAuth() {
     const redirectUrl = makeRedirectUri({ scheme: 'com.ejar.app', path: 'auth/callback' });
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -61,7 +61,17 @@ export const auth = {
       }
     }
 
-    throw new Error('Sign up failed');
+    throw new Error('Authentication failed');
+  },
+
+  // Sign up with Google (creates new account for first-time users)
+  async signUpWithGoogle() {
+    return await this._googleOAuth();
+  },
+
+  // Sign in with Google (for existing users)
+  async signInWithGoogle() {
+    return await this._googleOAuth();
   },
 
   // Sign out

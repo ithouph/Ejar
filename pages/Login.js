@@ -143,20 +143,20 @@ export default function Login({ navigation }) {
             )}
           </Pressable>
 
-          {/* "I Have Account" Button (TEMPORARY: Goes to homepage for testing) */}
+          {/* Continue as Guest Button */}
           <Pressable
             onPress={handleGuestLogin}
             disabled={loading}
-            style={[styles.accountButton, { backgroundColor: theme.surface, opacity: loading ? 0.6 : 1 }]}
+            style={[styles.guestButton, { borderColor: theme.border, opacity: loading ? 0.6 : 1 }]}
           >
-            <ThemedText type="body">
-              I have an account
+            <ThemedText type="body" style={{ color: theme.textSecondary }}>
+              Continue as Guest
             </ThemedText>
           </Pressable>
 
           {/* Terms Text */}
           <ThemedText type="caption" style={[styles.terms, { color: theme.textSecondary }]}>
-            By continuing you agree to our Terms of Service and Privacy Policy. Book your dream vacation with TravelStay.
+            By continuing you agree to our Terms of Service and Privacy Policy.
           </ThemedText>
         </Animated.View>
       </View>
@@ -198,11 +198,12 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: BorderRadius.medium,
   },
-  accountButton: {
+  guestButton: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 56,
     borderRadius: BorderRadius.medium,
+    borderWidth: 1,
   },
   buttonText: {
     fontWeight: '600',

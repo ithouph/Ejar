@@ -51,6 +51,21 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function signInWithGoogle() {
+    try {
+      setLoading(true);
+      const { user, session } = await authApi.signInWithGoogle();
+      setUser(user);
+      setSession(session);
+      return { user, session };
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function signOut() {
     try {
       setLoading(true);
@@ -117,6 +132,7 @@ export function AuthProvider({ children }) {
     session,
     loading,
     signUpWithGoogle,
+    signInWithGoogle,
     signInAsGuest,
     signOut,
     refreshUser,
