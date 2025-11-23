@@ -81,12 +81,18 @@ export default function Profile({ navigation }) {
           onPress={() => navigation.navigate('EditProfile')}
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
-          <Image
-            source={{ 
-              uri: userProfile?.photo_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
-            }}
-            style={styles.profilePhoto}
-          />
+          {userProfile?.avatar_url || user?.user_metadata?.avatar_url ? (
+            <Image
+              source={{ 
+                uri: userProfile?.avatar_url || user?.user_metadata?.avatar_url
+              }}
+              style={styles.profilePhoto}
+            />
+          ) : (
+            <View style={[styles.profilePhoto, { backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' }]}>
+              <Feather name="user" size={40} color={theme.textSecondary} />
+            </View>
+          )}
           <View style={styles.profileInfo}>
             <ThemedText type="bodyLarge" style={styles.profileName}>
               {userProfile?.full_name || user?.user_metadata?.full_name || user?.email || 'Guest User'}
