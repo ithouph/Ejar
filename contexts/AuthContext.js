@@ -103,7 +103,7 @@ export function AuthProvider({ children }) {
       
       const guestUser = {
         id: '00000000-0000-0000-0000-000000000001',
-        email: 'guest@travelstay.com',
+        email: 'guest@ejar.com',
         user_metadata: {
           full_name: 'Guest User',
           avatar_url: null,

@@ -108,13 +108,13 @@ export default function Login({ navigation }) {
             ═══════════════════════════════════════════════════════════ */}
         <Animated.View entering={FadeInDown.delay(200)} style={styles.header}>
           <ThemedText type="display" style={styles.title}>
-            TravelStay
+            Ejar
           </ThemedText>
           <ThemedText type="h1" style={[styles.subtitle, { color: theme.textSecondary }]}>
-            Discover your
+            Your marketplace
           </ThemedText>
           <ThemedText type="h1" style={styles.title}>
-            perfect stay
+            for everything
           </ThemedText>
         </Animated.View>
 

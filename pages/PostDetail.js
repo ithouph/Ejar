@@ -269,10 +269,16 @@ export default function PostDetail({ route, navigation }) {
             reviews.map(review => (
               <View key={review.id} style={[styles.reviewCard, { backgroundColor: theme.surface }]}>
                 <View style={styles.reviewHeader}>
-                  <Image 
-                    source={{ uri: review.users?.photo_url || 'https://via.placeholder.com/40' }} 
-                    style={styles.reviewUserPhoto} 
-                  />
+                  {review.users?.avatar_url ? (
+                    <Image 
+                      source={{ uri: review.users.avatar_url }} 
+                      style={styles.reviewUserPhoto} 
+                    />
+                  ) : (
+                    <View style={[styles.reviewUserPhoto, { backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' }]}>
+                      <Feather name="user" size={20} color={theme.textSecondary} />
+                    </View>
+                  )}
                   <View style={{ flex: 1 }}>
                     <ThemedText type="body" style={styles.reviewUserName}>
                       {review.users?.full_name || review.users?.email || 'Anonymous'}
