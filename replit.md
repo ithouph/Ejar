@@ -21,11 +21,20 @@ Ejar is a React Native mobile application built with Expo designed for booking h
   - Created `.env.example` - Template for environment variables
   - Key fix: Users must use `npm start` (not `npm run dev`) when running locally
   - `npm run dev` uses Replit-specific proxy variables that don't exist locally
-- **Authentication Update: Sign-Up Flow**: Changed authentication from sign-in to sign-up terminology
-  - Renamed `signInWithGoogle()` → `signUpWithGoogle()` across entire codebase (services/database.js, contexts/AuthContext.js, pages/Login.js)
-  - Updated button text: "Sign up with Google" to emphasize account creation
-  - Updated error messages and comments throughout to reflect sign-up flow
-  - Note: OAuth automatically handles both new user registration and existing user login
+- **Dual Authentication Backend Implementation**: Added both sign-in and sign-up functions to backend
+  - Created shared `_googleOAuth()` helper function in services/database.js for OAuth flow
+  - Added `signInWithGoogle()` function alongside existing `signUpWithGoogle()` 
+  - Both functions use identical OAuth implementation (OAuth automatically handles new vs returning users)
+  - Updated `AuthContext` to export both `signInWithGoogle` and `signUpWithGoogle` functions
+  - Login/Welcome page shows only "Sign Up with Google" button as per user requirement
+  - Guest mode available via "Continue as Guest" button (creates session with guest@ejar.com)
+  - Updated all guest branding from "TravelStay" to "Ejar"
+- **Complete Placeholder Image Removal**: Eliminated all placeholder.com image references
+  - Updated 6 page files: Profile.js, Account.js, EditProfile.js, Reviews.js, PostDetail.js, AddPost.js
+  - Replaced all placeholder images with conditional rendering using Feather "user" icon
+  - Avatar display pattern: Shows image if `avatar_url` exists, otherwise shows icon with theme-colored background
+  - Fixed all `photo_url` references to `avatar_url` (aligns with database schema)
+  - Verified with grep: 0 placeholder.com references remain in codebase
 - **Backend Schema Alignment**: Fixed all CRUD functions in `services/database.js` to match database schema
   - Changed all `photo_url` references to `avatar_url` (users table)
   - Removed `whatsapp` column from user_profiles operations
@@ -71,7 +80,7 @@ The application is built using Expo React Native for the frontend and Supabase (
 
 -   **Backend Services:** All backend interactions are consolidated into a single unified service file (`services/database.js`), organized by feature (Auth, Users, Properties, Favorites, Reviews, Wallet, Posts, Balance Requests, Payment Requests). A naming convention using an "Api" suffix (e.g., `wallet as walletApi`) is used to prevent naming collisions.
 -   **Styling System:** A global, centralized styling system is enforced, with all styles defined in `theme/` files (`colors.js`, `global.js`, `utils.js`, `index.js`). No custom `StyleSheet.create()` is used within page components.
--   **Data Flow:** The application prioritizes real-time data fetching and persistence with Supabase. In case of Supabase failure, static data from the `/data` folder serves as a fallback. Optimistic UI updates are implemented for immediate feedback.
+-   **Data Flow:** The application uses real-time data fetching and persistence with Supabase exclusively. No fallback or placeholder data is used. Optimistic UI updates are implemented for immediate feedback.
 -   **Authentication Flow:** Google OAuth handles user signup/login, with session persistence managed via AsyncStorage and global state managed by `AuthContext`.
 -   **UI/UX Design:** The design adheres to an iOS 26 liquid glass interface, incorporating Notion-inspired scattered icons, frosted glass effects, and a metallic pickaxe app icon. The app supports auto dark/light mode detection.
 -   **Core Capabilities:**
