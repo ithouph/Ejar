@@ -261,7 +261,7 @@ export default function EditProfile({ navigation }) {
         <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
           <Image
             source={{ 
-              uri: profilePicture || 'https://via.placeholder.com/150'
+              uri: profilePicture || 'https://via.placeholder.com/100'
             }}
             style={{ width: 100, height: 100, borderRadius: 50 }}
           />

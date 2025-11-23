@@ -36,21 +36,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function signUpWithGoogle() {
-    try {
-      setLoading(true);
-      const { user, session } = await authApi.signUpWithGoogle();
-      setUser(user);
-      setSession(session);
-      return { user, session };
-    } catch (error) {
-      console.error('Sign up error:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function signInWithGoogle() {
     try {
       setLoading(true);
@@ -94,15 +79,31 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Guest login (local session only)
-  // NOTE: Guest mode has limitations - wallet features require Google OAuth
+  // TEMPORARY: Guest login for testing without Supabase setup
+  // This creates a fake user session so you can test the app
+  // REMOVE THIS when you set up real authentication
   async function signInAsGuest() {
     try {
       setLoading(true);
-      const { user, session } = await authApi.signInAsGuest();
-      setUser(user);
-      setSession(session);
-      return { user, session };
+      
+      const guestUser = {
+        id: '00000000-0000-0000-0000-000000000001',
+        email: 'guest@travelstay.com',
+        user_metadata: {
+          full_name: 'Guest User',
+          avatar_url: null,
+        },
+      };
+      
+      const guestSession = {
+        user: guestUser,
+        access_token: 'guest-token',
+      };
+      
+      setUser(guestUser);
+      setSession(guestSession);
+      
+      return { user: guestUser, session: guestSession };
     } catch (error) {
       console.error('Guest sign in error:', error);
       throw error;
@@ -115,7 +116,6 @@ export function AuthProvider({ children }) {
     user,
     session,
     loading,
-    signUpWithGoogle,
     signInWithGoogle,
     signInAsGuest,
     signOut,

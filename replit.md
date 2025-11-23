@@ -14,45 +14,6 @@ Ejar is a React Native mobile application built with Expo designed for booking h
 
 ## Recent Changes
 
-### November 23, 2025
-- **Guest Mode Limitations Documented**: Clarified guest authentication behavior
-  - Guest mode uses deterministic UUID for data consistency with seed data
-  - Guest mode suitable for browsing and viewing marketplace content
-  - Wallet features require Google OAuth due to Supabase RLS policies
-  - Users encouraged to sign in with Google for full app functionality
-- **PostDetail Navigation & Layout Improvements**: Fixed card navigation and enhanced detail page layout
-  - Added PostDetail screen to DiscoverNavigator (router/Discover.js) to enable navigation from home page cards
-  - Redesigned PostDetail layout with full-width hero images (350px height)
-  - Added floating back button over images with semi-transparent background
-  - Implemented horizontal image scrolling with pagination for multiple images
-  - Enhanced HotelCard component to display title, price, and category badge
-  - Fixed heart icon to show filled state when favorited
-  - Improved visual hierarchy and spacing throughout detail page
-- **Local Development Setup**: Created comprehensive guides for running app outside Replit
-  - Created `LOCAL_SETUP_GUIDE.md` - Step-by-step guide for local development
-  - Created `README.md` - Complete project documentation
-  - Created `.env.example` - Template for environment variables
-  - Key fix: Users must use `npm start` (not `npm run dev`) when running locally
-  - `npm run dev` uses Replit-specific proxy variables that don't exist locally
-- **Dual Authentication Backend Implementation**: Added both sign-in and sign-up functions to backend
-  - Created shared `_googleOAuth()` helper function in services/database.js for OAuth flow
-  - Added `signInWithGoogle()` function alongside existing `signUpWithGoogle()` 
-  - Both functions use identical OAuth implementation (OAuth automatically handles new vs returning users)
-  - Updated `AuthContext` to export both `signInWithGoogle` and `signUpWithGoogle` functions
-  - Login/Welcome page shows only "Sign Up with Google" button as per user requirement
-  - Guest mode available via "Continue as Guest" button (creates session with guest@ejar.com)
-  - Updated all guest branding from "TravelStay" to "Ejar"
-- **Placeholder Image Implementation**: Standardized avatar fallback behavior across all pages
-  - Updated 6 page files: Profile.js, Account.js, EditProfile.js, Reviews.js, PostDetail.js, AddPost.js
-  - Avatar display pattern: Shows real image if `avatar_url` exists, otherwise displays https://via.placeholder.com/150
-  - Fixed all `photo_url` references to `avatar_url` (aligns with database schema)
-  - Ensures consistent user experience when avatar images are missing
-- **Backend Schema Alignment**: Fixed all CRUD functions in `services/database.js` to match database schema
-  - Changed all `photo_url` references to `avatar_url` (users table)
-  - Removed `whatsapp` column from user_profiles operations
-  - Fixed `postReviews` functions to use `property_reviews` table with `review_text` column
-  - Updated all Supabase queries to use correct column names
-
 ### November 22, 2025
 - **Payment Requests System**: Implemented secure member-only payment request approval system
   - **Database**: Added `payment_requests` table with comprehensive RLS policies and constraints
@@ -92,7 +53,7 @@ The application is built using Expo React Native for the frontend and Supabase (
 
 -   **Backend Services:** All backend interactions are consolidated into a single unified service file (`services/database.js`), organized by feature (Auth, Users, Properties, Favorites, Reviews, Wallet, Posts, Balance Requests, Payment Requests). A naming convention using an "Api" suffix (e.g., `wallet as walletApi`) is used to prevent naming collisions.
 -   **Styling System:** A global, centralized styling system is enforced, with all styles defined in `theme/` files (`colors.js`, `global.js`, `utils.js`, `index.js`). No custom `StyleSheet.create()` is used within page components.
--   **Data Flow:** The application uses real-time data fetching and persistence with Supabase exclusively. No fallback or placeholder data is used. Optimistic UI updates are implemented for immediate feedback.
+-   **Data Flow:** The application prioritizes real-time data fetching and persistence with Supabase. In case of Supabase failure, static data from the `/data` folder serves as a fallback. Optimistic UI updates are implemented for immediate feedback.
 -   **Authentication Flow:** Google OAuth handles user signup/login, with session persistence managed via AsyncStorage and global state managed by `AuthContext`.
 -   **UI/UX Design:** The design adheres to an iOS 26 liquid glass interface, incorporating Notion-inspired scattered icons, frosted glass effects, and a metallic pickaxe app icon. The app supports auto dark/light mode detection.
 -   **Core Capabilities:**
