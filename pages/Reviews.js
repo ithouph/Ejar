@@ -27,23 +27,17 @@ function ReviewCard({ review, theme }) {
   };
 
   const userName = review.users?.full_name || 'Unknown User';
-  const userPhoto = review.users?.avatar_url;
+  const userPhoto = review.users?.avatar_url || 'https://via.placeholder.com/150';
   const postTitle = review.posts?.title || 'Untitled Post';
   const postCategory = review.posts?.category || '';
 
   return (
     <View style={[styles.reviewCard, { backgroundColor: theme.surface }]}>
       <View style={styles.reviewHeader}>
-        {userPhoto ? (
-          <Image
-            source={{ uri: userPhoto }}
-            style={styles.avatar}
-          />
-        ) : (
-          <View style={[styles.avatar, { backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' }]}>
-            <Feather name="user" size={20} color={theme.textSecondary} />
-          </View>
-        )}
+        <Image
+          source={{ uri: userPhoto }}
+          style={styles.avatar}
+        />
         <View style={styles.reviewInfo}>
           <ThemedText type="bodyLarge" style={styles.userName}>
             {userName}

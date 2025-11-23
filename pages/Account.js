@@ -112,18 +112,12 @@ export default function Account({ navigation }) {
           onPress={() => navigation.navigate('EditProfile')}
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
-          {userProfile?.avatar_url || user?.user_metadata?.avatar_url ? (
-            <Image
-              source={{ 
-                uri: userProfile?.avatar_url || user?.user_metadata?.avatar_url
-              }}
-              style={styles.profilePhoto}
-            />
-          ) : (
-            <View style={[styles.profilePhoto, { backgroundColor: theme.border, alignItems: 'center', justifyContent: 'center' }]}>
-              <Feather name="user" size={40} color={theme.textSecondary} />
-            </View>
-          )}
+          <Image
+            source={{ 
+              uri: userProfile?.avatar_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/150'
+            }}
+            style={styles.profilePhoto}
+          />
           <View style={styles.profileInfo}>
             <ThemedText type="h2" style={styles.profileName}>
               {userProfile?.full_name || user?.user_metadata?.full_name || user?.email || 'Guest User'}

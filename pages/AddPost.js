@@ -417,7 +417,7 @@ export default function AddPost({ navigation }) {
         category,
         specifications: getCategorySpecifications(),
         userName: user?.user_metadata?.full_name || user?.email || 'Anonymous User',
-        userPhoto: user?.user_metadata?.avatar_url || null,
+        userPhoto: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/150',
       };
 
       await postsApi.create(user?.id || 'guest', postData);
