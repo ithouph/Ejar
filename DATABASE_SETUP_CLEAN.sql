@@ -7,6 +7,7 @@ CREATE TABLE public.cities (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT cities_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.favorites (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -16,6 +17,7 @@ CREATE TABLE public.favorites (
   CONSTRAINT favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT favorites_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id)
 );
+
 CREATE TABLE public.payment_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -32,14 +34,24 @@ CREATE TABLE public.payment_requests (
   CONSTRAINT payment_requests_pkey PRIMARY KEY (id),
   CONSTRAINT payment_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
   title text NOT NULL,
   description text,
-  type text NOT NULL,
+  content text,
+  type text,
+  category text DEFAULT 'property'::text,
+  listing_type text,
+  property_type text,
   location text NOT NULL,
-  cities ARRAY DEFAULT '{}'::uuid[],
+  price numeric,
+  image_url text,
+  images text[] DEFAULT '{}'::text[],
+  amenities text[] DEFAULT '{}'::text[],
+  specifications jsonb DEFAULT '{}'::jsonb,
+  cities uuid[] DEFAULT '{}'::uuid[],
   likes_count integer DEFAULT 0,
   rating numeric DEFAULT 0,
   total_reviews integer DEFAULT 0,
@@ -48,6 +60,7 @@ CREATE TABLE public.posts (
   CONSTRAINT posts_pkey PRIMARY KEY (id),
   CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.posts_photos (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   post_id uuid,
@@ -58,6 +71,7 @@ CREATE TABLE public.posts_photos (
   CONSTRAINT posts_photos_pkey PRIMARY KEY (id),
   CONSTRAINT posts_photos_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id)
 );
+
 CREATE TABLE public.reviews (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -70,6 +84,7 @@ CREATE TABLE public.reviews (
   CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT reviews_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id)
 );
+
 CREATE TABLE public.saved_posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -79,6 +94,7 @@ CREATE TABLE public.saved_posts (
   CONSTRAINT saved_posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT saved_posts_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id)
 );
+
 CREATE TABLE public.service_categories (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL,
@@ -88,6 +104,7 @@ CREATE TABLE public.service_categories (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT service_categories_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.support_messages (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -100,6 +117,7 @@ CREATE TABLE public.support_messages (
   CONSTRAINT support_messages_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT support_messages_payment_request_id_fkey FOREIGN KEY (payment_request_id) REFERENCES public.payment_requests(id)
 );
+
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   email text NOT NULL UNIQUE,
@@ -112,6 +130,7 @@ CREATE TABLE public.users (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
+
 CREATE TABLE public.wallet_accounts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid UNIQUE,
@@ -122,6 +141,7 @@ CREATE TABLE public.wallet_accounts (
   CONSTRAINT wallet_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT wallet_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
 CREATE TABLE public.wallet_transactions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   wallet_id uuid,
