@@ -2,6 +2,7 @@ import { supabase } from "../config/supabase";
 import * as WebBrowser from "expo-web-browser";
 import * as ImagePicker from "expo-image-picker";
 import { makeRedirectUri } from "expo-auth-session";
+import { mockData } from "./mockData";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -384,7 +385,8 @@ export const favorites = {
 
 export const reviews = {
   // Get all reviews for a property
-  async getForProperty(propertyId) {
+  async getForProperty(postId) {
+    if (!postId) return [];
     const { data, error } = await supabase
       .from("reviews")
       .select(
@@ -393,10 +395,10 @@ export const reviews = {
         users (full_name, photo_url)
       `,
       )
-      .eq("property_id", propertyId)
+      .eq("post_id", postId)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) return [];
     return data || [];
   },
 
@@ -413,24 +415,21 @@ export const reviews = {
   },
 
   // Add a new review
-  async add(userId, propertyId, review) {
+  async add(userId, postId, review) {
+    if (!userId || !postId) return null;
     const { data, error } = await supabase
       .from("reviews")
       .insert({
         user_id: userId,
-        property_id: propertyId,
+        post_id: postId,
         rating: review.rating,
-        title: review.title,
         comment: review.comment,
       })
       .select()
       .single();
 
-    if (error) throw error;
-
-    // Update property's average rating
-    await this.updatePropertyRating(propertyId);
-
+    if (error) return null;
+    await this.updatePropertyRating(postId);
     return data;
   },
 
@@ -467,10 +466,10 @@ export const reviews = {
 
   // Delete review
   async delete(reviewId, userId) {
-    // Get property ID before deleting
+    if (!reviewId || !userId) return false;
     const { data: review } = await supabase
       .from("reviews")
-      .select("property_id")
+      .select("post_id")
       .eq("id", reviewId)
       .eq("user_id", userId)
       .single();
@@ -481,23 +480,20 @@ export const reviews = {
       .eq("id", reviewId)
       .eq("user_id", userId);
 
-    if (error) throw error;
-
-    // Update property rating
+    if (error) return false;
     if (review) {
-      await this.updatePropertyRating(review.property_id);
+      await this.updatePropertyRating(review.post_id);
     }
-
     return true;
   },
 
   // Update property's average rating (called automatically after review changes)
-  async updatePropertyRating(propertyId) {
-    if (!propertyId) return;
+  async updatePropertyRating(postId) {
+    if (!postId) return;
     const { data: allReviews, error: reviewsError } = await supabase
       .from("reviews")
       .select("rating")
-      .eq("property_id", propertyId);
+      .eq("post_id", postId);
 
     if (reviewsError) return;
 
