@@ -12,9 +12,6 @@ import { Feather } from "@expo/vector-icons";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
 import { Button } from "../components/Button";
-import { AgentCard } from "../components/Renter";
-import { PropertySpecs, AmenitiesSection } from "../components/Article";
-import { StarRating } from "../components/Review";
 import { useTheme } from "../hooks/useTheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Spacing, BorderRadius, Shadows } from "../theme/global";
@@ -52,9 +49,7 @@ export default function Details({ route, navigation }) {
               setCurrentImageIndex(index);
             }}
             renderItem={({ item }) => (
-              <Pressable
-                onPress={() => navigation.navigate("Poster", { property })}
-              >
+              <Pressable>
                 <Image source={{ uri: item.url }} style={styles.image} />
               </Pressable>
             )}
