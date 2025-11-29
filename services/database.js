@@ -225,14 +225,8 @@ export const properties = {
   // Get all properties with optional filters
   async getAll(filters = {}) {
     let query = supabase
-      .from("properties")
-      .select(
-        `
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `,
-      )
+      .from("posts")
+      .select("*")
       .order("created_at", { ascending: false });
 
     // Apply filters
@@ -253,22 +247,8 @@ export const properties = {
   // Get one property by ID
   async getOne(id) {
     const { data, error } = await supabase
-      .from("properties")
-      .select(
-        `
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon),
-        reviews (
-          id,
-          rating,
-          title,
-          comment,
-          created_at,
-          users (full_name, photo_url)
-        )
-      `,
-      )
+      .from("posts")
+      .select("*")
       .eq("id", id)
       .single();
 
@@ -279,27 +259,19 @@ export const properties = {
   // Search properties with optional filters
   async search(searchTerm, filters = {}) {
     let query = supabase
-      .from("properties")
-      .select(
-        `
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `,
-      )
+      .from("posts")
+      .select("*")
       .or(
-        `title.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`,
+        `title.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`,
       );
 
-    // Apply filters to search results
-    if (filters.type) query = query.eq("type", filters.type);
-    if (filters.location)
-      query = query.ilike("location", `%${filters.location}%`);
+    if (filters.category) query = query.eq("category", filters.category);
+    if (filters.search)
+      query = query.ilike("title", `%${filters.search}%`);
     if (filters.minPrice)
-      query = query.gte("price_per_night", filters.minPrice);
+      query = query.gte("price", filters.minPrice);
     if (filters.maxPrice)
-      query = query.lte("price_per_night", filters.maxPrice);
-    if (filters.minRating) query = query.gte("rating", filters.minRating);
+      query = query.lte("price", filters.maxPrice);
 
     query = query.order("created_at", { ascending: false });
 
@@ -311,16 +283,9 @@ export const properties = {
   // Get featured/top properties
   async getFeatured(limit = 10) {
     const { data, error } = await supabase
-      .from("properties")
-      .select(
-        `
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `,
-      )
-      .gte("rating", 4.5)
-      .order("rating", { ascending: false })
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(limit);
 
     if (error) throw error;
@@ -335,54 +300,51 @@ export const properties = {
 export const favorites = {
   // Get all user's favorites
   async getAll(userId) {
+    if (!userId) return [];
     const { data, error } = await supabase
-      .from("favorites")
-      .select(
-        `
-        id,
-        property_id,
-        created_at,
-        properties (*)
-      `,
-      )
+      .from("saved_posts")
+      .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) return [];
     return data || [];
   },
 
   // Add property to favorites
-  async add(userId, propertyId) {
+  async add(userId, postId) {
+    if (!userId) return null;
     const { data, error } = await supabase
-      .from("favorites")
-      .insert({ user_id: userId, property_id: propertyId })
+      .from("saved_posts")
+      .insert({ user_id: userId, post_id: postId })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) return null;
     return data;
   },
 
   // Remove property from favorites
-  async remove(userId, propertyId) {
+  async remove(userId, postId) {
+    if (!userId) return false;
     const { error } = await supabase
-      .from("favorites")
+      .from("saved_posts")
       .delete()
       .eq("user_id", userId)
-      .eq("property_id", propertyId);
+      .eq("post_id", postId);
 
-    if (error) throw error;
+    if (error) return false;
     return true;
   },
 
   // Check if property is favorited
-  async isFavorite(userId, propertyId) {
+  async isFavorite(userId, postId) {
+    if (!userId) return false;
     const { data, error } = await supabase
-      .from("favorites")
+      .from("saved_posts")
       .select("id")
       .eq("user_id", userId)
-      .eq("property_id", propertyId)
+      .eq("post_id", postId)
       .maybeSingle();
 
     if (error) return false;
@@ -390,27 +352,29 @@ export const favorites = {
   },
 
   // Toggle favorite (add if not exists, remove if exists)
-  async toggle(userId, propertyId) {
-    const isFav = await this.isFavorite(userId, propertyId);
+  async toggle(userId, postId) {
+    if (!userId) return { action: "error", isFavorite: false };
+    const isFav = await this.isFavorite(userId, postId);
 
     if (isFav) {
-      await this.remove(userId, propertyId);
+      await this.remove(userId, postId);
       return { action: "removed", isFavorite: false };
     } else {
-      await this.add(userId, propertyId);
+      await this.add(userId, postId);
       return { action: "added", isFavorite: true };
     }
   },
 
   // Get just the IDs of favorited properties
   async getIds(userId) {
+    if (!userId) return [];
     const { data, error } = await supabase
-      .from("favorites")
-      .select("property_id")
+      .from("saved_posts")
+      .select("post_id")
       .eq("user_id", userId);
 
     if (error) return [];
-    return (data || []).map((fav) => fav.property_id);
+    return (data || []).map((fav) => fav.post_id);
   },
 };
 
@@ -440,12 +404,7 @@ export const reviews = {
   async getByUser(userId) {
     const { data, error } = await supabase
       .from("reviews")
-      .select(
-        `
-        *,
-        properties (title, location)
-      `,
-      )
+      .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
@@ -534,6 +493,7 @@ export const reviews = {
 
   // Update property's average rating (called automatically after review changes)
   async updatePropertyRating(propertyId) {
+    if (!propertyId) return;
     const { data: allReviews, error: reviewsError } = await supabase
       .from("reviews")
       .select("rating")
@@ -546,7 +506,7 @@ export const reviews = {
         allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
 
       await supabase
-        .from("properties")
+        .from("posts")
         .update({
           rating: avgRating.toFixed(1),
           total_reviews: allReviews.length,
