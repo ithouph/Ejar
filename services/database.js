@@ -32,6 +32,75 @@ WebBrowser.maybeCompleteAuthSession();
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
+  // Phone OTP Sign In (simulated - in production use Twilio/AWS SNS)
+  async signInWithPhoneOTP(phoneNumber) {
+    try {
+      // Format phone number
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
+      
+      // Check if user exists
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id")
+        .eq("phone_number", formattedPhone)
+        .maybeSingle();
+
+      // For demo: generate 4-digit OTP (in production use Twilio)
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      // Store OTP in session (production: send via SMS)
+      console.log(`OTP for ${formattedPhone}: ${otp}`); // Debug log
+      
+      return {
+        phoneNumber: formattedPhone,
+        otp: otp, // In production, this would only be sent via SMS
+        userExists: !!existingUser,
+        userId: existingUser?.id,
+      };
+    } catch (error) {
+      return { error: error.message };
+    }
+  },
+
+  // Verify OTP and create/login user
+  async verifyPhoneOTP(phoneNumber, otp, userInfo = {}) {
+    try {
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
+      
+      // Check if user exists
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", formattedPhone)
+        .maybeSingle();
+
+      if (existingUser) {
+        // Login existing user
+        return { user: existingUser, isNewUser: false };
+      } else {
+        // Create new user
+        const { data: newUser, error } = await supabase
+          .from("users")
+          .insert({
+            phone_number: formattedPhone,
+            first_name: userInfo.first_name || userInfo.firstName || "",
+            last_name: userInfo.last_name || userInfo.lastName || "",
+            full_name: `${userInfo.first_name || userInfo.firstName || ""} ${userInfo.last_name || userInfo.lastName || ""}`.trim(),
+            age: userInfo.age,
+            profile_photo_url: userInfo.profile_photo_url || null,
+            whatsapp_number: userInfo.whatsapp_number || userInfo.whatsappNumber || formattedPhone,
+          })
+          .select()
+          .single();
+
+        if (error) return { error: error.message };
+        return { user: newUser, isNewUser: true };
+      }
+    } catch (error) {
+      return { error: error.message };
+    }
+  },
+
   // Sign in with Google
   async signInWithGoogle() {
     const redirectUrl = makeRedirectUri({
@@ -123,20 +192,26 @@ export const users = {
     return data;
   },
 
-  // Update user info (name, photo)
+  // Update user info (name, photo, age, WhatsApp)
   async updateUser(userId, updates) {
     const { data, error } = await supabase
       .from("users")
       .update({
-        full_name: updates.full_name,
-        photo_url: updates.photo_url,
+        first_name: updates.first_name || updates.firstName,
+        last_name: updates.last_name || updates.lastName,
+        full_name: updates.full_name || `${updates.first_name || ''} ${updates.last_name || ''}`.trim(),
+        profile_photo_url: updates.profile_photo_url || updates.photo_url,
+        photo_url: updates.photo_url || updates.profile_photo_url,
+        age: updates.age,
+        whatsapp_number: updates.whatsapp_number || updates.whatsappNumber,
+        phone_number: updates.phone_number || updates.phoneNumber,
         updated_at: new Date().toISOString(),
       })
       .eq("id", userId)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) return null;
     return data;
   },
 
@@ -195,26 +270,33 @@ export const users = {
 
   // Upload profile picture
   async uploadProfilePicture(userId, imageUri) {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    try {
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
 
-    const fileName = `${userId}_${Date.now()}.jpg`;
-    const filePath = `profile-pictures/${fileName}`;
+      const fileName = `${userId}_${Date.now()}.jpg`;
+      const filePath = `profile-pictures/${fileName}`;
 
-    const { data, error } = await supabase.storage
-      .from("avatars")
-      .upload(filePath, blob, {
-        contentType: "image/jpeg",
-        upsert: true,
-      });
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, blob, {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
 
-    if (error) throw error;
+      if (error) return null;
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
-    return publicUrl;
+      // Update user's profile photo URL
+      await this.updateUser(userId, { profile_photo_url: publicUrl });
+
+      return publicUrl;
+    } catch (err) {
+      return null;
+    }
   },
 };
 
