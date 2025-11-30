@@ -40,10 +40,16 @@ export default function Settings({ navigation }) {
 
     try {
       const profile = await usersApi.getUser(user.id);
-      setUserProfile(profile);
+      setUserProfile({
+        phone_number: user.phone || "Unknown",
+        created_at: user.created_at,
+      });
     } catch (error) {
       console.error("Error loading user profile:", error);
-      setUserProfile(null);
+      setUserProfile({
+        phone_number: user.phone || "Unknown",
+        created_at: user.created_at,
+      });
     }
   };
 
@@ -152,17 +158,14 @@ export default function Settings({ navigation }) {
               darkColor="#FFF"
               style={styles.profileName}
             >
-              {userProfile?.full_name ||
-                user?.user_metadata?.full_name ||
-                user?.email ||
-                "Guest User"}
+              {userProfile?.phone_number || user?.phone || "Phone User"}
             </ThemedText>
             <ThemedText
               type="bodySmall"
               lightColor="rgba(255,255,255,0.8)"
               darkColor="rgba(255,255,255,0.8)"
             >
-              {user?.email || "guest@ejar.com"}
+              Ejar Marketplace Member
             </ThemedText>
           </View>
           <Feather name="chevron-right" size={24} color="#FFF" />
@@ -170,7 +173,7 @@ export default function Settings({ navigation }) {
 
         <View style={styles.sectionLabel}>
           <ThemedText type="bodyLarge" style={styles.sectionLabelText}>
-            Account
+            My Account
           </ThemedText>
         </View>
 
@@ -186,7 +189,7 @@ export default function Settings({ navigation }) {
                 darkColor="#FFF"
                 style={styles.balanceLabel}
               >
-                Wallet Balance
+                Available Balance
               </ThemedText>
               {loadingBalance ? (
                 <ActivityIndicator
