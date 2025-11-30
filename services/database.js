@@ -134,14 +134,20 @@ export const posts = {
     }
   },
 
-  // Get posts by category
+  // Get posts by category (returns all approved for now, filters by listing_type if provided)
   async getByCategory(category, limit = 50, offset = 0) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("posts")
         .select("*")
-        .eq("category", category)
-        .eq("is_approved", true)
+        .eq("is_approved", true);
+
+      // Filter by listing_type if it's one of the valid types
+      if (["property", "phones", "electronics", "others"].includes(category)) {
+        query = query.or(`listing_type.eq.${category},property_type.eq.${category}`);
+      }
+
+      const { data, error } = await query
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -150,7 +156,8 @@ export const posts = {
       return data || [];
     } catch (error) {
       console.error(`Error fetching posts for category ${category}:`, error);
-      return [];
+      // Fallback: return all approved posts
+      return this.getAllApproved(limit, offset);
     }
   },
 
