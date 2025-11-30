@@ -69,12 +69,15 @@ export function AuthProvider({ children }) {
   async function signOut() {
     try {
       setLoading(true);
+      console.log("🔄 Starting logout...");
       await authService.signOut();
       await AsyncStorage.removeItem("ejar_user_session");
+      console.log("✅ Session cleared from AsyncStorage");
       setUser(null);
       setSession(null);
+      console.log("✅ User logged out successfully - redirecting to login");
     } catch (error) {
-      console.error("Sign out error:", error);
+      console.error("❌ Sign out error:", error);
       throw error;
     } finally {
       setLoading(false);
