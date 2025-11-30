@@ -116,8 +116,8 @@ export default function Login({ navigation }) {
     try {
       const result = await auth.generateOTP(phoneNumber);
       setGeneratedOtp(result.otp);
-      console.log(`📱 OTP sent to ${result.phoneNumber}: ${result.otp}`);
-      Alert.alert("OTP Generated", `Check console log for OTP.\n\nCode: ${result.otp}`);
+      console.log(`📱 OTP for ${result.phoneNumber}: ${result.otp}`);
+      Alert.alert("OTP Generated", `Check console for OTP code.\n\nOTP: ${result.otp}`);
       setStep("otp");
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to send code");
@@ -135,18 +135,18 @@ export default function Login({ navigation }) {
     setLoading(true);
     try {
       if (code !== generatedOtp) {
-        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
+        Alert.alert("Invalid Code", "The code you entered is incorrect.");
         setLoading(false);
         return;
       }
-      
+
       const result = await auth.verifyOTPAndLogin(phoneNumber, code);
       if (result.error) {
         Alert.alert("Error", result.error);
         setLoading(false);
         return;
       }
-      
+
       await signInWithPhoneOTP(result.user, phoneNumber);
     } catch (error) {
       Alert.alert("Error", error.message || "Verification failed");
