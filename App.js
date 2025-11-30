@@ -57,25 +57,36 @@ function AuthGate() {
     <NavigationContainer>
       <StatusBar style={isDark ? "light" : "dark"} />
 
-      {/* ALWAYS show main app - guests can browse without login */}
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        {/* Main app is always shown - guests can browse */}
-        <Stack.Group>
-          <Stack.Screen name="MainApp" component={MainTabNavigator} />
-        </Stack.Group>
+      {/* STEP 2: Show different screens based on login status */}
+      {!user ? (
+        // ═══════════════════════════════════════════════════════════
+        // NOT LOGGED IN - Show welcome/login screens
+        // ═══════════════════════════════════════════════════════════
+        <Stack.Navigator
+          initialRouteName="Welcome"
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          {/* Welcome Screen */}
+          <Stack.Screen name="Welcome" component={Welcome} />
 
-        {/* Auth screens shown as modals on top */}
-        {!user && (
-          <Stack.Group screenOptions={{ presentation: "modal" }}>
-            <Stack.Screen name="Welcome" component={Welcome} />
-            <Stack.Screen name="Login" component={Login} />
-          </Stack.Group>
-        )}
-      </Stack.Navigator>
+          {/* Login Screen - ADD YOUR CUSTOM LOGIN DESIGN HERE */}
+          <Stack.Screen name="Login" component={Login} />
+
+          {/* 
+              TO ADD MORE AUTH SCREENS:
+              - Create Register.js in /pages
+              - Add: <Stack.Screen name="Register" component={Register} />
+              - Same for ForgotPassword, etc.
+            */}
+        </Stack.Navigator>
+      ) : (
+        // ═══════════════════════════════════════════════════════════
+        // LOGGED IN - Show main app
+        // ═══════════════════════════════════════════════════════════
+        <MainTabNavigator />
+      )}
     </NavigationContainer>
   );
 }

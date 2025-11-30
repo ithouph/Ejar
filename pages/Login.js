@@ -20,7 +20,9 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
+  SlideInRight,
   SlideOutLeft,
+  SlideOutRight,
 } from "react-native-reanimated";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
@@ -35,6 +37,7 @@ import {
 } from "../theme/global";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
+import { auth } from "../services/database";
 
 const icons = [
   { name: "calendar", top: "15%", right: "20%" },
@@ -89,41 +92,89 @@ const FloatingIcon = ({ icon, index, theme }) => {
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { directLogin, guestSignIn } = useAuth();
+  const { signInWithPhoneOTP } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [phoneInputFocused, setPhoneInputFocused] = useState(false);
-  const [guestLoading, setGuestLoading] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState(null);
+  const otpRefs = useRef([]);
 
-  const handleDirectLogin = async () => {
+  useEffect(() => {
+    if (step === "otp") {
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    }
+  }, [step]);
+
+  const handleSendCode = async () => {
     if (phoneNumber.length < 8) {
       Alert.alert("Invalid Number", "Please enter a valid phone number.");
       return;
     }
     setLoading(true);
     try {
-      await directLogin(phoneNumber);
+      const result = await auth.generateOTP(phoneNumber);
+      setGeneratedOtp(result.otp);
+      console.log(`📱 OTP sent to ${result.phoneNumber}: ${result.otp}`);
+      Alert.alert("OTP Generated", `Check console log for OTP.\n\nCode: ${result.otp}`);
+      setStep("otp");
     } catch (error) {
-      Alert.alert("Error", error.message || "Login failed");
+      Alert.alert("Error", error.message || "Failed to send code");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGuestSignIn = async () => {
-    try {
-      setGuestLoading(true);
-      await guestSignIn();
-    } catch (error) {
-      Alert.alert("Error", error.message || "Failed to continue as guest");
-    } finally {
-      setGuestLoading(false);
+  const handleVerifyOtp = async () => {
+    const code = otp.join("");
+    if (code.length < 4) {
+      Alert.alert("Invalid Code", "Please enter the 4-digit code.");
+      return;
     }
+    setLoading(true);
+    try {
+      if (code !== generatedOtp) {
+        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
+        setLoading(false);
+        return;
+      }
+      
+      const result = await auth.verifyOTPAndLogin(phoneNumber, code);
+      if (result.error) {
+        Alert.alert("Error", result.error);
+        setLoading(false);
+        return;
+      }
+      
+      await signInWithPhoneOTP(result.user, phoneNumber);
+    } catch (error) {
+      Alert.alert("Error", error.message || "Verification failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpChange = (text, index) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    if (text && index < 3) {
+      otpRefs.current[index + 1]?.focus();
+    }
+    if (!text && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleBack = () => {
+    setStep("phone");
+    setOtp(["", "", "", ""]);
   };
 
   return (
     <ThemedView style={layoutStyles.container}>
-      {/* Background Icons */}
       {icons.map((icon, index) => (
         <FloatingIcon key={index} icon={icon} index={index} theme={theme} />
       ))}
@@ -144,14 +195,13 @@ export default function Login({ navigation }) {
           <View
             style={[
               layoutStyles.column,
-              { flex: 1, justifyContent: "space-between" },
+              styles.mainContent,
               {
                 paddingTop: insets.top + Spacing["3xl"],
                 paddingBottom: insets.bottom + Spacing.xl + 60,
               },
             ]}
           >
-            {/* Header Section */}
             <Animated.View
               entering={FadeInDown.delay(200)}
               style={spacingStyles.gapMd}
@@ -167,82 +217,128 @@ export default function Login({ navigation }) {
                   type="h2"
                   style={[styles.subTitle, { color: theme.textSecondary }]}
                 >
-                  Enter your phone number
+                  {step === "phone"
+                    ? "Enter your phone number"
+                    : "Verify your number"}
                 </ThemedText>
                 <ThemedText
                   type="body"
                   style={{ color: theme.textSecondary, marginTop: Spacing.xs }}
                 >
-                  Quick login with your phone
+                  {step === "phone"
+                    ? "We'll send you a verification code."
+                    : `Enter the code from console`}
                 </ThemedText>
               </View>
             </Animated.View>
 
-            {/* Form Section */}
             <View style={{ flex: 1, justifyContent: "center" }}>
-              <Animated.View
-                exiting={SlideOutLeft}
-                style={spacingStyles.gapLg}
-              >
-                <View style={styles.phoneInputContainer}>
-                  <View
-                    style={[
-                      styles.countryCode,
-                      { borderColor: theme.border, backgroundColor: theme.surface },
-                    ]}
-                  >
-                    <ThemedText type="body" style={{ fontWeight: "600" }}>
-                      +222
-                    </ThemedText>
+              {step === "phone" ? (
+                <Animated.View
+                  exiting={SlideOutLeft}
+                  style={spacingStyles.gapLg}
+                >
+                  <View style={styles.phoneInputContainer}>
+                    <View
+                      style={[
+                        styles.countryCode,
+                        { borderColor: theme.border, backgroundColor: theme.surface },
+                      ]}
+                    >
+                      <ThemedText type="body" style={{ fontWeight: "600" }}>
+                        +222
+                      </ThemedText>
+                    </View>
+                    <TextInput
+                      style={[
+                        inputStyles.input,
+                        {
+                          flex: 1,
+                          backgroundColor: theme.surface,
+                          borderColor: phoneInputFocused ? theme.primary : theme.border,
+                          borderWidth: phoneInputFocused ? 2 : 1,
+                          color: theme.textPrimary,
+                          paddingHorizontal: phoneInputFocused ? Spacing.md : Spacing.lg,
+                        },
+                      ]}
+                      placeholder="(555) 123-4567"
+                      placeholderTextColor={theme.textSecondary}
+                      keyboardType="phone-pad"
+                      value={phoneNumber}
+                      onChangeText={setPhoneNumber}
+                      onFocus={() => setPhoneInputFocused(true)}
+                      onBlur={() => setPhoneInputFocused(false)}
+                    />
                   </View>
-                  <TextInput
-                    style={[
-                      inputStyles.input,
-                      {
-                        flex: 1,
-                        backgroundColor: theme.surface,
-                        borderColor: phoneInputFocused ? theme.primary : theme.border,
-                        borderWidth: phoneInputFocused ? 2 : 1,
-                        color: theme.textPrimary,
-                        paddingHorizontal: phoneInputFocused ? Spacing.md : Spacing.lg,
-                      },
-                    ]}
-                    placeholder="(555) 123-4567"
-                    placeholderTextColor={theme.textSecondary}
-                    keyboardType="phone-pad"
-                    value={phoneNumber}
-                    onChangeText={setPhoneNumber}
-                    onFocus={() => setPhoneInputFocused(true)}
-                    onBlur={() => setPhoneInputFocused(false)}
-                  />
-                </View>
 
-                <Button
-                  onPress={handleDirectLogin}
-                  disabled={loading || phoneNumber.length < 8}
-                >
-                  {loading ? <ActivityIndicator color="white" /> : "Login"}
-                </Button>
-
-                <Pressable
-                  onPress={handleGuestSignIn}
-                  disabled={guestLoading}
-                  style={{ alignItems: "center", padding: Spacing.sm }}
-                >
-                  <ThemedText
-                    type="bodySmall"
-                    style={{ color: theme.primary, fontWeight: "600" }}
+                  <Button
+                    onPress={handleSendCode}
+                    disabled={loading || phoneNumber.length < 8}
                   >
-                    {guestLoading ? "Loading..." : "Continue as Guest"}
-                  </ThemedText>
-                </Pressable>
-              </Animated.View>
+                    {loading ? <ActivityIndicator color="white" /> : "Send Code"}
+                  </Button>
+                </Animated.View>
+              ) : (
+                <Animated.View
+                  entering={SlideInRight}
+                  exiting={SlideOutRight}
+                  style={spacingStyles.gapLg}
+                >
+                  <View style={styles.otpContainer}>
+                    {otp.map((digit, index) => (
+                      <TextInput
+                        key={index}
+                        ref={(ref) => (otpRefs.current[index] = ref)}
+                        style={[
+                          styles.otpInput,
+                          {
+                            borderColor: digit ? theme.primary : theme.border,
+                            backgroundColor: theme.surface,
+                            color: theme.textPrimary,
+                          },
+                        ]}
+                        maxLength={1}
+                        keyboardType="number-pad"
+                        value={digit}
+                        onChangeText={(text) => handleOtpChange(text, index)}
+                        onKeyPress={({ nativeEvent }) => {
+                          if (
+                            nativeEvent.key === "Backspace" &&
+                            !digit &&
+                            index > 0
+                          ) {
+                            otpRefs.current[index - 1].focus();
+                          }
+                        }}
+                      />
+                    ))}
+                  </View>
+
+                  <Button
+                    onPress={handleVerifyOtp}
+                    disabled={loading || otp.join("").length < 4}
+                  >
+                    {loading ? <ActivityIndicator color="white" /> : "Verify"}
+                  </Button>
+
+                  <Pressable
+                    onPress={handleBack}
+                    style={{ alignItems: "center", padding: Spacing.sm }}
+                  >
+                    <ThemedText
+                      type="bodySmall"
+                      style={{ color: theme.textSecondary }}
+                    >
+                      Wrong number?
+                    </ThemedText>
+                  </Pressable>
+                </Animated.View>
+              )}
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Footer */}
       <Animated.View
         entering={FadeInDown.delay(400)}
         style={[
@@ -273,6 +369,10 @@ const styles = StyleSheet.create({
   iconBase: {
     position: "absolute",
   },
+  mainContent: {
+    flex: 1,
+    paddingHorizontal: Spacing.xl,
+  },
   logoContainer: {
     marginBottom: Spacing.md,
   },
@@ -298,6 +398,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: Spacing.inputHeight,
     marginTop: 1,
+  },
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+  },
+  otpInput: {
+    width: 60,
+    height: 60,
+    borderRadius: BorderRadius.medium,
+    borderWidth: 1,
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
   },
   termsText: {
     textAlign: "center",
