@@ -20,9 +20,7 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  SlideInRight,
   SlideOutLeft,
-  SlideOutRight,
 } from "react-native-reanimated";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
@@ -37,7 +35,6 @@ import {
 } from "../theme/global";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
-import { auth, users as usersApi } from "../services/database";
 
 const icons = [
   { name: "calendar", top: "15%", right: "20%" },
@@ -53,14 +50,14 @@ const FloatingIcon = ({ icon, index, theme }) => {
   const translateY = useSharedValue(0);
 
   useEffect(() => {
-    const duration = 2000 + Math.random() * 1000; // Random duration between 2-3s
+    const duration = 2000 + Math.random() * 1000;
     translateY.value = withRepeat(
       withSequence(
         withTiming(-10, { duration: duration, easing: Easing.inOut(Easing.ease) }),
         withTiming(0, { duration: duration, easing: Easing.inOut(Easing.ease) })
       ),
-      -1, // Infinite repeat
-      true // Reverse
+      -1,
+      true
     );
   }, []);
 
@@ -150,7 +147,7 @@ export default function Login({ navigation }) {
               { flex: 1, justifyContent: "space-between" },
               {
                 paddingTop: insets.top + Spacing["3xl"],
-                paddingBottom: insets.bottom + Spacing.xl + 60, // Add extra padding for the absolute footer
+                paddingBottom: insets.bottom + Spacing.xl + 60,
               },
             ]}
           >
@@ -170,137 +167,76 @@ export default function Login({ navigation }) {
                   type="h2"
                   style={[styles.subTitle, { color: theme.textSecondary }]}
                 >
-                  {step === "phone"
-                    ? "Enter your phone number"
-                    : "Verify your number"}
+                  Enter your phone number
                 </ThemedText>
                 <ThemedText
                   type="body"
                   style={{ color: theme.textSecondary, marginTop: Spacing.xs }}
                 >
-                  {step === "phone"
-                    ? "We'll send you a verification code."
-                    : `Enter the code sent to ${phoneNumber}`}
+                  Quick login with your phone
                 </ThemedText>
               </View>
             </Animated.View>
 
             {/* Form Section */}
             <View style={{ flex: 1, justifyContent: "center" }}>
-              {step === "phone" ? (
-                <Animated.View
-                  exiting={SlideOutLeft}
-                  style={spacingStyles.gapLg}
-                >
-                  <View style={styles.phoneInputContainer}>
-                    <View
-                      style={[
-                        styles.countryCode,
-                        { borderColor: theme.border, backgroundColor: theme.surface },
-                      ]}
-                    >
-                      <ThemedText type="body" style={{ fontWeight: "600" }}>
-                        +222
-                      </ThemedText>
-                    </View>
-                    <TextInput
-                      style={[
-                        inputStyles.input,
-                        {
-                          flex: 1,
-                          backgroundColor: theme.surface,
-                          borderColor: phoneInputFocused ? theme.primary : theme.border,
-                          borderWidth: phoneInputFocused ? 2 : 1,
-                          color: theme.textPrimary,
-                          paddingHorizontal: phoneInputFocused ? Spacing.md : Spacing.lg,
-                        },
-                      ]}
-                      placeholder="(555) 123-4567"
-                      placeholderTextColor={theme.textSecondary}
-                      keyboardType="phone-pad"
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      onFocus={() => setPhoneInputFocused(true)}
-                      onBlur={() => setPhoneInputFocused(false)}
-                    />
-                  </View>
-
-                  <Button
-                    onPress={handleSendCode}
-                    disabled={loading || phoneNumber.length < 8}
+              <Animated.View
+                exiting={SlideOutLeft}
+                style={spacingStyles.gapLg}
+              >
+                <View style={styles.phoneInputContainer}>
+                  <View
+                    style={[
+                      styles.countryCode,
+                      { borderColor: theme.border, backgroundColor: theme.surface },
+                    ]}
                   >
-                    {loading ? <ActivityIndicator color="white" /> : "Send Code"}
-                  </Button>
-                </Animated.View>
-              ) : (
-                <Animated.View
-                  entering={SlideInRight}
-                  exiting={SlideOutRight}
-                  style={spacingStyles.gapLg}
-                >
-                  <View style={styles.otpContainer}>
-                    {otp.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        ref={(ref) => (otpRefs.current[index] = ref)}
-                        style={[
-                          styles.otpInput,
-                          {
-                            borderColor: digit ? theme.primary : theme.border,
-                            backgroundColor: theme.surface,
-                            color: theme.textPrimary,
-                          },
-                        ]}
-                        maxLength={1}
-                        keyboardType="number-pad"
-                        value={digit}
-                        onChangeText={(text) => handleOtpChange(text, index)}
-                        onKeyPress={({ nativeEvent }) => {
-                          if (
-                            nativeEvent.key === "Backspace" &&
-                            !digit &&
-                            index > 0
-                          ) {
-                            otpRefs.current[index - 1].focus();
-                          }
-                        }}
-                      />
-                    ))}
-                  </View>
-
-                  <Button
-                    onPress={handleVerifyOtp}
-                    disabled={loading || otp.join("").length < 4}
-                  >
-                    {loading ? <ActivityIndicator color="white" /> : "Verify"}
-                  </Button>
-
-                  <Pressable
-                    onPress={handleBack}
-                    style={{ alignItems: "center", padding: Spacing.sm }}
-                  >
-                    <ThemedText
-                      type="bodySmall"
-                      style={{ color: theme.textSecondary }}
-                    >
-                      Wrong number?
+                    <ThemedText type="body" style={{ fontWeight: "600" }}>
+                      +222
                     </ThemedText>
-                  </Pressable>
+                  </View>
+                  <TextInput
+                    style={[
+                      inputStyles.input,
+                      {
+                        flex: 1,
+                        backgroundColor: theme.surface,
+                        borderColor: phoneInputFocused ? theme.primary : theme.border,
+                        borderWidth: phoneInputFocused ? 2 : 1,
+                        color: theme.textPrimary,
+                        paddingHorizontal: phoneInputFocused ? Spacing.md : Spacing.lg,
+                      },
+                    ]}
+                    placeholder="(555) 123-4567"
+                    placeholderTextColor={theme.textSecondary}
+                    keyboardType="phone-pad"
+                    value={phoneNumber}
+                    onChangeText={setPhoneNumber}
+                    onFocus={() => setPhoneInputFocused(true)}
+                    onBlur={() => setPhoneInputFocused(false)}
+                  />
+                </View>
 
-                  <Pressable
-                    onPress={handleGuestSignIn}
-                    disabled={guestLoading}
-                    style={{ alignItems: "center", padding: Spacing.sm }}
+                <Button
+                  onPress={handleDirectLogin}
+                  disabled={loading || phoneNumber.length < 8}
+                >
+                  {loading ? <ActivityIndicator color="white" /> : "Login"}
+                </Button>
+
+                <Pressable
+                  onPress={handleGuestSignIn}
+                  disabled={guestLoading}
+                  style={{ alignItems: "center", padding: Spacing.sm }}
+                >
+                  <ThemedText
+                    type="bodySmall"
+                    style={{ color: theme.primary, fontWeight: "600" }}
                   >
-                    <ThemedText
-                      type="bodySmall"
-                      style={{ color: theme.primary, fontWeight: "600" }}
-                    >
-                      {guestLoading ? "Loading..." : "Continue as Guest"}
-                    </ThemedText>
-                  </Pressable>
-                </Animated.View>
-              )}
+                    {guestLoading ? "Loading..." : "Continue as Guest"}
+                  </ThemedText>
+                </Pressable>
+              </Animated.View>
             </View>
           </View>
         </ScrollView>
@@ -318,7 +254,7 @@ export default function Login({ navigation }) {
             right: 0,
             paddingHorizontal: Spacing.xl,
             paddingBottom: insets.bottom + Spacing.xl,
-            backgroundColor: "transparent", // Ensure it doesn't block touches if transparent
+            backgroundColor: "transparent",
           },
         ]}
       >
@@ -336,10 +272,6 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   iconBase: {
     position: "absolute",
-  },
-  mainContent: {
-    flex: 1,
-    paddingHorizontal: Spacing.xl,
   },
   logoContainer: {
     marginBottom: Spacing.md,
@@ -364,22 +296,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: BorderRadius.medium,
     borderWidth: 1,
-    height: Spacing.inputHeight, // Match input height
-    marginTop: 1, // Slight alignment fix if needed
-  },
-  otpContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: Spacing.sm,
-  },
-  otpInput: {
-    width: 60,
-    height: 60,
-    borderRadius: BorderRadius.medium,
-    borderWidth: 1,
-    fontSize: 24,
-    fontWeight: "700",
-    textAlign: "center",
+    height: Spacing.inputHeight,
+    marginTop: 1,
   },
   termsText: {
     textAlign: "center",

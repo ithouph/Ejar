@@ -58,8 +58,12 @@ export const auth = {
   },
 
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      // No-op for now - user will be cleared from context
+      console.log("User signed out");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   },
 };
 
