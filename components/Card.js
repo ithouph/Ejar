@@ -42,9 +42,9 @@ export function HotelCard({
   };
 
   // Extract image URL (supports both single image or array)
-  const imageUrl = Array.isArray(item.images) && item.images.length > 0 
+  const imageUrl = item.image_url || (Array.isArray(item.images) && item.images.length > 0 
     ? item.images[0] 
-    : item.image_url || item.image || "https://via.placeholder.com/300";
+    : item.image) || "https://images.unsplash.com/photo-1553531087-84f7ce9c763b?w=500&h=500&fit=crop";
 
   // Format price for display
   const priceDisplay = item.price ? `$${item.price.toLocaleString()}` : "N/A";
