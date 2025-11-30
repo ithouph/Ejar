@@ -85,34 +85,41 @@ export function AuthProvider({ children }) {
       setLoading(true);
       const guestPhoneNumber = "22212345678";
       
+      console.log("🔄 Starting guest sign in for:", guestPhoneNumber);
+      
       // Fetch guest user from database by phone number
       const guestUserFromDb = await usersApi.getByPhoneNumber(guestPhoneNumber);
       
       if (!guestUserFromDb) {
+        console.error("Guest user not found:", guestPhoneNumber);
         throw new Error("Guest user not found in database");
       }
 
+      console.log("✅ Guest user found:", guestUserFromDb);
+
       // Create a session object with the user data
-      const sessionData = {
-        user: {
-          id: guestUserFromDb.id,
-          phone_number: guestUserFromDb.phone_number,
-          whatsapp_phone: guestUserFromDb.whatsapp_phone,
-          post_limit: guestUserFromDb.post_limit,
-          posts_count: guestUserFromDb.posts_count,
-          is_member: guestUserFromDb.is_member,
-          hit_limit: guestUserFromDb.hit_limit,
-          created_at: guestUserFromDb.created_at,
-          updated_at: guestUserFromDb.updated_at,
-        },
+      const userData = {
+        id: guestUserFromDb.id,
+        phone_number: guestUserFromDb.phone_number,
+        whatsapp_phone: guestUserFromDb.whatsapp_phone,
+        post_limit: guestUserFromDb.post_limit,
+        posts_count: guestUserFromDb.posts_count,
+        is_member: guestUserFromDb.is_member,
+        hit_limit: guestUserFromDb.hit_limit,
+        created_at: guestUserFromDb.created_at,
+        updated_at: guestUserFromDb.updated_at,
       };
 
-      setUser(sessionData.user);
+      // Set user state first
+      setUser(userData);
+      console.log("✅ User state set, should redirect now");
+      
+      const sessionData = { user: userData };
       setSession(sessionData);
       
       return sessionData;
     } catch (error) {
-      console.error("Guest sign in error:", error);
+      console.error("❌ Guest sign in error:", error?.message || error);
       throw error;
     } finally {
       setLoading(false);
