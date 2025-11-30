@@ -24,6 +24,16 @@ CREATE TABLE public.cities (
   CONSTRAINT cities_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE public.service_categories (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  icon text,
+  description text,
+  active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT service_categories_pkey PRIMARY KEY (id)
+);
+
 create table public.posts (
   id uuid not null default gen_random_uuid (),
   user_id uuid not null,
@@ -129,16 +139,6 @@ CREATE TABLE public.payment_requests (
   CONSTRAINT payment_requests_pkey PRIMARY KEY (id),
   CONSTRAINT payment_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
   CONSTRAINT payment_requests_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE
-);
-
-CREATE TABLE public.service_categories (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  icon text,
-  description text,
-  active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT service_categories_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE public.support_messages (
