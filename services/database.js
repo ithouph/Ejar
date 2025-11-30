@@ -78,22 +78,32 @@ export const auth = {
         // Login existing user
         return { user: existingUser, isNewUser: false };
       } else {
-        // Create new user
+        // Create new user with phone number only
         const { data: newUser, error } = await supabase
           .from("users")
           .insert({
             phone_number: formattedPhone,
-            first_name: userInfo.first_name || userInfo.firstName || "",
-            last_name: userInfo.last_name || userInfo.lastName || "",
-            full_name: `${userInfo.first_name || userInfo.firstName || ""} ${userInfo.last_name || userInfo.lastName || ""}`.trim(),
-            age: userInfo.age,
-            profile_photo_url: userInfo.profile_photo_url || null,
-            whatsapp_number: userInfo.whatsapp_number || userInfo.whatsappNumber || formattedPhone,
           })
           .select()
           .single();
 
         if (error) return { error: error.message };
+        
+        // Create wallet account for new user
+        try {
+          await supabase
+            .from("wallet_accounts")
+            .insert({
+              user_id: newUser.id,
+              balance: 0,
+              currency: "MRU",
+            })
+            .select()
+            .single();
+        } catch (walletError) {
+          console.log("Wallet creation note:", walletError);
+        }
+
         return { user: newUser, isNewUser: true };
       }
     } catch (error) {
@@ -192,27 +202,20 @@ export const users = {
     return data;
   },
 
-  // Update user info (name, photo, age, WhatsApp)
-  async updateUser(userId, updates) {
-    const { data, error } = await supabase
-      .from("users")
-      .update({
-        first_name: updates.first_name || updates.firstName,
-        last_name: updates.last_name || updates.lastName,
-        full_name: updates.full_name || `${updates.first_name || ''} ${updates.last_name || ''}`.trim(),
-        profile_photo_url: updates.profile_photo_url || updates.photo_url,
-        photo_url: updates.photo_url || updates.profile_photo_url,
-        age: updates.age,
-        whatsapp_number: updates.whatsapp_number || updates.whatsappNumber,
-        phone_number: updates.phone_number || updates.phoneNumber,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId)
-      .select()
-      .single();
+  // Get user by ID
+  async getUserById(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
 
-    if (error) return null;
-    return data;
+      if (error) return null;
+      return data;
+    } catch (err) {
+      return null;
+    }
   },
 
   // Get user profile (birthday, gender, mobile, weight, height)

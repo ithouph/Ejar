@@ -1,29 +1,29 @@
--- EJAR DATABASE SEED DATA
--- Insert dummy data for testing and development
+-- EJAR DATABASE SEED DATA - SIMPLIFIED
+-- Only phone number for login
 
--- 1. CITIES
-INSERT INTO public.cities (id, name, created_at) VALUES
-('550e8400-e29b-41d4-a716-446655440001', 'Nouakchott', NOW()),
-('550e8400-e29b-41d4-a716-446655440002', 'Atar', NOW()),
-('550e8400-e29b-41d4-a716-446655440003', 'Chinguetti', NOW()),
-('550e8400-e29b-41d4-a716-446655440004', 'Tidjikja', NOW()),
-('550e8400-e29b-41d4-a716-446655440005', 'Kaédi', NOW());
+-- 1. USERS (Phone number only)
+INSERT INTO public.users (id, phone_number, created_at) VALUES
+('650e8400-e29b-41d4-a716-446655440001', '22212345678', NOW()),
+('650e8400-e29b-41d4-a716-446655440002', '22287654321', NOW()),
+('650e8400-e29b-41d4-a716-446655440003', '22298765432', NOW()),
+('650e8400-e29b-41d4-a716-446655440004', '22256789012', NOW()),
+('650e8400-e29b-41d4-a716-446655440005', '22289876543', NOW());
 
--- 2. USERS
-INSERT INTO public.users (id, phone_number, first_name, last_name, full_name, age, profile_photo_url, whatsapp_number, created_at) VALUES
-('650e8400-e29b-41d4-a716-446655440001', '22212345678', 'Ahmed', 'Mohamed', 'Ahmed Mohamed', 28, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', '22212345678', NOW()),
-('650e8400-e29b-41d4-a716-446655440002', '22287654321', 'Fatima', 'Ali', 'Fatima Ali', 26, 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', '22287654321', NOW()),
-('650e8400-e29b-41d4-a716-446655440003', '22298765432', 'Mohammed', 'Hassan', 'Mohammed Hassan', 32, 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', '22298765432', NOW()),
-('650e8400-e29b-41d4-a716-446655440004', '22256789012', 'Noor', 'Ibrahim', 'Noor Ibrahim', 24, 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop', '22256789012', NOW()),
-('650e8400-e29b-41d4-a716-446655440005', '22289876543', 'Sara', 'Omar', 'Sara Omar', 30, 'https://images.unsplash.com/photo-1517331156700-3c241d2b4d83?w=100&h=100&fit=crop', '22289876543', NOW());
-
--- 3. WALLET ACCOUNTS
+-- 2. WALLET ACCOUNTS
 INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) VALUES
 ('750e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', 5000, 'MRU', NOW()),
 ('750e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', 12000, 'MRU', NOW()),
 ('750e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440003', 8500, 'MRU', NOW()),
 ('750e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440004', 3200, 'MRU', NOW()),
 ('750e8400-e29b-41d4-a716-446655440005', '650e8400-e29b-41d4-a716-446655440005', 15000, 'MRU', NOW());
+
+-- 3. CITIES
+INSERT INTO public.cities (id, name, created_at) VALUES
+('550e8400-e29b-41d4-a716-446655440001', 'Nouakchott', NOW()),
+('550e8400-e29b-41d4-a716-446655440002', 'Atar', NOW()),
+('550e8400-e29b-41d4-a716-446655440003', 'Chinguetti', NOW()),
+('550e8400-e29b-41d4-a716-446655440004', 'Tidjikja', NOW()),
+('550e8400-e29b-41d4-a716-446655440005', 'Kaédi', NOW());
 
 -- 4. POSTS (Properties, Electronics, Vehicles, Furniture)
 INSERT INTO public.posts (id, user_id, title, description, category, listing_type, property_type, location, price, image_url, images, created_at) VALUES
@@ -73,8 +73,3 @@ INSERT INTO public.service_categories (id, name, icon, description, active, crea
 ('c50e8400-e29b-41d4-a716-446655440003', 'Vehicles', 'truck', 'Cars, motorcycles, and transportation', true, NOW()),
 ('c50e8400-e29b-41d4-a716-446655440004', 'Furniture', 'box', 'Household furniture and appliances', true, NOW()),
 ('c50e8400-e29b-41d4-a716-446655440005', 'Fashion', 'shopping-bag', 'Clothing and accessories', true, NOW());
-
--- 9. PAYMENT REQUESTS (Admin review examples)
-INSERT INTO public.payment_requests (id, user_id, amount, status, payment_method, created_at) VALUES
-('d50e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', 50000, 'pending', 'bank_transfer', NOW()),
-('d50e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', 100000, 'approved', 'mobile_money', NOW());
