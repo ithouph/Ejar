@@ -1,38 +1,6 @@
 -- EJAR DATABASE SCHEMA - SIMPLIFIED
 -- Phone number only login system
 
-CREATE TABLE public.categories (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL UNIQUE,
-  slug text NOT NULL UNIQUE,
-  icon text,
-  description text,
-  active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT categories_pkey PRIMARY KEY (id)
-);
-
-CREATE TABLE public.subcategories (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  category_id uuid NOT NULL,
-  name text NOT NULL,
-  slug text NOT NULL,
-  icon text,
-  description text,
-  active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT subcategories_pkey PRIMARY KEY (id),
-  CONSTRAINT subcategories_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE CASCADE,
-  CONSTRAINT subcategories_unique UNIQUE(category_id, slug)
-);
-
-CREATE TABLE public.cities (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT cities_pkey PRIMARY KEY (id)
-);
-
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   phone_number text NOT NULL UNIQUE,
@@ -42,13 +10,19 @@ CREATE TABLE public.users (
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE public.cities (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT cities_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
-  category_id uuid,
-  subcategory_id uuid,
   title text NOT NULL,
   description text,
+  category text DEFAULT 'property'::text,
   listing_type text,
   property_type text,
   location text NOT NULL,
@@ -63,9 +37,7 @@ CREATE TABLE public.posts (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT posts_pkey PRIMARY KEY (id),
-  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL,
-  CONSTRAINT posts_subcategory_id_fkey FOREIGN KEY (subcategory_id) REFERENCES public.subcategories(id) ON DELETE SET NULL
+  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.reviews (
