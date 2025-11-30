@@ -106,6 +106,10 @@ export default function Settings({ navigation }) {
     );
   };
 
+  const handleMemberApprovals = () => {
+    navigation.navigate("MemberApprovals");
+  };
+
   return (
     <ThemedView style={styles.container}>
       <StickyHeader
@@ -210,6 +214,35 @@ export default function Settings({ navigation }) {
             </View>
             <View style={styles.balanceIcon}>
               <Feather name="dollar-sign" size={40} color="#FFF" />
+            </View>
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={handleMemberApprovals}
+          style={[styles.balanceCard, { backgroundColor: theme.primary + "CC" }]}
+        >
+          <View style={styles.balanceContent}>
+            <View>
+              <ThemedText
+                type="caption"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceLabel}
+              >
+                Payment Approvals
+              </ThemedText>
+              <ThemedText
+                type="bodyMedium"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceAmount}
+              >
+                Review Pending
+              </ThemedText>
+            </View>
+            <View style={styles.balanceIcon}>
+              <Feather name="check-square" size={40} color="#FFF" />
             </View>
           </View>
         </Pressable>

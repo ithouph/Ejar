@@ -2,13 +2,13 @@
 -- Phone number for login + WhatsApp phone
 -- With post approval system
 
--- 1. USERS (Phone number + WhatsApp + Post Limits)
-INSERT INTO public.users (id, phone_number, whatsapp_phone, post_limit, posts_count, created_at) VALUES
-('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 2, NOW()),
-('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, NOW()),
-('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, NOW()),
-('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, NOW()),
-('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 2, NOW());
+-- 1. USERS (Phone number + WhatsApp + Post Limits + Member Status)
+INSERT INTO public.users (id, phone_number, whatsapp_phone, post_limit, posts_count, is_member, created_at) VALUES
+('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 2, true, NOW()),
+('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, false, NOW()),
+('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, false, NOW()),
+('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, false, NOW()),
+('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 2, true, NOW());
 
 -- 2. WALLET ACCOUNTS
 INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) VALUES

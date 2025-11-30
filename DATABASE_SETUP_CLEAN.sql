@@ -8,6 +8,7 @@ CREATE TABLE public.users (
   whatsapp_phone text,
   post_limit integer DEFAULT 5,
   posts_count integer DEFAULT 0,
+  is_member boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT users_pkey PRIMARY KEY (id)
