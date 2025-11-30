@@ -1,4 +1,4 @@
-# Design Guidelines: Ejar Booking & Event Planning App
+# Design Guidelines: Travel Booking & Event Planning App
 
 ## Authentication Flow
 
@@ -112,8 +112,8 @@
 
 ### Color Palette
 **Light Mode**:
-- Primary: rgba(37, 99, 235, 1) (blue for CTAs)
-- Background: rgba(255, 255, 255, 1)
+- Primary: #2563EB (blue for CTAs)
+- Background: #FFFFFF
 - Surface: #F9FAFB
 - Text Primary: #111827
 - Text Secondary: #6B7280
@@ -125,7 +125,7 @@
 **Dark Mode**:
 - Primary: #3B82F6 (lighter blue)
 - Background: #111827
-- Surface: rgba(31, 41, 55, 1)
+- Surface: #1F2937
 - Text Primary: #F9FAFB
 - Text Secondary: #9CA3AF
 - Border: #374151

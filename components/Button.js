@@ -1,13 +1,13 @@
-import React from "react";
-import { StyleSheet, Pressable } from "react-native";
+import React from 'react';
+import { StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-} from "react-native-reanimated";
-import { ThemedText } from "./ThemedText";
-import { useTheme } from "../hooks/useTheme";
-import { BorderRadius, Spacing, Shadows } from "../theme/global";
+} from 'react-native-reanimated';
+import { ThemedText } from './ThemedText';
+import { useTheme } from '../hooks/useTheme';
+import { BorderRadius, Spacing, Shadows } from '../theme/global';
 
 const springConfig = {
   damping: 15,
@@ -24,7 +24,7 @@ export function Button({
   children,
   style,
   disabled = false,
-  variant = "primary",
+  variant = 'primary',
 }) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
@@ -46,20 +46,11 @@ export function Button({
   };
 
   const getButtonStyle = () => {
-    if (variant === "secondary") {
+    if (variant === 'secondary') {
       return {
-        backgroundColor: "transparent",
+        backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: theme.primary,
-      };
-    }
-    if (variant === "google") {
-      return {
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: theme.border,
-        flexDirection: "row",
-        gap: Spacing.md,
       };
     }
     return {
@@ -68,11 +59,8 @@ export function Button({
   };
 
   const getTextColor = () => {
-    if (variant === "secondary") {
+    if (variant === 'secondary') {
       return theme.primary;
-    }
-    if (variant === "google") {
-      return "black";
     }
     return theme.buttonText;
   };
@@ -86,7 +74,7 @@ export function Button({
       style={[
         styles.button,
         getButtonStyle(),
-        variant === "primary" && Shadows.button,
+        variant === 'primary' && Shadows.button,
         {
           opacity: disabled ? 0.5 : 1,
         },
@@ -108,11 +96,11 @@ const styles = StyleSheet.create({
   button: {
     height: Spacing.buttonHeight,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
   },
   buttonText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

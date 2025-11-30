@@ -1,16 +1,11 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Settings from "../pages/Settings";
-import Account from "../pages/Account";
-import EditProfile from "../pages/EditProfile";
-import Balance from "../pages/Balance";
-import AddBalance from "../pages/AddBalance";
-import MemberApprovals from "../pages/MemberApprovals";
-import Reviews from "../pages/Reviews";
-import Support from "../pages/Support";
-import FAQ from "../pages/FAQ";
-import Terms from "../pages/Terms";
-import Privacy from "../pages/Privacy";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Profile from '../pages/Profile';
+import Account from '../pages/Account';
+import EditProfile from '../pages/EditProfile';
+import Balance from '../pages/Balance';
+import Review from '../pages/Review';
+import Support from '../pages/Support';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,17 +16,12 @@ export default function SettingsNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Settings" component={Settings} />
+      <Stack.Screen name="Profile" component={Profile} />
       <Stack.Screen name="Account" component={Account} />
       <Stack.Screen name="EditProfile" component={EditProfile} />
       <Stack.Screen name="Balance" component={Balance} />
-      <Stack.Screen name="AddBalance" component={AddBalance} />
-      <Stack.Screen name="MemberApprovals" component={MemberApprovals} />
-      <Stack.Screen name="Reviews" component={Reviews} />
+      <Stack.Screen name="Review" component={Review} />
       <Stack.Screen name="Support" component={Support} />
-      <Stack.Screen name="FAQ" component={FAQ} />
-      <Stack.Screen name="Terms" component={Terms} />
-      <Stack.Screen name="Privacy" component={Privacy} />
     </Stack.Navigator>
   );
 }

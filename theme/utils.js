@@ -1,7 +1,6 @@
-import { Dimensions } from "react-native";
+import { Dimensions } from 'react-native';
 
-export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
-  Dimensions.get("window");
+export const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isMediumDevice = SCREEN_WIDTH >= 375 && SCREEN_WIDTH < 414;
@@ -25,12 +24,12 @@ export const truncateText = (text, maxLength) => {
   return `${text.substring(0, maxLength)}...`;
 };
 
-export const formatPrice = (price, currency = "$") => {
+export const formatPrice = (price, currency = '$') => {
   return `${currency}${price.toLocaleString()}`;
 };
 
 export const formatDate = (dateString) => {
   const date = new Date(dateString);
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return date.toLocaleDateString("en-US", options);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
 };

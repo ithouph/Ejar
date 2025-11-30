@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  ScrollView,
-  View,
-  Pressable,
-  Image,
-  ActivityIndicator,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { ThemedText } from "../components/ThemedText";
-import { ThemedView } from "../components/ThemedView";
-import { useTheme } from "../hooks/useTheme";
-import { useScreenInsets } from "../hooks/useScreenInsets";
-import { Spacing, BorderRadius } from "../theme/global";
-import { useAuth } from "../contexts/AuthContext";
-import { wallet as walletApi, users as usersApi } from "../services/database";
+import React from 'react';
+import { StyleSheet, ScrollView, View, Pressable, Image } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { ThemedText } from '../components/ThemedText';
+import { ThemedView } from '../components/ThemedView';
+import { useTheme } from '../hooks/useTheme';
+import { useScreenInsets } from '../hooks/useScreenInsets';
+import { Spacing, BorderRadius } from '../theme/global';
+import { userData } from '../data/userData';
 
 function ServiceCard({ icon, title, onPress, theme }) {
   return (
@@ -22,12 +14,7 @@ function ServiceCard({ icon, title, onPress, theme }) {
       onPress={onPress}
       style={[styles.serviceCard, { backgroundColor: theme.surface }]}
     >
-      <View
-        style={[
-          styles.serviceIconContainer,
-          { backgroundColor: theme.primary + "10" },
-        ]}
-      >
+      <View style={[styles.serviceIconContainer, { backgroundColor: theme.primary + '10' }]}>
         <Feather name={icon} size={28} color={theme.primary} />
       </View>
       <ThemedText type="bodySmall" style={styles.serviceTitle}>
@@ -40,60 +27,11 @@ function ServiceCard({ icon, title, onPress, theme }) {
 export default function Account({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
-  const { user } = useAuth();
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [loadingBalance, setLoadingBalance] = useState(true);
-  const [userProfile, setUserProfile] = useState(null);
-
-  useEffect(() => {
-    loadWalletBalance();
-    loadUserProfile();
-  }, [user]);
-
-  const loadUserProfile = async () => {
-    if (!user) {
-      setUserProfile(null);
-      return;
-    }
-
-    try {
-      const profile = await usersApi.getUser(user.id);
-      setUserProfile(profile);
-    } catch (error) {
-      console.error("Error loading user profile:", error);
-      setUserProfile(null);
-    }
-  };
-
-  const loadWalletBalance = async () => {
-    if (!user) {
-      setWalletBalance(0);
-      setLoadingBalance(false);
-      return;
-    }
-
-    try {
-      setLoadingBalance(true);
-      const walletData = await walletApi.get(user.id);
-
-      if (walletData) {
-        const balance = parseFloat(walletData.balance) || 0;
-        setWalletBalance(balance);
-      } else {
-        setWalletBalance(0);
-      }
-    } catch (error) {
-      console.error("Error loading wallet balance:", error);
-      setWalletBalance(0);
-    } finally {
-      setLoadingBalance(false);
-    }
-  };
 
   const services = [
-    { icon: "scissors", title: "Hairdresser" },
-    { icon: "wind", title: "Cleaning" },
-    { icon: "droplet", title: "Painting" },
+    { icon: 'scissors', title: 'Hairdresser' },
+    { icon: 'wind', title: 'Cleaning' },
+    { icon: 'droplet', title: 'Painting' },
   ];
 
   return (
@@ -121,34 +59,26 @@ export default function Account({ navigation }) {
         </View>
 
         <Pressable
-          onPress={() => navigation.navigate("EditProfile")}
+          onPress={() => navigation.navigate('EditProfile')}
           style={[styles.profileCard, { backgroundColor: theme.surface }]}
         >
           <Image
-            source={{
-              uri:
-                userProfile?.photo_url ||
-                user?.user_metadata?.avatar_url ||
-                "https://via.placeholder.com/100",
-            }}
+            source={{ uri: userData.profile.photo }}
             style={styles.profilePhoto}
           />
           <View style={styles.profileInfo}>
             <ThemedText type="h2" style={styles.profileName}>
-              {userProfile?.full_name ||
-                user?.user_metadata?.full_name ||
-                user?.email ||
-                "Guest User"}
+              {userData.profile.fullName}
             </ThemedText>
             <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-              {user?.email || "guest@ejar.com"}
+              {userData.profile.email}
             </ThemedText>
           </View>
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />
         </Pressable>
 
         <Pressable
-          onPress={() => navigation.navigate("Balance")}
+          onPress={() => navigation.navigate('Balance')}
           style={[styles.balanceCard, { backgroundColor: theme.primary }]}
         >
           <View style={styles.balanceContent}>
@@ -161,22 +91,14 @@ export default function Account({ navigation }) {
               >
                 Total Balance
               </ThemedText>
-              {loadingBalance ? (
-                <ActivityIndicator
-                  size="small"
-                  color="#FFF"
-                  style={{ marginVertical: 8 }}
-                />
-              ) : (
-                <ThemedText
-                  type="h1"
-                  lightColor="#FFF"
-                  darkColor="#FFF"
-                  style={styles.balanceAmount}
-                >
-                  ${walletBalance.toFixed(2)}
-                </ThemedText>
-              )}
+              <ThemedText
+                type="h1"
+                lightColor="#FFF"
+                darkColor="#FFF"
+                style={styles.balanceAmount}
+              >
+                $2,850.00
+              </ThemedText>
             </View>
             <View style={styles.balanceIcon}>
               <Feather name="dollar-sign" size={32} color="#FFF" />
@@ -188,17 +110,10 @@ export default function Account({ navigation }) {
           <View style={styles.sectionHeader}>
             <ThemedText type="h2">Services Categories</ThemedText>
             <Pressable style={styles.viewAllButton}>
-              <ThemedText
-                type="bodySmall"
-                style={{ color: theme.textSecondary }}
-              >
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
                 View all
               </ThemedText>
-              <Feather
-                name="chevron-right"
-                size={16}
-                color={theme.textSecondary}
-              />
+              <Feather name="chevron-right" size={16} color={theme.textSecondary} />
             </Pressable>
           </View>
 
@@ -227,14 +142,9 @@ export default function Account({ navigation }) {
           <View style={styles.gridContainer}>
             <Pressable
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
-              onPress={() => navigation.navigate("EditProfile")}
+              onPress={() => navigation.navigate('EditProfile')}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
                 <Feather name="edit-3" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
@@ -247,14 +157,9 @@ export default function Account({ navigation }) {
 
             <Pressable
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
-              onPress={() => navigation.navigate("Review")}
+              onPress={() => navigation.navigate('Review')}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
                 <Feather name="star" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
@@ -267,19 +172,10 @@ export default function Account({ navigation }) {
 
             <Pressable
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
-              onPress={() => navigation.navigate("Balance")}
+              onPress={() => navigation.navigate('Balance')}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Feather
-                  name="dollar-sign"
-                  size={24}
-                  color={theme.textPrimary}
-                />
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="dollar-sign" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
                 Wallet
@@ -291,19 +187,10 @@ export default function Account({ navigation }) {
 
             <Pressable
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
-              onPress={() => navigation.navigate("Support")}
+              onPress={() => navigation.navigate('Support')}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
-                <Feather
-                  name="message-circle"
-                  size={24}
-                  color={theme.textPrimary}
-                />
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+                <Feather name="message-circle" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
                 Support
@@ -317,12 +204,7 @@ export default function Account({ navigation }) {
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
               onPress={() => {}}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
                 <Feather name="bell" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
@@ -337,12 +219,7 @@ export default function Account({ navigation }) {
               style={[styles.gridCard, { backgroundColor: theme.surface }]}
               onPress={() => {}}
             >
-              <View
-                style={[
-                  styles.gridIconContainer,
-                  { backgroundColor: theme.background },
-                ]}
-              >
+              <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
                 <Feather name="settings" size={24} color={theme.textPrimary} />
               </View>
               <ThemedText type="bodyLarge" style={styles.gridTitle}>
@@ -410,22 +287,22 @@ const styles = StyleSheet.create({
     gap: Spacing.xl,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   pageTitle: {
-    fontWeight: "700",
+    fontWeight: '700',
   },
   closeButton: {
     width: 40,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: Spacing.lg,
     borderRadius: BorderRadius.large,
     gap: Spacing.md,
@@ -439,7 +316,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontWeight: "700",
+    fontWeight: '700',
     marginBottom: Spacing.xs,
   },
   balanceCard: {
@@ -447,39 +324,39 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.large,
   },
   balanceContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   balanceLabel: {
     marginBottom: Spacing.xs,
     opacity: 0.9,
   },
   balanceAmount: {
-    fontWeight: "700",
+    fontWeight: '700',
   },
   balanceIcon: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
     gap: Spacing.md,
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sectionTitle: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   viewAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
   servicesScroll: {
@@ -488,8 +365,8 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     width: 110,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: BorderRadius.medium,
     padding: Spacing.lg,
     gap: Spacing.sm,
@@ -498,54 +375,54 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   serviceTitle: {
-    textAlign: "center",
-    fontWeight: "500",
+    textAlign: 'center',
+    fontWeight: '500',
   },
   gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.md,
   },
   gridCard: {
-    width: "48%",
+    width: '48%',
     padding: Spacing.lg,
     borderRadius: BorderRadius.large,
     gap: Spacing.sm,
-    alignItems: "flex-start",
+    alignItems: 'flex-start',
   },
   gridIconContainer: {
     width: 48,
     height: 48,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.xs,
   },
   gridTitle: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   statsSection: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: Spacing.md,
   },
   statCard: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
     padding: Spacing.lg,
     borderRadius: BorderRadius.medium,
     gap: Spacing.sm,
   },
   statNumber: {
-    fontWeight: "700",
+    fontWeight: '700',
   },
   logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.md,
     padding: Spacing.lg,
     borderRadius: BorderRadius.medium,

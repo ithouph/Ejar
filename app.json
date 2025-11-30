@@ -39,11 +39,14 @@
           }
         }
       ],
-      "expo-web-browser",
-      "expo-secure-store"
+      "expo-web-browser"
     ],
     "experiments": {
       "reactCompiler": true
-    }
+    },
+    "extra": {
+  "supabaseUrl": "https://pvfgyvjsxqlmyugucohg.supabase.co",
+  "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2Zmd5dmpzeHFsbXl1Z3Vjb2hnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxMDg5MTUsImV4cCI6MjA3NzY4NDkxNX0.Sqnn_B3bInpZ-1voy1uYTS08pnrWOMcnPKHv5FxmHbE"
+}
   }
 }

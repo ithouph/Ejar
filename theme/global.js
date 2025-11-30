@@ -1,17 +1,17 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 /**
  * ═══════════════════════════════════════════════════════════════════
  * SPACING CONSTANTS
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Controls padding, margins, and gaps throughout the app.
- *
+ * 
  * CUSTOMIZATION:
  * - Make numbers bigger for more space
  * - Make numbers smaller for less space
  * - Keep proportional (xs < sm < md < lg < xl)
- *
+ * 
  * EXAMPLES:
  * xs: 4   - Tiny spacing between related items
  * sm: 8   - Small spacing
@@ -27,25 +27,25 @@ export const Spacing = {
   md: 12,
   lg: 16,
   xl: 24,
-  "2xl": 32,
-  "3xl": 48,
-
+  '2xl': 32,
+  '3xl': 48,
+  
   // COMPONENT HEIGHTS
-  inputHeight: 48, // Height of text inputs
-  buttonHeight: 56, // Height of large buttons
-  tabBarHeight: 80,// Height of bottom tab bar
+  inputHeight: 48,      // Height of text inputs
+  buttonHeight: 56,     // Height of large buttons
+  tabBarHeight: 60,     // Height of bottom tab bar
 };
 
 /**
  * ═══════════════════════════════════════════════════════════════════
  * BORDER RADIUS (ROUNDED CORNERS)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * CUSTOMIZATION:
  * - Increase for more rounded corners
  * - Decrease for sharper corners
  * - Set to 0 for square corners
- *
+ * 
  * EXAMPLES:
  * small: 8    - Inputs, small buttons
  * medium: 12  - Cards, primary buttons
@@ -63,11 +63,11 @@ export const BorderRadius = {
  * ═══════════════════════════════════════════════════════════════════
  * TYPOGRAPHY (TEXT SIZES & WEIGHTS)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * CUSTOMIZATION:
  * - Change fontSize to make text bigger/smaller
  * - fontWeight options: '400' (normal), '600' (semibold), '700' (bold)
- *
+ * 
  * WHERE USED:
  * display   - Large welcome text
  * h1        - Screen titles
@@ -79,32 +79,32 @@ export const BorderRadius = {
  */
 export const Typography = {
   display: {
-    fontSize: 32, // Large welcome text
-    fontWeight: "700", // Bold
+    fontSize: 32,      // Large welcome text
+    fontWeight: '700', // Bold
   },
   h1: {
-    fontSize: 24, // Screen titles
-    fontWeight: "700", // Bold
+    fontSize: 24,      // Screen titles
+    fontWeight: '700', // Bold
   },
   h2: {
-    fontSize: 20, // Section headers
-    fontWeight: "600", // Semibold
+    fontSize: 20,      // Section headers
+    fontWeight: '600', // Semibold
   },
   bodyLarge: {
-    fontSize: 18, // Property names
-    fontWeight: "400", // Normal
+    fontSize: 18,      // Property names
+    fontWeight: '400', // Normal
   },
   body: {
-    fontSize: 16, // Normal text
-    fontWeight: "400", // Normal
+    fontSize: 16,      // Normal text
+    fontWeight: '400', // Normal
   },
   bodySmall: {
-    fontSize: 14, // Small text
-    fontWeight: "400", // Normal
+    fontSize: 14,      // Small text
+    fontWeight: '400', // Normal
   },
   caption: {
-    fontSize: 12, // Tiny text
-    fontWeight: "400", // Normal
+    fontSize: 12,      // Tiny text
+    fontWeight: '400', // Normal
   },
 };
 
@@ -112,36 +112,36 @@ export const Typography = {
  * ═══════════════════════════════════════════════════════════════════
  * SHADOWS (DROP SHADOWS)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Creates depth and elevation.
- *
+ * 
  * CUSTOMIZATION:
  * - shadowOpacity: 0-1 (higher = darker shadow)
  * - shadowRadius: 0-20 (higher = more blurred)
  * - elevation: Android shadow (0-20)
- *
+ * 
  * NOTE: Shadows don't work well on all backgrounds.
  * Use sparingly for best performance.
  */
 export const Shadows = {
   small: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2, // Android
   },
   medium: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4, // Android
   },
   button: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.20,
     shadowRadius: 4,
     elevation: 3, // Android
   },
@@ -151,9 +151,9 @@ export const Shadows = {
  * ═══════════════════════════════════════════════════════════════════
  * BUTTON STYLES
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Pre-made button styles used throughout the app.
- *
+ * 
  * TYPES:
  * - primary: Filled button (blue background)
  * - primaryLarge: Larger filled button
@@ -169,56 +169,56 @@ export const buttonStyles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   primaryLarge: {
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secondary: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
   },
   outlined: {
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   text: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iconSmall: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   chip: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.xs,
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
@@ -230,7 +230,7 @@ export const buttonStyles = StyleSheet.create({
  * ═══════════════════════════════════════════════════════════════════
  * INPUT STYLES (TEXT FIELDS, SEARCH BARS, ETC.)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * TYPES:
  * - input: Standard text input
  * - inputLarge: Larger text input
@@ -249,7 +249,7 @@ export const inputStyles = StyleSheet.create({
   },
   input: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.medium,
     fontSize: 16,
     borderWidth: 1,
@@ -262,8 +262,8 @@ export const inputStyles = StyleSheet.create({
     borderWidth: 1,
   },
   searchInput: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
     paddingHorizontal: Spacing.lg,
     height: 48,
@@ -276,12 +276,12 @@ export const inputStyles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     minHeight: 100,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   picker: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.medium,
@@ -292,8 +292,8 @@ export const inputStyles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   radioInner: {
     width: 10,
@@ -305,8 +305,8 @@ export const inputStyles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
@@ -314,9 +314,9 @@ export const inputStyles = StyleSheet.create({
  * ═══════════════════════════════════════════════════════════════════
  * CARD STYLES (PROPERTY CARDS, PROFILE CARDS, ETC.)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Pre-made card components used throughout the app.
- *
+ * 
  * CUSTOMIZATION:
  * - Change borderRadius for sharper/rounder corners
  * - Change padding for more/less space inside cards
@@ -324,11 +324,11 @@ export const inputStyles = StyleSheet.create({
 export const cardStyles = StyleSheet.create({
   card: {
     borderRadius: BorderRadius.medium,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   cardLarge: {
     borderRadius: BorderRadius.large,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   cardContent: {
     padding: Spacing.lg,
@@ -337,9 +337,9 @@ export const cardStyles = StyleSheet.create({
     padding: Spacing.md,
   },
   cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: Spacing.lg,
   },
   cardFooter: {
@@ -347,15 +347,15 @@ export const cardStyles = StyleSheet.create({
     borderTopWidth: 1,
   },
   cardImage: {
-    width: "100%",
+    width: '100%',
     height: 200,
   },
   cardImageSmall: {
-    width: "100%",
+    width: '100%',
     height: 150,
   },
   cardImageLarge: {
-    width: "100%",
+    width: '100%',
     height: 250,
   },
   cardImageRound: {
@@ -364,7 +364,7 @@ export const cardStyles = StyleSheet.create({
     borderRadius: 50,
   },
   cardRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: Spacing.md,
   },
   cardColumn: {
@@ -376,9 +376,9 @@ export const cardStyles = StyleSheet.create({
  * ═══════════════════════════════════════════════════════════════════
  * LAYOUT STYLES (CONTAINERS, ROWS, COLUMNS)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Common layout patterns used throughout the app.
- *
+ * 
  * MOST USED:
  * - container: Full screen container
  * - row: Horizontal layout
@@ -401,37 +401,37 @@ export const layoutStyles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   rowCenter: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   rowBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   rowStart: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   rowEnd: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   column: {
-    flexDirection: "column",
+    flexDirection: 'column',
   },
   columnCenter: {
-    flexDirection: "column",
-    alignItems: "center",
+    flexDirection: 'column',
+    alignItems: 'center',
   },
   center: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
     gap: Spacing.md,
@@ -441,15 +441,15 @@ export const layoutStyles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: Spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
@@ -464,17 +464,17 @@ export const layoutStyles = StyleSheet.create({
  * ═══════════════════════════════════════════════════════════════════
  * SPACING UTILITIES (PADDING & MARGIN)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Bootstrap-like spacing utilities.
  * Use these instead of creating custom styles.
- *
+ * 
  * HOW TO USE:
  * - p = padding, m = margin
  * - t = top, b = bottom, l = left, r = right
  * - x = horizontal (left + right)
  * - y = vertical (top + bottom)
  * - Xs, Sm, Md, Lg, Xl, 2xl, 3xl = size
- *
+ * 
  * EXAMPLES:
  * - pLg: Padding large (16px) on all sides
  * - mtXl: Margin top extra large (24px)
@@ -489,9 +489,9 @@ export const spacingStyles = StyleSheet.create({
   pMd: { padding: Spacing.md },
   pLg: { padding: Spacing.lg },
   pXl: { padding: Spacing.xl },
-  p2xl: { padding: Spacing["2xl"] },
-  p3xl: { padding: Spacing["3xl"] },
-
+  p2xl: { padding: Spacing['2xl'] },
+  p3xl: { padding: Spacing['3xl'] },
+  
   // PADDING - TOP
   pt0: { paddingTop: 0 },
   ptXs: { paddingTop: Spacing.xs },
@@ -499,8 +499,8 @@ export const spacingStyles = StyleSheet.create({
   ptMd: { paddingTop: Spacing.md },
   ptLg: { paddingTop: Spacing.lg },
   ptXl: { paddingTop: Spacing.xl },
-  pt2xl: { paddingTop: Spacing["2xl"] },
-
+  pt2xl: { paddingTop: Spacing['2xl'] },
+  
   // PADDING - BOTTOM
   pb0: { paddingBottom: 0 },
   pbXs: { paddingBottom: Spacing.xs },
@@ -508,8 +508,8 @@ export const spacingStyles = StyleSheet.create({
   pbMd: { paddingBottom: Spacing.md },
   pbLg: { paddingBottom: Spacing.lg },
   pbXl: { paddingBottom: Spacing.xl },
-  pb2xl: { paddingBottom: Spacing["2xl"] },
-
+  pb2xl: { paddingBottom: Spacing['2xl'] },
+  
   // PADDING - LEFT
   pl0: { paddingLeft: 0 },
   plXs: { paddingLeft: Spacing.xs },
@@ -517,7 +517,7 @@ export const spacingStyles = StyleSheet.create({
   plMd: { paddingLeft: Spacing.md },
   plLg: { paddingLeft: Spacing.lg },
   plXl: { paddingLeft: Spacing.xl },
-
+  
   // PADDING - RIGHT
   pr0: { paddingRight: 0 },
   prXs: { paddingRight: Spacing.xs },
@@ -525,7 +525,7 @@ export const spacingStyles = StyleSheet.create({
   prMd: { paddingRight: Spacing.md },
   prLg: { paddingRight: Spacing.lg },
   prXl: { paddingRight: Spacing.xl },
-
+  
   // PADDING - HORIZONTAL (left + right)
   px0: { paddingHorizontal: 0 },
   pxXs: { paddingHorizontal: Spacing.xs },
@@ -533,7 +533,7 @@ export const spacingStyles = StyleSheet.create({
   pxMd: { paddingHorizontal: Spacing.md },
   pxLg: { paddingHorizontal: Spacing.lg },
   pxXl: { paddingHorizontal: Spacing.xl },
-
+  
   // PADDING - VERTICAL (top + bottom)
   py0: { paddingVertical: 0 },
   pyXs: { paddingVertical: Spacing.xs },
@@ -541,7 +541,7 @@ export const spacingStyles = StyleSheet.create({
   pyMd: { paddingVertical: Spacing.md },
   pyLg: { paddingVertical: Spacing.lg },
   pyXl: { paddingVertical: Spacing.xl },
-
+  
   // MARGIN - ALL SIDES
   m0: { margin: 0 },
   mXs: { margin: Spacing.xs },
@@ -549,7 +549,7 @@ export const spacingStyles = StyleSheet.create({
   mMd: { margin: Spacing.md },
   mLg: { margin: Spacing.lg },
   mXl: { margin: Spacing.xl },
-
+  
   // MARGIN - TOP
   mt0: { marginTop: 0 },
   mtXs: { marginTop: Spacing.xs },
@@ -557,7 +557,7 @@ export const spacingStyles = StyleSheet.create({
   mtMd: { marginTop: Spacing.md },
   mtLg: { marginTop: Spacing.lg },
   mtXl: { marginTop: Spacing.xl },
-
+  
   // MARGIN - BOTTOM
   mb0: { marginBottom: 0 },
   mbXs: { marginBottom: Spacing.xs },
@@ -565,7 +565,7 @@ export const spacingStyles = StyleSheet.create({
   mbMd: { marginBottom: Spacing.md },
   mbLg: { marginBottom: Spacing.lg },
   mbXl: { marginBottom: Spacing.xl },
-
+  
   // MARGIN - LEFT
   ml0: { marginLeft: 0 },
   mlXs: { marginLeft: Spacing.xs },
@@ -573,7 +573,7 @@ export const spacingStyles = StyleSheet.create({
   mlMd: { marginLeft: Spacing.md },
   mlLg: { marginLeft: Spacing.lg },
   mlXl: { marginLeft: Spacing.xl },
-
+  
   // MARGIN - RIGHT
   mr0: { marginRight: 0 },
   mrXs: { marginRight: Spacing.xs },
@@ -581,7 +581,7 @@ export const spacingStyles = StyleSheet.create({
   mrMd: { marginRight: Spacing.md },
   mrLg: { marginRight: Spacing.lg },
   mrXl: { marginRight: Spacing.xl },
-
+  
   // MARGIN - HORIZONTAL (left + right)
   mx0: { marginHorizontal: 0 },
   mxXs: { marginHorizontal: Spacing.xs },
@@ -589,7 +589,7 @@ export const spacingStyles = StyleSheet.create({
   mxMd: { marginHorizontal: Spacing.md },
   mxLg: { marginHorizontal: Spacing.lg },
   mxXl: { marginHorizontal: Spacing.xl },
-
+  
   // MARGIN - VERTICAL (top + bottom)
   my0: { marginVertical: 0 },
   myXs: { marginVertical: Spacing.xs },
@@ -597,21 +597,21 @@ export const spacingStyles = StyleSheet.create({
   myMd: { marginVertical: Spacing.md },
   myLg: { marginVertical: Spacing.lg },
   myXl: { marginVertical: Spacing.xl },
-
+  
   // GAP (space between children)
   gapXs: { gap: Spacing.xs },
   gapSm: { gap: Spacing.sm },
   gapMd: { gap: Spacing.md },
   gapLg: { gap: Spacing.lg },
   gapXl: { gap: Spacing.xl },
-  gap2xl: { gap: Spacing["2xl"] },
+  gap2xl: { gap: Spacing['2xl'] },
 });
 
 /**
  * ═══════════════════════════════════════════════════════════════════
  * MODAL STYLES (POPUPS, BOTTOM SHEETS)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Used for filters, forms, and other modal popups.
  */
 export const modalStyles = StyleSheet.create({
@@ -620,17 +620,17 @@ export const modalStyles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
   },
   modalContent: {
     borderTopLeftRadius: BorderRadius.large,
     borderTopRightRadius: BorderRadius.large,
-    maxHeight: "90%",
+    maxHeight: '90%',
   },
   modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
   },
@@ -650,10 +650,10 @@ export const modalStyles = StyleSheet.create({
     gap: Spacing.md,
   },
   modalTitle: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   modalSubtitle: {
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: Spacing.xs,
   },
 });
@@ -662,7 +662,7 @@ export const modalStyles = StyleSheet.create({
  * ═══════════════════════════════════════════════════════════════════
  * LIST STYLES (FLATLIST, SCROLLVIEW)
  * ═══════════════════════════════════════════════════════════════════
- *
+ * 
  * Used for lists of items like properties, reviews, transactions.
  */
 export const listStyles = StyleSheet.create({
@@ -673,15 +673,15 @@ export const listStyles = StyleSheet.create({
     gap: Spacing.md,
   },
   listItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
   },
   listItemWithBorder: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
@@ -695,8 +695,8 @@ export const listStyles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listItemImage: {
     width: 50,
@@ -707,379 +707,5 @@ export const listStyles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 8,
-  },
-});
-
-/**
- * ═══════════════════════════════════════════════════════════════════
- * STICKY HEADER STYLES
- * ═══════════════════════════════════════════════════════════════════
- */
-export const stickyHeaderStyles = StyleSheet.create({
-  stickyHeader: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    minHeight: 56,
-    gap: Spacing.sm,
-  },
-  title: {
-    fontWeight: "700",
-    fontSize: 24,
-  },
-  actionButton: {
-    padding: Spacing.sm,
-  },
-});
-
-/**
- * ═══════════════════════════════════════════════════════════════════
- * SETTINGS PAGE STYLES
- * ═══════════════════════════════════════════════════════════════════
- */
-export const settingsPageStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.lg,
-    paddingTop: Spacing.xl * 3.5,
-  },
-  navbarContainer: {
-    zIndex: 10,
-  },
-  sectionLabel: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.lg,
-  },
-  sectionLabelText: {
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: Spacing.xl,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.large,
-    gap: Spacing.lg,
-    marginBottom: Spacing.lg,
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  profilePhotoContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.3)",
-  },
-  profilePhoto: {
-    width: "100%",
-    height: "100%",
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontWeight: "700",
-    marginBottom: Spacing.xs,
-  },
-  gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    justifyContent: "space-between",
-  },
-  gridCard: {
-    width: "100%",
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.large,
-    gap: Spacing.xs,
-    alignItems: "flex-start",
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
-    minHeight: 105,
-    justifyContent: "space-between",
-    aspectRatio: 1,
-  },
-  gridItem: {
-    width: "48%",
-    marginBottom: Spacing.md,
-  },
-  gridIconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: "flex-start",
-    justifyContent: "center",
-    marginBottom: Spacing.xs,
-  },
-  gridTitle: {
-    fontWeight: "700",
-    textAlign: "left",
-    fontSize: 14,
-  },
-  gridDescription: {
-    textAlign: "left",
-    fontSize: 11,
-  },
-  gridCardContent: {
-    flex: 1,
-    alignItems: "flex-start",
-    justifyContent: "center",
-  },
-  balanceCard: {
-    padding: Spacing.xl,
-    marginHorizontal: Spacing.md,
-    borderRadius: BorderRadius.large,
-    marginBottom: Spacing.lg,
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  balanceContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  balanceLabel: {
-    marginBottom: Spacing.sm,
-    fontWeight: "600",
-  },
-  balanceAmount: {
-    fontWeight: "700",
-    fontSize: 28,
-  },
-  balanceIcon: {
-    width: 72,
-    height: 72,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
-
-/**
- * ═══════════════════════════════════════════════════════════════════
- * POSTS PAGE STYLES
- * ═══════════════════════════════════════════════════════════════════
- */
-export const postsPageStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  listContent: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.lg,
-  },
-  gridContent: {
-    paddingHorizontal: Spacing.lg,
-  },
-  row: {
-    justifyContent: "space-between",
-    marginBottom: Spacing.md,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.xl,
-  },
-  emptyIconContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Spacing.xl,
-  },
-  emptyTitle: {
-    fontWeight: "700",
-    marginBottom: Spacing.sm,
-    textAlign: "center",
-  },
-  emptyDescription: {
-    textAlign: "center",
-    marginBottom: Spacing.xl,
-    lineHeight: 22,
-  },
-  createButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.medium,
-  },
-  createButtonText: {
-    fontWeight: "600",
-  },
-});
-
-/**
- * ═══════════════════════════════════════════════════════════════════
- * REVIEW PAGE STYLES
- * ═══════════════════════════════════════════════════════════════════
- */
-export const reviewPageStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  list: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-  },
-  reviewCard: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.large,
-    gap: Spacing.md,
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  reviewHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: Spacing.md,
-  },
-  propertyInfo: {
-    flex: 1,
-    gap: Spacing.xs,
-  },
-  propertyName: {
-    fontWeight: "700",
-  },
-  ratingBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.medium,
-  },
-  comment: {
-    lineHeight: 22,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.xl,
-  },
-  emptyIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Spacing.lg,
-  },
-  emptyTitle: {
-    fontWeight: "700",
-    marginBottom: Spacing.sm,
-    textAlign: "center",
-  },
-  emptyText: {
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
-
-/**
- * ═══════════════════════════════════════════════════════════════════
- * SAVED PAGE STYLES
- * ═══════════════════════════════════════════════════════════════════
- */
-export const savedPageStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  navbarContainer: {
-    zIndex: 10,
-  },
-  listContent: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-  },
-  gridContent: {
-    paddingHorizontal: Spacing.lg,
-  },
-  row: {
-    justifyContent: "space-between",
-    marginBottom: Spacing.md,
-  },
-  cardContainer: {
-    marginBottom: Spacing.lg,
-  },
-  compactCard: {
-    width: "48%",
-    borderRadius: BorderRadius.medium,
-    overflow: "hidden",
-  },
-  compactImage: {
-    width: "100%",
-    height: 120,
-  },
-  compactContent: {
-    padding: Spacing.sm,
-    gap: Spacing.xs,
-  },
-  compactName: {
-    fontWeight: "600",
-  },
-  compactLocationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-  },
-  compactRatingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
-  },
-  compactRating: {
-    fontWeight: "600",
-  },
-  compactFavoriteButton: {
-    position: "absolute",
-    top: Spacing.sm,
-    right: Spacing.sm,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing.xl,
   },
 });

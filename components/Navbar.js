@@ -1,17 +1,17 @@
-import React from "react";
-import { View, Pressable, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import React from 'react';
+import { View, Pressable, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-} from "react-native-reanimated";
-import { BlurView } from "expo-blur";
-import { ThemedText } from "./ThemedText";
-import { Spacing } from "../theme/global";
+} from 'react-native-reanimated';
+import { ThemedText } from './ThemedText';
+import { Spacing } from '../theme/global';
 
 export function TabBarIcon({ name, color, focused }) {
   const scale = useSharedValue(1);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: focused ? 1.1 : scale.value }],
   }));
@@ -23,9 +23,47 @@ export function TabBarIcon({ name, color, focused }) {
   );
 }
 
+export function PageHeader({ title, theme, onBack, onAction, actionIcon, onViewToggle, viewMode }) {
+  return (
+    <View style={[styles.pageHeader, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+      {onBack ? (
+        <Pressable onPress={onBack} style={styles.headerButton}>
+          <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+        </Pressable>
+      ) : (
+        <View style={styles.headerButton} />
+      )}
+      
+      <ThemedText type="h1" style={styles.headerTitle}>
+        {title}
+      </ThemedText>
+      
+      <View style={styles.headerActions}>
+        {onViewToggle ? (
+          <Pressable onPress={onViewToggle} style={styles.headerButton}>
+            <Feather 
+              name={viewMode === 'normal' ? 'grid' : 'list'} 
+              size={20} 
+              color={theme.primary} 
+            />
+          </Pressable>
+        ) : null}
+        
+        {onAction ? (
+          <Pressable onPress={onAction} style={styles.headerButton}>
+            <Feather name={actionIcon || 'plus-circle'} size={24} color={theme.primary} />
+          </Pressable>
+        ) : actionIcon ? (
+          <View style={styles.headerButton} />
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 export function SimpleHeader({ title, theme, onClose }) {
   return (
-    <View style={[styles.simpleHeader, { backgroundColor: theme.bg }]}>
+    <View style={[styles.simpleHeader, { backgroundColor: theme.background }]}>
       <ThemedText type="h1" style={styles.simpleTitle}>
         {title}
       </ThemedText>
@@ -40,47 +78,43 @@ export function SimpleHeader({ title, theme, onClose }) {
 
 const styles = StyleSheet.create({
   pageHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    gap: Spacing.md,
-    position: "relative",
   },
   headerTitle: {
+    fontWeight: '700',
     flex: 1,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "700",
+    textAlign: 'center',
   },
   headerButton: {
-    width: 30,
-    height: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerActions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.sm,
   },
   simpleHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
   simpleTitle: {
-    fontWeight: "700",
+    fontWeight: '700',
   },
   closeButton: {
     width: 40,
     height: 40,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

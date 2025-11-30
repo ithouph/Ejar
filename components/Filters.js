@@ -1,14 +1,10 @@
-import React from "react";
-import { View, StyleSheet, Pressable, ScrollView } from "react-native";
-import { ThemedText } from "./ThemedText";
-import { useTheme } from "../hooks/useTheme";
-import { Spacing, BorderRadius } from "../theme/global";
+import React from 'react';
+import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { ThemedText } from './ThemedText';
+import { useTheme } from '../hooks/useTheme';
+import { Spacing, BorderRadius } from '../theme/global';
 
-export function CategoryTabs({
-  categories,
-  selectedCategory,
-  onSelectCategory,
-}) {
+export function CategoryTabs({ categories, selectedCategory, onSelectCategory }) {
   const { theme } = useTheme();
 
   return (
@@ -26,9 +22,7 @@ export function CategoryTabs({
             style={[
               styles.tab,
               {
-                backgroundColor: isSelected ? theme.primary : theme.surface,
-                borderColor: isSelected ? theme.primary : theme.border,
-                borderWidth: 1,
+                backgroundColor: isSelected ? theme.textPrimary : theme.surface,
               },
             ]}
           >
@@ -37,7 +31,7 @@ export function CategoryTabs({
               style={[
                 styles.tabText,
                 {
-                  color: isSelected ? "rgba(255, 255, 255, 1)" : theme.textPrimary,
+                  color: isSelected ? theme.buttonText : theme.textPrimary,
                 },
               ]}
             >
@@ -54,14 +48,14 @@ const styles = StyleSheet.create({
   tabsContainer: {
     paddingHorizontal: Spacing.lg,
     gap: Spacing.md,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   tab: {
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
   },
   tabText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

@@ -1,22 +1,17 @@
-import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Pressable,
-  Dimensions,
-  FlatList,
-} from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { ThemedText } from "../components/ThemedText";
-import { ThemedView } from "../components/ThemedView";
-import { Button } from "../components/Button";
-import { useTheme } from "../hooks/useTheme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Spacing, BorderRadius, Shadows } from "../theme/global";
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Image, Pressable, Dimensions, FlatList } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { ThemedText } from '../components/ThemedText';
+import { ThemedView } from '../components/ThemedView';
+import { Button } from '../components/Button';
+import { AgentCard } from '../components/Renter';
+import { PropertySpecs, AmenitiesSection } from '../components/Article';
+import { StarRating } from '../components/Review';
+import { useTheme } from '../hooks/useTheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Spacing, BorderRadius, Shadows } from '../theme/global';
 
-const SCREEN_WIDTH = Dimensions.get("window").width;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function Details({ route, navigation }) {
   const { property } = route.params;
@@ -28,51 +23,44 @@ export default function Details({ route, navigation }) {
     <ThemedView style={styles.container}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 80 },
-        ]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 80 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.imageContainer}>
           <FlatList
-            data={
-              property.photos || [{ url: property.image, category: "Main" }]
-            }
+            data={property.photos || [{ url: property.image, category: 'Main' }]}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={(e) => {
-              const index = Math.round(
-                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
-              );
+              const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
               setCurrentImageIndex(index);
             }}
             renderItem={({ item }) => (
-              <Pressable>
+              <Pressable
+                onPress={() => navigation.navigate('Poster', { property })}
+              >
                 <Image source={{ uri: item.url }} style={styles.image} />
               </Pressable>
             )}
             keyExtractor={(item, index) => index.toString()}
           />
-
+          
           <Pressable
             onPress={() => navigation.goBack()}
             style={[styles.backButton, { top: insets.top + Spacing.md }]}
           >
             <Feather name="arrow-left" size={24} color="#FFF" />
           </Pressable>
-
+          
           <Pressable
             onPress={() => navigation.goBack()}
             style={[styles.closeButton, { top: insets.top + Spacing.md }]}
           >
             <Feather name="x" size={24} color="#FFF" />
           </Pressable>
-
-          <Pressable
-            style={[styles.favoriteButton, { top: insets.top + Spacing.md }]}
-          >
+          
+          <Pressable style={[styles.favoriteButton, { top: insets.top + Spacing.md }]}>
             <Feather name="heart" size={24} color="#FFF" />
           </Pressable>
 
@@ -83,10 +71,7 @@ export default function Details({ route, navigation }) {
                 style={[
                   styles.dot,
                   {
-                    backgroundColor:
-                      index === currentImageIndex
-                        ? "#FFF"
-                        : "rgba(255,255,255,0.5)",
+                    backgroundColor: index === currentImageIndex ? '#FFF' : 'rgba(255,255,255,0.5)',
                   },
                 ]}
               />
@@ -154,12 +139,9 @@ export default function Details({ route, navigation }) {
                 {property.photos.slice(0, 4).map((photo, index) => (
                   <Pressable
                     key={index}
-                    onPress={() => navigation.navigate("Poster", { property })}
+                    onPress={() => navigation.navigate('Poster', { property })}
                   >
-                    <Image
-                      source={{ uri: photo.url }}
-                      style={styles.thumbnail}
-                    />
+                    <Image source={{ uri: photo.url }} style={styles.thumbnail} />
                   </Pressable>
                 ))}
               </View>
@@ -171,10 +153,7 @@ export default function Details({ route, navigation }) {
       <View
         style={[
           styles.footer,
-          {
-            backgroundColor: theme.backgroundRoot,
-            paddingBottom: insets.bottom + Spacing.md,
-          },
+          { backgroundColor: theme.backgroundRoot, paddingBottom: insets.bottom + Spacing.md },
           Shadows.medium,
         ]}
       >
@@ -187,7 +166,7 @@ export default function Details({ route, navigation }) {
           </ThemedText>
         </View>
         <Button
-          onPress={() => navigation.navigate("Feedback")}
+          onPress={() => navigation.navigate('Feedback')}
           style={styles.bookButton}
         >
           Book
@@ -210,49 +189,49 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: SCREEN_WIDTH,
     height: 350,
-    position: "relative",
+    position: 'relative',
   },
   image: {
     width: SCREEN_WIDTH,
     height: 350,
   },
   backButton: {
-    position: "absolute",
+    position: 'absolute',
     left: Spacing.lg,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     right: 60,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   favoriteButton: {
-    position: "absolute",
+    position: 'absolute',
     right: Spacing.lg,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   paginationDots: {
-    position: "absolute",
+    position: 'absolute',
     bottom: Spacing.lg,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     gap: Spacing.xs,
   },
   dot: {
@@ -265,41 +244,41 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   badge: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
   },
   name: {
-    fontWeight: "700",
+    fontWeight: '700',
   },
   locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.xs,
   },
   ratingRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.sm,
   },
   ratingText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   aboutSection: {
     gap: Spacing.md,
     paddingVertical: Spacing.md,
   },
   sectionTitle: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
   photosSection: {
     gap: Spacing.md,
     paddingVertical: Spacing.md,
   },
   photosGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.sm,
   },
   thumbnail: {
@@ -308,13 +287,13 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.medium,
   },
   footer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
   },

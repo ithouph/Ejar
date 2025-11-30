@@ -1,13 +1,13 @@
-import React from "react";
-import { Text } from "react-native";
-import { useTheme } from "../hooks/useTheme";
-import { Typography } from "../theme/global";
+import React from 'react';
+import { Text } from 'react-native';
+import { useTheme } from '../hooks/useTheme';
+import { Typography } from '../theme/global';
 
 export function ThemedText({
   style,
   lightColor,
   darkColor,
-  type = "body",
+  type = 'body',
   ...rest
 }) {
   const { theme, isDark } = useTheme();
@@ -19,7 +19,7 @@ export function ThemedText({
     if (!isDark && lightColor) {
       return lightColor;
     }
-    if (type === "link") {
+    if (type === 'link') {
       return theme.link;
     }
     return theme.textPrimary;

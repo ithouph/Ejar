@@ -1,6 +1,6 @@
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { Spacing } from "../theme/global";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { Spacing } from '../theme/global';
 
 export function useScreenInsets() {
   const insets = useSafeAreaInsets();

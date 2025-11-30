@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
-import { reloadAppAsync } from "expo";
-import { ThemedText } from "./ThemedText";
-import { ThemedView } from "./ThemedView";
-import { Spacing } from "../theme/global";
+import React, { Component } from 'react';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { reloadAppAsync } from 'expo';
+import { ThemedText } from './ThemedText';
+import { ThemedView } from './ThemedView';
+import { Spacing } from '../theme/global';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -16,14 +16,14 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.log("Error caught by boundary:", error, errorInfo);
+    console.log('Error caught by boundary:', error, errorInfo);
   }
 
   handleReload = async () => {
     try {
       await reloadAppAsync();
     } catch (e) {
-      console.log("Failed to reload app:", e);
+      console.log('Failed to reload app:', e);
     }
   };
 
@@ -57,26 +57,26 @@ function ErrorFallback({ onReload }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: Spacing.xl,
   },
   title: {
     marginBottom: Spacing.md,
   },
   message: {
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: Spacing.xl,
   },
   button: {
-    backgroundColor: "rgba(37, 99, 235, 1)",
+    backgroundColor: '#2563EB',
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: 12,
   },
   buttonText: {
-    color: "rgba(255, 255, 255, 1)",
-    fontWeight: "600",
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
 });
 

@@ -1,582 +1,416 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  ScrollView,
-  FlatList,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  useAnimatedScrollHandler,
-  withTiming,
-  interpolate,
-  Extrapolate,
-} from "react-native-reanimated";
-import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { ThemedText } from "../components/ThemedText";
-import { ThemedView } from "../components/ThemedView";
-import { CategoryTabs } from "../components/Filters";
-import { HotelCard } from "../components/Card";
-import { SearchOverlay } from "../components/SearchOverlay";
-import { useTheme } from "../hooks/useTheme";
-import { useScreenInsets } from "../hooks/useScreenInsets";
-import { useAuth } from "../contexts/AuthContext";
-import {
-  Spacing,
-  layoutStyles,
-  inputStyles,
-  spacingStyles,
-  listStyles,
-  BorderRadius,
-} from "../theme";
-import {
-  posts as postsApi,
-  savedPosts as savedPostsApi,
-} from "../services/database";
-
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "property", label: "Property" },
-  { id: "phones", label: "Phones" },
-  { id: "electronics", label: "Electronics" },
-  { id: "others", label: "Others" },
-];
-
-const AMENITIES_OPTIONS = [
-  { id: "Wi-Fi", label: "Wi-Fi", icon: "wifi" },
-  { id: "Air Conditioning", label: "Air conditioning", icon: "wind" },
-  { id: "Pool", label: "Pool", icon: "droplet" },
-  { id: "Parking", label: "Parking", icon: "truck" },
-  { id: "Gym", label: "Gym", icon: "activity" },
-  { id: "Kitchen", label: "Kitchen", icon: "coffee" },
-];
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, FlatList, Pressable, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { ThemedText } from '../components/ThemedText';
+import { ThemedView } from '../components/ThemedView';
+import { Header } from '../components/Header';
+import { CategoryTabs } from '../components/Filters';
+import { HotelCard } from '../components/Card';
+import { useTheme } from '../hooks/useTheme';
+import { useScreenInsets } from '../hooks/useScreenInsets';
+import { useAuth } from '../contexts/AuthContext';
+import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
+import { userData } from '../data/userData';
+import { hotelsData, apartmentsData, allPropertiesData } from '../data/cardsData';
+import { filterOptions } from '../data/filterData';
+import { propertiesService } from '../services/propertiesService';
+import { favoritesService } from '../services/favoritesService';
 
 export default function Discover({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
   const { user } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [favorites, setFavorites] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRating, setSelectedRating] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [collapsibleHeaderHeight, setCollapsibleHeaderHeight] = useState(0);
-  const [pinnedSavedHeight, setPinnedSavedHeight] = useState(0);
-
-  // Search State
-  const [isSearching, setIsSearching] = useState(false);
-  const searchInputRef = useRef(null);
-
-  // Reanimated scroll tracking
-  const scrollY = useSharedValue(0);
-  const lastScrollY = useSharedValue(0);
-  const headerTranslateY = useSharedValue(0);
-
-  // Animation values for fade transition
-  const mainContentOpacity = useSharedValue(1);
-  const searchContentOpacity = useSharedValue(0);
-
-
 
   useEffect(() => {
     loadData();
-  }, [user, selectedCategory, priceRange, selectedRating, searchQuery]);
-
-  // Handle fade animations when isSearching changes
-  useEffect(() => {
-    if (isSearching) {
-      mainContentOpacity.value = withTiming(0, { duration: 300 });
-      searchContentOpacity.value = withTiming(1, { duration: 300 });
-      // Focus input after animation
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
-    } else {
-      mainContentOpacity.value = withTiming(1, { duration: 300 });
-      searchContentOpacity.value = withTiming(0, { duration: 300 });
-      searchInputRef.current?.blur();
-    }
-  }, [isSearching]);
+  }, [user, selectedCategory]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-
-      let postsData = [];
       
-      if (selectedCategory === "all") {
-        postsData = await postsApi.getAllApproved();
-      } else if (selectedCategory === "property") {
-        postsData = await postsApi.getByCategory("property");
-      } else if (selectedCategory === "phones") {
-        postsData = await postsApi.getByCategory("phones");
-      } else if (selectedCategory === "electronics") {
-        postsData = await postsApi.getByCategory("electronics");
-      } else if (selectedCategory === "others") {
-        postsData = await postsApi.getAllApproved();
+      const filters = {};
+      if (selectedCategory === 'hotels') {
+        filters.type = 'Hotel';
+      } else if (selectedCategory === 'apartments') {
+        filters.type = 'Apartment';
       }
 
-      if (searchQuery.trim()) {
-        postsData = await postsApi.search(searchQuery.trim());
-      }
+      const [propertiesData, favoriteIds] = await Promise.all([
+        propertiesService.getProperties(filters).catch(() => allPropertiesData),
+        user ? favoritesService.getFavoriteIds(user.id).catch(() => []) : Promise.resolve([]),
+      ]);
 
-      const favoriteIds = user ? await Promise.resolve([]) : Promise.resolve([]);
-
-      setPosts(postsData || []);
-      setFavorites(favoriteIds || []);
+      setProperties(propertiesData.length > 0 ? propertiesData : allPropertiesData);
+      setFavorites(favoriteIds);
     } catch (error) {
-      console.error("Error loading data:", error);
-      Alert.alert(
-        "Error Loading Posts",
-        "Unable to load posts. Please check your internet connection and try again.",
-        [{ text: "OK" }]
-      );
-      setPosts([]);
+      console.error('Error loading data:', error);
+      setProperties(allPropertiesData);
     } finally {
       setLoading(false);
     }
   };
 
   const getFilteredData = () => {
-    if (selectedAmenities.length === 0) return posts;
-    return posts.filter((item) =>
-      selectedAmenities.every((a) => (item.amenities || []).includes(a))
-    );
+    let filtered = properties;
+    
+    if (selectedCategory === 'hotels') {
+      filtered = filtered.filter(item => item.type === 'Hotel');
+    } else if (selectedCategory === 'apartments') {
+      filtered = filtered.filter(item => item.type === 'Apartment');
+    }
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title?.toLowerCase().includes(query) ||
+        item.location?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
+      );
+    }
+    
+    if (priceRange[0] > 0 || priceRange[1] < 5000) {
+      filtered = filtered.filter(item => 
+        item.price >= priceRange[0] && item.price <= priceRange[1]
+      );
+    }
+    
+    if (selectedAmenities.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedAmenities.every(amenity => 
+          item.amenities?.includes(amenity)
+        )
+      );
+    }
+    
+    if (selectedRating) {
+      filtered = filtered.filter(item => item.rating >= selectedRating);
+    }
+    
+    return filtered;
   };
 
-  const toggleSaved = async (id) => {
+  const toggleFavorite = async (id) => {
     const previousFavorites = [...favorites];
     const wasAdding = !favorites.includes(id);
-
+    
     try {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-      setFavorites((prev) =>
-        prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+      
+      setFavorites(prev =>
+        prev.includes(id) ? prev.filter(fav => fav !== id) : [...prev, id]
       );
 
       if (user) {
-        await savedPostsApi.toggle(user.id, id);
+        await favoritesService.toggleFavorite(user.id, id);
       } else if (wasAdding) {
         setFavorites(previousFavorites);
         Alert.alert(
-          "Sign in required",
-          "Please sign in to save posts across devices.",
-          [{ text: "OK" }]
+          'Sign in required',
+          'Please sign in to save your favorites across devices.',
+          [{ text: 'OK' }]
         );
       }
     } catch (error) {
-      console.error("Error toggling saved:", error);
-
+      console.error('Error toggling favorite:', error);
+      
       setFavorites(previousFavorites);
 
       Alert.alert(
-        "Action Failed",
-        wasAdding
-          ? "Unable to save post. Please try again."
-          : "Unable to unsave post. Please try again.",
-        [{ text: "OK" }]
+        'Action Failed',
+        wasAdding 
+          ? 'Unable to add to favorites. Please try again.'
+          : 'Unable to remove from favorites. Please try again.',
+        [{ text: 'OK' }]
       );
     }
   };
 
-  const toggleAmenity = (id) =>
-    setSelectedAmenities((prev) =>
-      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+  const toggleAmenity = (id) => {
+    setSelectedAmenities(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
     );
+  };
 
-  const isDefaultState = () =>
-    selectedCategory === "all" &&
-    !searchQuery.trim() &&
-    selectedAmenities.length === 0 &&
-    !selectedRating &&
-    priceRange[0] === 0 &&
-    priceRange[1] === 5000;
+  const clearFilters = () => {
+    setSearchQuery('');
+    setPriceRange([0, 5000]);
+    setSelectedAmenities([]);
+    setSelectedRating(null);
+  };
 
-  const isFiltered = () =>
-    selectedAmenities.length > 0 ||
-    selectedRating ||
-    priceRange[0] > 0 ||
-    priceRange[1] < 5000;
-
-  const EmptyState = () => (
-    <View
-      style={[
-        layoutStyles.center,
-        { paddingVertical: Spacing["3xl"], paddingHorizontal: Spacing.xl },
-      ]}
-    >
-      <Feather
-        name="search"
-        size={48}
-        color={theme.textSecondary}
-        style={{ marginBottom: Spacing.md }}
-      />
-      <ThemedText
-        type="h3"
-        style={{ marginBottom: Spacing.xs, textAlign: "center" }}
-      >
-        No results found
-      </ThemedText>
-      <ThemedText
-        type="body"
-        style={{ color: theme.textSecondary, textAlign: "center" }}
-      >
-        Try adjusting your search or filters
-      </ThemedText>
-    </View>
-  );
-
-  const SearchBar = () => (
-    <View
-      style={[
-        spacingStyles.pxLg,
-        spacingStyles.mtSm,
-      ]}
-    >
-      <Pressable
-        onPress={() => setIsSearching(true)}
-        style={[
-          inputStyles.searchInput,
-          {
-            backgroundColor: theme.surface,
-            paddingHorizontal: Spacing.md,
-            paddingVertical: 0,
-            height: 40,
-            borderWidth: 1,
-            borderColor: theme.border,
-          },
-        ]}
-      >
-        <Feather name="search" size={20} color={theme.textSecondary} />
-        <View style={{ flex: 1, justifyContent: "center" }}>
-          <ThemedText style={{ color: searchQuery ? theme.textPrimary : theme.textSecondary }}>
-            {searchQuery || "Search..."}
-          </ThemedText>
-        </View>
-        {searchQuery.length > 0 && (
-          <Pressable onPress={(e) => {
-            e.stopPropagation();
-            setSearchQuery("");
-          }}>
-            <Feather name="x" size={20} color={theme.textSecondary} />
-          </Pressable>
-        )}
-        <View style={{ marginLeft: Spacing.xs }}>
-          <Feather name="sliders" size={20} color={theme.primary} />
-        </View>
-      </Pressable>
-    </View>
-  );
-
-  // Scroll handler for header animation
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      const currentY = event.contentOffset.y;
-      const diff = currentY - lastScrollY.value;
-      scrollY.value = currentY;
-
-      const collapseThreshold = pinnedSavedHeight > 0 ? pinnedSavedHeight - collapsibleHeaderHeight : 200;
-
-      if (currentY > collapseThreshold) {
-        if (diff > 0) {
-          headerTranslateY.value = withTiming(-collapsibleHeaderHeight, {
-            duration: 250,
-          });
-        } else if (diff < 0 && currentY > collapseThreshold + 20) {
-          headerTranslateY.value = withTiming(0, {
-            duration: 250,
-          });
-        }
-      } else {
-        headerTranslateY.value = withTiming(0, {
-          duration: 250,
-        });
-      }
-
-      lastScrollY.value = currentY;
-    },
-  });
-
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: headerTranslateY.value }],
-      opacity: interpolate(
-        headerTranslateY.value,
-        [-collapsibleHeaderHeight, 0],
-        [0, 1],
-        Extrapolate.CLAMP
-      ),
-    };
-  });
-
-  const stickySearchAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: interpolate(
-        headerTranslateY.value,
-        [-collapsibleHeaderHeight, 0],
-        [1, 0],
-        Extrapolate.CLAMP
-      ),
-      transform: [
-        {
-          translateY: interpolate(
-            headerTranslateY.value,
-            [-collapsibleHeaderHeight, 0],
-            [0, -20],
-            Extrapolate.CLAMP
-          ),
-        },
-      ],
-    };
-  });
-
-  const mainContentAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: mainContentOpacity.value,
-      pointerEvents: isSearching ? "none" : "auto",
-    };
-  });
-
-  const searchContentAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      pointerEvents: isSearching ? "auto" : "none",
-      zIndex: isSearching ? 100 : -1,
-    };
-  });
-
-  // Animation for the search input expansion
-  const searchInputAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      height: interpolate(searchContentOpacity.value, [0, 1], [40, 48]),
-      // No scale change, just height expansion
-    };
-  });
-
-  // Animation for the buttons sliding in
-  const buttonsAnimatedStyle = useAnimatedStyle(() => {
-    const translate = interpolate(searchContentOpacity.value, [0, 1], [20, 0]);
-    return {
-      opacity: searchContentOpacity.value,
-      transform: [{ translateX: 0 }], // Simplified for stability, opacity handles visibility well
-    };
-  });
-
-  const CollapsibleHeader = () => (
-    <Animated.View
-      onLayout={(e) => setCollapsibleHeaderHeight(e.nativeEvent.layout.height)}
-      style={[
-        {
-          overflow: "hidden",
-        },
-        headerAnimatedStyle,
-      ]}
-    >
-      <SearchBar />
-      <CategoryTabs
-        categories={CATEGORIES}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
-    </Animated.View>
-  );
-
-  const StickySearchBar = () => (
-    <Animated.View
-      style={[
-        {
-          position: "absolute",
-          top: insets.top,
-          left: 0,
-          right: 0,
-          zIndex: 9,
-          backgroundColor: theme.background,
-          paddingVertical: Spacing.sm,
-        },
-        stickySearchAnimatedStyle,
-      ]}
-    >
-      <SearchBar />
-    </Animated.View>
-  );
-
-
+  const applyFilters = () => {
+    setShowFilters(false);
+  };
 
   return (
     <ThemedView style={layoutStyles.container}>
-      <Animated.View style={[{ flex: 1 }, mainContentAnimatedStyle]}>
-        <View style={{ paddingTop: insets.top, zIndex: 10, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-          <CollapsibleHeader />
-          <StickySearchBar />
+      <ScrollView
+        style={layoutStyles.scrollView}
+        contentContainerStyle={[
+          layoutStyles.scrollContent,
+          { paddingTop: insets.top + Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Header
+          userData={userData}
+          onSettingsPress={() => navigation.navigate('Settings')}
+          onFavoritePress={() => navigation.navigate('Saved')}
+          onNotificationsPress={() => navigation.navigate('Notifications')}
+        />
+
+        <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>
+          <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
+            <Feather name="search" size={20} color={theme.textSecondary} />
+            <TextInput
+              style={{ 
+                flex: 1, 
+                fontSize: 16, 
+                color: theme.textPrimary,
+                paddingVertical: 0,
+              }}
+              placeholder="Find the best for your holiday"
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+            {searchQuery.length > 0 ? (
+              <Pressable onPress={() => setSearchQuery('')}>
+                <Feather name="x" size={20} color={theme.textSecondary} />
+              </Pressable>
+            ) : null}
+            <Pressable onPress={() => setShowFilters(true)} style={{ marginLeft: Spacing.xs }}>
+              <Feather name="sliders" size={20} color={theme.primary} />
+            </Pressable>
+          </View>
         </View>
 
-        <Animated.ScrollView
-          style={[layoutStyles.scrollView, { zIndex: 0 }]}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + Spacing.xl,
-          }}
-          showsVerticalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={scrollHandler}
-        >
-          <View style={layoutStyles.section}>
-            {isDefaultState() && (
-              <>
-                <View
-                  style={[
-                    layoutStyles.sectionHeader,
-                    {
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      paddingVertical: Spacing.md,
-                    },
-                  ]}
-                >
-                  <ThemedText type="h2">Pinned Saved</ThemedText>
-                  <Pressable
-                    onPress={() => navigation.navigate("Pinned")}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: Spacing.xs,
-                    }}
-                  >
-                    <ThemedText
-                      type="body"
-                      style={{ color: theme.primary, fontWeight: "600" }}
-                    >
-                      See All
-                    </ThemedText>
-                    <Feather name="arrow-right" size={18} color={theme.primary} />
-                  </Pressable>
-                </View>
+        <CategoryTabs
+          categories={filterOptions.propertyTypes}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
 
-                {loading ? (
-                  <View
-                    style={[
-                      layoutStyles.center,
-                      { paddingVertical: Spacing["3xl"] },
-                    ]}
-                  >
-                    <ActivityIndicator size="large" color={theme.primary} />
-                  </View>
-                ) : posts.length === 0 ? (
-                  <EmptyState />
-                ) : (
-                  <FlatList
-                    data={posts}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={listStyles.listHorizontal}
-                    renderItem={({ item }) => (
-                      <HotelCard
-                        item={item}
-                        onPress={() =>
-                          navigation.navigate("PostDetail", { post: item })
-                        }
-                        onFavoritePress={toggleSaved}
-                        isFavorite={favorites.includes(item.id)}
-                      />
-                    )}
-                    keyExtractor={(item) => item.id}
-                  />
-                )}
-              </>
-            )}
+        <View style={layoutStyles.section}>
+          <View style={layoutStyles.sectionHeader}>
+            <ThemedText type="h2">
+              {searchQuery.trim() ? `Search results (${getFilteredData().length})` : 'Popular hotels'}
+            </ThemedText>
+            {!searchQuery.trim() ? (
+              <Pressable>
+                <View style={[layoutStyles.rowCenter, spacingStyles.gapXs]}>
+                  <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                    See all
+                  </ThemedText>
+                  <Feather name="chevron-right" size={16} color={theme.textSecondary} />
+                </View>
+              </Pressable>
+            ) : null}
           </View>
 
-          {/* Explore Section - becomes sticky when header collapses */}
-          <View
-            onLayout={(e) => {
-              const { height } = e.nativeEvent.layout;
-              if (isDefaultState()) {
-                setPinnedSavedHeight(height + Spacing.lg);
-              }
-            }}
-          >
-            <View
-              style={[
-                layoutStyles.sectionHeader,
-                spacingStyles.mbMd,
-                {
-                  paddingVertical: Spacing.lg,
-                  borderBottomColor: theme.border,
-                },
-              ]}
-            >
-              {searchQuery.trim() && (
-                <ThemedText type="h2">
-                  {`Search results (${getFilteredData().length})`}
-                </ThemedText>
-              )}
-              {!searchQuery.trim() && isFiltered() && (
-                <ThemedText type="h2">
-                  {`Results (${getFilteredData().length})`}
-                </ThemedText>
-              )}
-              {isDefaultState() && (
-                <ThemedText type="h2">Explore Marketplace</ThemedText>
-              )}
+          {loading ? (
+            <View style={{ paddingVertical: Spacing.xl, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color={theme.primary} />
             </View>
-
-            <View style={[layoutStyles.section, { paddingVertical: Spacing.lg }]}>
-              {getFilteredData().length === 0 ? (
-                <EmptyState />
-              ) : (
-                <FlatList
-                  data={getFilteredData()}
-                  scrollEnabled={false}
-                  contentContainerStyle={[
-                    listStyles.listVertical,
-                    spacingStyles.mxLg,
-                    { paddingTop: 0 },
-                  ]}
-                  renderItem={({ item }) => (
-                    <HotelCard
-                      item={item}
-                      onPress={() =>
-                        navigation.navigate("PostDetail", { post: item })
-                      }
-                      onFavoritePress={toggleSaved}
-                      isFavorite={favorites.includes(item.id)}
-                      fullWidth
-                    />
-                  )}
-                  keyExtractor={(item) => item.id}
+          ) : getFilteredData().length === 0 ? (
+            <View style={{ paddingVertical: Spacing.xxl, alignItems: 'center' }}>
+              <Feather name="search" size={48} color={theme.textSecondary} style={{ marginBottom: Spacing.md }} />
+              <ThemedText type="h3" style={{ marginBottom: Spacing.xs }}>
+                No results found
+              </ThemedText>
+              <ThemedText type="body" style={{ color: theme.textSecondary, textAlign: 'center' }}>
+                Try adjusting your search or filters
+              </ThemedText>
+            </View>
+          ) : (
+            <FlatList
+              data={getFilteredData()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={listStyles.listHorizontal}
+              renderItem={({ item }) => (
+                <HotelCard
+                  item={item}
+                  onPress={() => navigation.navigate('Details', { property: item })}
+                  onFavoritePress={toggleFavorite}
+                  isFavorite={favorites.includes(item.id)}
                 />
               )}
-            </View>
-          </View>
-        </Animated.ScrollView>
-      </Animated.View>
+              keyExtractor={item => item.id}
+            />
+          )}
+        </View>
+      </ScrollView>
 
-      <SearchOverlay
-        searchContentAnimatedStyle={searchContentAnimatedStyle}
-        searchContentOpacity={searchContentOpacity}
-        buttonsAnimatedStyle={buttonsAnimatedStyle}
-        searchInputAnimatedStyle={searchInputAnimatedStyle}
-        theme={theme}
-        insets={insets}
-        searchInputRef={searchInputRef}
-        searchQuery={searchQuery}
-        onChangeText={setSearchQuery}
-        onClose={() => setIsSearching(false)}
-        categories={CATEGORIES}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-        priceRange={priceRange}
-        onPriceChange={setPriceRange}
-        amenities={AMENITIES_OPTIONS}
-        selectedAmenities={selectedAmenities}
-        toggleAmenity={toggleAmenity}
-      />
+      <Modal
+        visible={showFilters}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <ThemedView style={modalStyles.modalContainer}>
+          <View style={[modalStyles.modalHeader, { 
+            backgroundColor: theme.background, 
+            paddingTop: insets.top + Spacing.md 
+          }]}>
+            <Pressable onPress={() => setShowFilters(false)}>
+              <Feather name="x" size={24} color={theme.textPrimary} />
+            </Pressable>
+            <ThemedText type="h2">Search Filters</ThemedText>
+            <Pressable onPress={clearFilters}>
+              <ThemedText type="body" style={{ color: theme.primary }}>Clear</ThemedText>
+            </Pressable>
+          </View>
+
+          <ScrollView 
+            style={modalStyles.modalBody}
+            contentContainerStyle={[
+              modalStyles.modalScrollContent,
+              { paddingBottom: insets.bottom + Spacing.xl }
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Location</ThemedText>
+              <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
+                <Feather name="map-pin" size={20} color={theme.textSecondary} />
+                <TextInput
+                  style={{ flex: 1, fontSize: 16, color: theme.textPrimary }}
+                  placeholder="Where are you going?"
+                  placeholderTextColor={theme.textSecondary}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </View>
+            </View>
+
+            <View style={modalStyles.modalSection}>
+              <View style={layoutStyles.rowBetween}>
+                <ThemedText type="h3" style={modalStyles.modalSubtitle}>Price Range</ThemedText>
+                <ThemedText type="body" style={{ color: theme.primary }}>
+                  ${priceRange[0]} - ${priceRange[1]}
+                </ThemedText>
+              </View>
+              <View style={[layoutStyles.row, spacingStyles.gapSm]}>
+                <Pressable 
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
+                  onPress={() => setPriceRange([0, 1000])}
+                >
+                  <ThemedText type="bodySmall">$0 - $1000</ThemedText>
+                </Pressable>
+                <Pressable 
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
+                  onPress={() => setPriceRange([1000, 3000])}
+                >
+                  <ThemedText type="bodySmall">$1000 - $3000</ThemedText>
+                </Pressable>
+                <Pressable 
+                  style={[buttonStyles.primary, { flex: 1, backgroundColor: theme.surface }]}
+                  onPress={() => setPriceRange([3000, 5000])}
+                >
+                  <ThemedText type="bodySmall">$3000+</ThemedText>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Amenities</ThemedText>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
+                {filterOptions.amenities.map((amenity) => (
+                  <Pressable
+                    key={amenity.id}
+                    style={[
+                      buttonStyles.chip,
+                      { 
+                        backgroundColor: selectedAmenities.includes(amenity.id) 
+                          ? theme.primary + '20' 
+                          : theme.surface,
+                        borderColor: selectedAmenities.includes(amenity.id) 
+                          ? theme.primary 
+                          : 'transparent',
+                        borderWidth: 1,
+                      }
+                    ]}
+                    onPress={() => toggleAmenity(amenity.id)}
+                  >
+                    <Feather 
+                      name={amenity.icon} 
+                      size={20} 
+                      color={selectedAmenities.includes(amenity.id) ? theme.primary : theme.textSecondary} 
+                    />
+                    <ThemedText 
+                      type="bodySmall" 
+                      style={{ 
+                        color: selectedAmenities.includes(amenity.id) ? theme.primary : theme.textPrimary 
+                      }}
+                    >
+                      {amenity.label}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <View style={modalStyles.modalSection}>
+              <ThemedText type="h3" style={modalStyles.modalSubtitle}>Rating</ThemedText>
+              <View style={spacingStyles.gapSm}>
+                {filterOptions.ratings.map((rating) => (
+                  <Pressable
+                    key={rating.id}
+                    style={[
+                      buttonStyles.primary,
+                      { 
+                        backgroundColor: selectedRating === rating.id 
+                          ? theme.primary 
+                          : theme.surface 
+                      }
+                    ]}
+                    onPress={() => setSelectedRating(selectedRating === rating.id ? null : rating.id)}
+                  >
+                    <ThemedText 
+                      type="body" 
+                      lightColor={selectedRating === rating.id ? '#FFF' : undefined}
+                      darkColor={selectedRating === rating.id ? '#FFF' : undefined}
+                    >
+                      {rating.label}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={[modalStyles.modalFooter, { 
+            backgroundColor: theme.background,
+            paddingBottom: insets.bottom + Spacing.md,
+            borderTopColor: theme.border,
+          }]}>
+            <Pressable 
+              style={[buttonStyles.primaryLarge, { backgroundColor: theme.primary }]}
+              onPress={applyFilters}
+            >
+              <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF">
+                Apply Filters
+              </ThemedText>
+            </Pressable>
+          </View>
+        </ThemedView>
+      </Modal>
     </ThemedView>
   );
 }
+

@@ -1,156 +1,450 @@
--- EJAR DATABASE SCHEMA - SIMPLIFIED
--- Phone number only login system
--- Posts approval system with paid/unpaid posts
+-- ═══════════════════════════════════════════════════════════════
+-- TRAVELSTAY APP - DATABASE SETUP (SYNTAX VERIFIED)
+-- ═══════════════════════════════════════════════════════════════
 
-CREATE TABLE public.users (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  phone_number text NOT NULL UNIQUE,
-  whatsapp_phone text,
-  post_limit integer DEFAULT 5,
-  posts_count integer DEFAULT 0,
-  is_member boolean DEFAULT false,
-  hit_limit boolean DEFAULT false,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT users_pkey PRIMARY KEY (id)
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 1: USER TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  google_id TEXT UNIQUE,
+  full_name TEXT,
+  photo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.cities (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name_en text NOT NULL,
-  name_ar text NOT NULL,
-  code text NOT NULL UNIQUE,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT cities_pkey PRIMARY KEY (id)
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  date_of_birth DATE,
+  gender TEXT,
+  mobile TEXT,
+  weight NUMERIC,
+  height NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.service_categories (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  icon text,
-  description text,
-  active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT service_categories_pkey PRIMARY KEY (id)
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 2: PROPERTY TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS properties (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  type TEXT NOT NULL,
+  location TEXT NOT NULL,
+  address TEXT,
+  description TEXT,
+  price_per_night NUMERIC NOT NULL,
+  rating NUMERIC DEFAULT 0,
+  total_reviews INT DEFAULT 0,
+  bedrooms INT,
+  bathrooms INT,
+  area_sqft NUMERIC,
+  agent_name TEXT,
+  agent_photo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-create table public.posts (
-  id uuid not null default gen_random_uuid (),
-  user_id uuid not null,
-  city_id uuid not null,
-  category_id uuid not null,
-  title text not null,
-  description text null,
-  listing_type text null,
-  property_type text null,
-  price numeric null,
-  image_url text null,
-  images text[] null default '{}'::text[],
-  amenities text[] null default '{}'::text[],
-  specifications jsonb null default '{}'::jsonb,
-  is_paid boolean null default false,
-  is_approved boolean null default false,
-  payment_approved boolean null default false,
-  hit_limit boolean null default false,
-  likes_count integer null default 0,
-  total_favorites integer null default 0,
-  rating numeric null default 0,
-  total_reviews integer null default 0,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
-  constraint posts_pkey primary key (id),
-  constraint posts_category_id_fkey foreign KEY (category_id) references service_categories (id) on delete CASCADE,
-  constraint posts_city_id_fkey foreign KEY (city_id) references cities (id) on delete CASCADE,
-  constraint posts_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
-) TABLESPACE pg_default;
-
-CREATE TABLE public.reviews (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  post_id uuid NOT NULL,
-  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
-  comment text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT reviews_pkey PRIMARY KEY (id),
-  CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT reviews_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS property_photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  category TEXT DEFAULT 'Main',
+  order_index INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.saved_posts (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  post_id uuid NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT saved_posts_pkey PRIMARY KEY (id),
-  CONSTRAINT saved_posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT saved_posts_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE,
-  CONSTRAINT saved_posts_unique UNIQUE(user_id, post_id)
+CREATE TABLE IF NOT EXISTS amenities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  icon TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.favorites (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  post_id uuid NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT favorites_pkey PRIMARY KEY (id),
-  CONSTRAINT favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT favorites_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE,
-  CONSTRAINT favorites_unique UNIQUE(user_id, post_id)
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 3: USER INTERACTION TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS favorites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, property_id)
 );
 
-CREATE TABLE public.wallet_accounts (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL UNIQUE,
-  balance numeric DEFAULT 0,
-  currency text DEFAULT 'MRU'::text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT wallet_accounts_pkey PRIMARY KEY (id),
-  CONSTRAINT wallet_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+  rating INT NOT NULL,
+  title TEXT,
+  comment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT valid_rating CHECK (rating >= 1 AND rating <= 5)
 );
 
-CREATE TABLE public.wallet_transactions (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  wallet_id uuid NOT NULL,
-  type text NOT NULL,
-  amount numeric NOT NULL,
-  description text,
-  category text,
-  status text DEFAULT 'completed'::text,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT wallet_transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT wallet_transactions_wallet_id_fkey FOREIGN KEY (wallet_id) REFERENCES public.wallet_accounts(id) ON DELETE CASCADE
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 4: SOCIAL TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT,
+  description TEXT,
+  content TEXT,
+  images TEXT[] DEFAULT ARRAY[]::TEXT[],
+  image_url TEXT,
+  property_type TEXT,
+  price NUMERIC,
+  location TEXT,
+  amenities TEXT[] DEFAULT ARRAY[]::TEXT[],
+  specifications JSONB DEFAULT '{}'::JSONB,
+  likes_count INT DEFAULT 0,
+  comments_count INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.payment_requests (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  post_id uuid,
-  amount numeric NOT NULL,
-  status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])),
-  payment_method text,
-  transaction_id text,
-  processed_by uuid,
-  processed_at timestamp with time zone,
-  rejection_reason text,
-  admin_notes text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT payment_requests_pkey PRIMARY KEY (id),
-  CONSTRAINT payment_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT payment_requests_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 5: WALLET & PAYMENT TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS wallet_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+  balance NUMERIC DEFAULT 0,
+  currency TEXT DEFAULT 'USD',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE public.support_messages (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  payment_request_id uuid,
-  message text,
-  image_url text,
-  sender_type text NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT support_messages_pkey PRIMARY KEY (id),
-  CONSTRAINT support_messages_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT support_messages_payment_request_id_fkey FOREIGN KEY (payment_request_id) REFERENCES public.payment_requests(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_id UUID REFERENCES wallet_accounts(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  amount NUMERIC NOT NULL,
+  description TEXT,
+  category TEXT,
+  status TEXT DEFAULT 'completed',
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS payment_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  amount NUMERIC NOT NULL,
+  status TEXT DEFAULT 'pending',
+  payment_method TEXT,
+  transaction_id TEXT,
+  processed_by UUID,
+  processed_at TIMESTAMPTZ,
+  rejection_reason TEXT,
+  admin_notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  CONSTRAINT valid_payment_status CHECK (status IN ('pending', 'processing', 'processed', 'approved', 'rejected'))
+);
+
+CREATE TABLE IF NOT EXISTS support_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  payment_request_id UUID REFERENCES payment_requests(id) ON DELETE CASCADE,
+  message TEXT,
+  image_url TEXT,
+  sender_type TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 6: EVENT TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS wedding_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  partner1_name TEXT DEFAULT 'Christine',
+  partner2_name TEXT DEFAULT 'Duncan',
+  event_date DATE,
+  location TEXT,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 7: SYSTEM TABLES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS service_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  icon TEXT,
+  description TEXT,
+  active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 8: INDEXES
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id);
+CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(type);
+CREATE INDEX IF NOT EXISTS idx_properties_location ON properties(location);
+CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_property_id ON favorites(property_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_property_id ON reviews(property_id);
+CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_user_id ON payment_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_requests_status ON payment_requests(status);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 9: ROW LEVEL SECURITY (RLS)
+-- ═══════════════════════════════════════════════════════════════
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
+ALTER TABLE property_photos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE amenities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wallet_accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wedding_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
+
+-- Users
+CREATE POLICY "Users can view own data" ON users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can update own data" ON users FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can insert own data" ON users FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- User profiles
+CREATE POLICY "Users can view own profile" ON user_profiles FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own profile" ON user_profiles FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own profile" ON user_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Properties (PUBLIC)
+CREATE POLICY "Properties are viewable by everyone" ON properties FOR SELECT USING (true);
+CREATE POLICY "Property photos are viewable by everyone" ON property_photos FOR SELECT USING (true);
+CREATE POLICY "Amenities are viewable by everyone" ON amenities FOR SELECT USING (true);
+
+-- Favorites (USER-SPECIFIC)
+CREATE POLICY "Users can view own favorites" ON favorites FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own favorites" ON favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own favorites" ON favorites FOR DELETE USING (auth.uid() = user_id);
+
+-- Reviews (PUBLIC READ, USER WRITE)
+CREATE POLICY "Reviews are viewable by everyone" ON reviews FOR SELECT USING (true);
+CREATE POLICY "Users can insert own reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own reviews" ON reviews FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own reviews" ON reviews FOR DELETE USING (auth.uid() = user_id);
+
+-- Posts (PUBLIC READ, USER WRITE)
+CREATE POLICY "Posts are viewable by everyone" ON posts FOR SELECT USING (true);
+CREATE POLICY "Users can insert own posts" ON posts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own posts" ON posts FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own posts" ON posts FOR DELETE USING (auth.uid() = user_id);
+
+-- Wallet (USER-SPECIFIC)
+CREATE POLICY "Users can view own wallet" ON wallet_accounts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own wallet" ON wallet_accounts FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own wallet" ON wallet_accounts FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own transactions" ON wallet_transactions FOR SELECT USING (
+  EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
+);
+CREATE POLICY "Users can insert own transactions" ON wallet_transactions FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM wallet_accounts WHERE wallet_accounts.id = wallet_transactions.wallet_id AND wallet_accounts.user_id = auth.uid())
+);
+
+-- Payment requests (USER-SPECIFIC)
+CREATE POLICY "Users can view own payment requests" ON payment_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own payment requests" ON payment_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own payment requests" ON payment_requests FOR UPDATE USING (auth.uid() = user_id);
+
+-- Support messages (USER-SPECIFIC)
+CREATE POLICY "Users can view own support messages" ON support_messages FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own support messages" ON support_messages FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Wedding events (USER-SPECIFIC)
+CREATE POLICY "Users can view own events" ON wedding_events FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own events" ON wedding_events FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own events" ON wedding_events FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own events" ON wedding_events FOR DELETE USING (auth.uid() = user_id);
+
+-- Service categories (PUBLIC)
+CREATE POLICY "Service categories are viewable by everyone" ON service_categories FOR SELECT USING (true);
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 10: FUNCTIONS
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE OR REPLACE FUNCTION add_wallet_transaction(
+  p_wallet_id UUID,
+  p_type TEXT,
+  p_amount NUMERIC,
+  p_description TEXT,
+  p_category TEXT
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_transaction_id UUID;
+  v_new_balance NUMERIC;
+  v_user_id UUID;
+BEGIN
+  SELECT user_id INTO v_user_id FROM wallet_accounts WHERE id = p_wallet_id;
+  IF v_user_id != auth.uid() THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
+  INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
+  VALUES (p_wallet_id, p_type, p_amount, p_description, p_category, 'completed')
+  RETURNING id INTO v_transaction_id;
+
+  UPDATE wallet_accounts
+  SET 
+    balance = CASE 
+      WHEN p_type = 'credit' THEN balance + p_amount 
+      ELSE balance - p_amount 
+    END,
+    updated_at = NOW()
+  WHERE id = p_wallet_id
+  RETURNING balance INTO v_new_balance;
+
+  RETURN json_build_object('transaction_id', v_transaction_id, 'new_balance', v_new_balance);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION process_payment_request(
+  p_request_id UUID,
+  p_new_status TEXT,
+  p_admin_notes TEXT DEFAULT NULL,
+  p_rejection_reason TEXT DEFAULT NULL
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_amount NUMERIC;
+  v_wallet_id UUID;
+  v_new_balance NUMERIC;
+BEGIN
+  IF p_new_status NOT IN ('processing', 'processed', 'approved', 'rejected') THEN
+    RAISE EXCEPTION 'Invalid status: %', p_new_status;
+  END IF;
+
+  SELECT user_id, amount INTO v_user_id, v_amount 
+  FROM payment_requests 
+  WHERE id = p_request_id;
+
+  UPDATE payment_requests
+  SET 
+    status = p_new_status,
+    processed_at = NOW(),
+    admin_notes = COALESCE(p_admin_notes, admin_notes),
+    rejection_reason = COALESCE(p_rejection_reason, rejection_reason),
+    updated_at = NOW()
+  WHERE id = p_request_id;
+
+  IF p_new_status = 'approved' THEN
+    SELECT id INTO v_wallet_id FROM wallet_accounts WHERE user_id = v_user_id;
+    
+    IF v_wallet_id IS NULL THEN
+      INSERT INTO wallet_accounts (user_id, balance, currency)
+      VALUES (v_user_id, v_amount, 'USD')
+      RETURNING id, balance INTO v_wallet_id, v_new_balance;
+    ELSE
+      UPDATE wallet_accounts
+      SET balance = balance + v_amount, updated_at = NOW()
+      WHERE id = v_wallet_id
+      RETURNING balance INTO v_new_balance;
+    END IF;
+
+    INSERT INTO wallet_transactions (wallet_id, type, amount, description, category, status)
+    VALUES (v_wallet_id, 'credit', v_amount, 'Balance addition approved', 'deposit', 'completed');
+
+    RETURN json_build_object(
+      'success', true,
+      'status', p_new_status,
+      'new_balance', v_new_balance,
+      'message', 'Payment approved and balance added'
+    );
+  END IF;
+
+  RETURN json_build_object(
+    'success', true,
+    'status', p_new_status,
+    'message', 'Payment request status updated'
+  );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION update_property_rating()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE properties
+  SET 
+    rating = (
+      SELECT COALESCE(AVG(rating), 0) 
+      FROM reviews 
+      WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)
+    ),
+    total_reviews = (
+      SELECT COUNT(*) 
+      FROM reviews 
+      WHERE property_id = COALESCE(NEW.property_id, OLD.property_id)
+    ),
+    updated_at = NOW()
+  WHERE id = COALESCE(NEW.property_id, OLD.property_id);
+  RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 11: TRIGGERS
+-- ═══════════════════════════════════════════════════════════════
+
+DROP TRIGGER IF EXISTS trigger_update_property_rating ON reviews;
+CREATE TRIGGER trigger_update_property_rating
+  AFTER INSERT OR UPDATE OR DELETE ON reviews
+  FOR EACH ROW EXECUTE FUNCTION update_property_rating();
+
+-- ═══════════════════════════════════════════════════════════════
+-- SECTION 12: SAMPLE DATA
+-- ═══════════════════════════════════════════════════════════════
+
+INSERT INTO service_categories (name, icon, description, active) VALUES
+  ('Flight', 'send', 'Book domestic and international flights', true),
+  ('Hotel', 'home', 'Find and book hotels worldwide', true),
+  ('Food', 'coffee', 'Restaurant reservations and food delivery', true),
+  ('Taxi', 'navigation', 'Ride sharing and taxi services', true),
+  ('Event', 'calendar', 'Event planning and management', true),
+  ('Tour', 'map', 'Guided tours and experiences', true)
+ON CONFLICT DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════
+-- ✅ SETUP COMPLETE!
+-- ═══════════════════════════════════════════════════════════════

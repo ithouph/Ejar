@@ -1,7 +1,5 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { authService } from "../services/authService";
-import { auth as phoneAuth, users as usersApi } from "../services/database";
-import { supabase } from "../config/supabase";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext({});
 
@@ -13,13 +11,13 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     loadSession();
 
-    const {
-      data: { subscription },
-    } = authService.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data: { subscription } } = authService.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
     return () => {
       subscription?.unsubscribe();
@@ -32,7 +30,7 @@ export function AuthProvider({ children }) {
       setSession(session);
       setUser(session?.user ?? null);
     } catch (error) {
-      console.error("Error loading session:", error);
+      console.error('Error loading session:', error);
     } finally {
       setLoading(false);
     }
@@ -46,7 +44,7 @@ export function AuthProvider({ children }) {
       setSession(session);
       return { user, session };
     } catch (error) {
-      console.error("Sign in error:", error);
+      console.error('Sign in error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -60,66 +58,40 @@ export function AuthProvider({ children }) {
       setUser(null);
       setSession(null);
     } catch (error) {
-      console.error("Sign out error:", error);
+      console.error('Sign out error:', error);
       throw error;
     } finally {
       setLoading(false);
     }
   }
 
-  async function signInWithPhoneOTP(user, phoneNumber) {
+  // TEMPORARY: Guest login for testing without Supabase setup
+  // This creates a fake user session so you can test the app
+  // REMOVE THIS when you set up real authentication
+  async function signInAsGuest() {
     try {
       setLoading(true);
-      setUser(user);
-      return { user };
-    } catch (error) {
-      console.error("Phone OTP sign in error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function guestSignIn() {
-    try {
-      setLoading(true);
-      const guestPhoneNumber = "22212345678";
       
-      console.log("🔄 Starting guest sign in for:", guestPhoneNumber);
-      
-      // Fetch guest user from database by phone number
-      const guestUserFromDb = await usersApi.getByPhoneNumber(guestPhoneNumber);
-      
-      if (!guestUserFromDb) {
-        console.error("Guest user not found:", guestPhoneNumber);
-        throw new Error("Guest user not found in database");
-      }
-
-      console.log("✅ Guest user found:", guestUserFromDb);
-
-      // Create a session object with the user data
-      const userData = {
-        id: guestUserFromDb.id,
-        phone_number: guestUserFromDb.phone_number,
-        whatsapp_phone: guestUserFromDb.whatsapp_phone,
-        post_limit: guestUserFromDb.post_limit,
-        posts_count: guestUserFromDb.posts_count,
-        is_member: guestUserFromDb.is_member,
-        hit_limit: guestUserFromDb.hit_limit,
-        created_at: guestUserFromDb.created_at,
-        updated_at: guestUserFromDb.updated_at,
+      const guestUser = {
+        id: '00000000-0000-0000-0000-000000000001',
+        email: 'guest@travelstay.com',
+        user_metadata: {
+          full_name: 'Guest User',
+          avatar_url: null,
+        },
       };
-
-      // Set user state first
-      setUser(userData);
-      console.log("✅ User state set, should redirect now");
       
-      const sessionData = { user: userData };
-      setSession(sessionData);
+      const guestSession = {
+        user: guestUser,
+        access_token: 'guest-token',
+      };
       
-      return sessionData;
+      setUser(guestUser);
+      setSession(guestSession);
+      
+      return { user: guestUser, session: guestSession };
     } catch (error) {
-      console.error("❌ Guest sign in error:", error?.message || error);
+      console.error('Guest sign in error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -131,10 +103,8 @@ export function AuthProvider({ children }) {
     session,
     loading,
     signInWithGoogle,
-    signInWithPhoneOTP,
-    guestSignIn,
+    signInAsGuest,
     signOut,
-    refreshUser: loadSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -143,7 +113,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }

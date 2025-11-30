@@ -1,16 +1,11 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Pressable, TextInput } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { ThemedText } from "./ThemedText";
-import { useTheme } from "../hooks/useTheme";
-import { Spacing, BorderRadius } from "../theme/global";
+import React, { useState } from 'react';
+import { View, StyleSheet, Pressable, TextInput } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { ThemedText } from './ThemedText';
+import { useTheme } from '../hooks/useTheme';
+import { Spacing, BorderRadius } from '../theme/global';
 
-export function StarRating({
-  rating,
-  onRatingChange,
-  editable = false,
-  size = 24,
-}) {
+export function StarRating({ rating, onRatingChange, editable = false, size = 24 }) {
   const { theme } = useTheme();
 
   return (
@@ -24,8 +19,8 @@ export function StarRating({
           <Feather
             name="star"
             size={size}
-            color={star <= rating ? "#FBBF24" : theme.border}
-            style={{ fontWeight: star <= rating ? "bold" : "normal" }}
+            color={star <= rating ? '#FBBF24' : theme.border}
+            style={{ fontWeight: star <= rating ? 'bold' : 'normal' }}
           />
         </Pressable>
       ))}
@@ -36,13 +31,13 @@ export function StarRating({
 export function ReviewForm({ onSubmit }) {
   const { theme } = useTheme();
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
 
   const handleSubmit = () => {
     if (rating > 0) {
       onSubmit({ rating, comment });
       setRating(0);
-      setComment("");
+      setComment('');
     }
   };
 
@@ -51,16 +46,8 @@ export function ReviewForm({ onSubmit }) {
       <ThemedText type="h2" style={styles.formTitle}>
         Tell us how you feel about our App
       </ThemedText>
-      <StarRating
-        rating={rating}
-        onRatingChange={setRating}
-        editable
-        size={32}
-      />
-      <ThemedText
-        type="bodySmall"
-        style={[styles.label, { color: theme.textSecondary }]}
-      >
+      <StarRating rating={rating} onRatingChange={setRating} editable size={32} />
+      <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
         Write your review
       </ThemedText>
       <TextInput
@@ -102,7 +89,7 @@ export function ReviewForm({ onSubmit }) {
 
 const styles = StyleSheet.create({
   starsContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: Spacing.sm,
   },
   formContainer: {
@@ -110,7 +97,7 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   formTitle: {
-    textAlign: "center",
+    textAlign: 'center',
   },
   label: {
     marginTop: Spacing.md,
@@ -120,15 +107,15 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.medium,
     padding: Spacing.md,
     minHeight: 120,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   submitButton: {
     height: 56,
     borderRadius: BorderRadius.medium,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitText: {
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });
