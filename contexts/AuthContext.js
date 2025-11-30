@@ -67,13 +67,20 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function signInWithPhoneOTP(user, phoneNumber) {
+  async function directLogin(phoneNumber) {
     try {
       setLoading(true);
-      setUser(user);
-      return { user };
+      const result = await phoneAuth.directLogin(phoneNumber);
+      
+      if (!result.user) {
+        throw new Error("Failed to login");
+      }
+
+      setUser(result.user);
+      console.log("✅ User logged in and redirecting to home");
+      return result;
     } catch (error) {
-      console.error("Phone OTP sign in error:", error);
+      console.error("Direct login error:", error);
       throw error;
     } finally {
       setLoading(false);
@@ -131,7 +138,7 @@ export function AuthProvider({ children }) {
     session,
     loading,
     signInWithGoogle,
-    signInWithPhoneOTP,
+    directLogin,
     guestSignIn,
     signOut,
     refreshUser: loadSession,

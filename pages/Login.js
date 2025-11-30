@@ -92,97 +92,25 @@ const FloatingIcon = ({ icon, index, theme }) => {
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signInWithPhoneOTP, guestSignIn } = useAuth();
+  const { directLogin, guestSignIn } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("phone"); // 'phone' | 'otp'
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState(["", "", "", ""]);
   const [phoneInputFocused, setPhoneInputFocused] = useState(false);
-  const [generatedOtp, setGeneratedOtp] = useState(null); // Store OTP for verification
-  const otpRefs = useRef([]);
   const [guestLoading, setGuestLoading] = useState(false);
 
-  // Focus first OTP input when step changes to OTP
-  useEffect(() => {
-    if (step === "otp") {
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    }
-  }, [step]);
-
-  const handleSendCode = async () => {
+  const handleDirectLogin = async () => {
     if (phoneNumber.length < 8) {
       Alert.alert("Invalid Number", "Please enter a valid phone number.");
       return;
     }
     setLoading(true);
     try {
-      const result = await auth.signInWithPhoneOTP(phoneNumber);
-      if (result.error) {
-        Alert.alert("Error", result.error);
-        setLoading(false);
-        return;
-      }
-      setGeneratedOtp(result.otp);
-      console.log(`📱 OTP sent to ${result.phoneNumber}: ${result.otp}`);
-      Alert.alert("Code Sent", `Check your messages for the verification code.\n\nDEMO: Code is ${result.otp}`);
-      setStep("otp");
+      await directLogin(phoneNumber);
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to send code");
+      Alert.alert("Error", error.message || "Login failed");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleVerifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length < 4) {
-      Alert.alert("Invalid Code", "Please enter the 4-digit code.");
-      return;
-    }
-    setLoading(true);
-    try {
-      // Verify OTP matches (in production, send to backend for validation)
-      if (code !== generatedOtp) {
-        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
-        setLoading(false);
-        return;
-      }
-      
-      // Verify phone OTP and create/login user
-      const result = await auth.verifyPhoneOTP(phoneNumber, code);
-      if (result.error) {
-        Alert.alert("Error", result.error);
-        setLoading(false);
-        return;
-      }
-      
-      // Login with phone OTP
-      await signInWithPhoneOTP(result.user, phoneNumber);
-    } catch (error) {
-      Alert.alert("Error", error.message || "Verification failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOtpChange = (text, index) => {
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
-
-    // Auto-focus next input
-    if (text && index < 3) {
-      otpRefs.current[index + 1]?.focus();
-    }
-    // Auto-focus prev input on backspace (handled in onKeyPress usually, but simple here)
-    if (!text && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleBack = () => {
-    setStep("phone");
-    setOtp(["", "", "", ""]);
   };
 
   const handleGuestSignIn = async () => {
@@ -219,7 +147,7 @@ export default function Login({ navigation }) {
           <View
             style={[
               layoutStyles.column,
-              styles.mainContent,
+              { flex: 1, justifyContent: "space-between" },
               {
                 paddingTop: insets.top + Spacing["3xl"],
                 paddingBottom: insets.bottom + Spacing.xl + 60, // Add extra padding for the absolute footer

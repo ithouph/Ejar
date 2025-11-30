@@ -16,73 +16,44 @@ WebBrowser.maybeCompleteAuthSession();
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
-  async signInWithPhoneOTP(phoneNumber) {
+  async directLogin(phoneNumber) {
     try {
+      const { queryPostgresSingle, queryPostgres } = await import("../config/postgres.js");
       const formattedPhone = phoneNumber.replace(/\D/g, '');
       
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("id")
-        .eq("phone_number", formattedPhone)
-        .maybeSingle();
-
-      const otp = Math.floor(1000 + Math.random() * 9000).toString();
-      console.log(`OTP for ${formattedPhone}: ${otp}`);
+      console.log("🔄 Direct login for:", formattedPhone);
       
-      return {
-        phoneNumber: formattedPhone,
-        otp: otp,
-        userExists: !!existingUser,
-        userId: existingUser?.id,
-      };
-    } catch (error) {
-      return { error: error.message };
-    }
-  },
+      // Check if user exists
+      let user = await queryPostgresSingle(
+        "SELECT * FROM users WHERE phone_number = $1",
+        [formattedPhone]
+      );
 
-  async verifyPhoneOTP(phoneNumber, otp, userInfo = {}) {
-    try {
-      const formattedPhone = phoneNumber.replace(/\D/g, '');
-      
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("*")
-        .eq("phone_number", formattedPhone)
-        .maybeSingle();
+      // If user doesn't exist, create them
+      if (!user) {
+        console.log("✅ Creating new user:", formattedPhone);
+        const result = await queryPostgresSingle(
+          "INSERT INTO users (phone_number, post_limit, posts_count, is_member, hit_limit) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+          [formattedPhone, 5, 0, false, 100]
+        );
+        user = result;
 
-      if (existingUser) {
-        return { user: existingUser, isNewUser: false };
-      } else {
-        const { data: newUser, error } = await supabase
-          .from("users")
-          .insert({
-            phone_number: formattedPhone,
-            post_limit: 5,
-            posts_count: 0,
-          })
-          .select()
-          .single();
-
-        if (error) return { error: error.message };
-        
+        // Create wallet for new user
         try {
-          await supabase
-            .from("wallet_accounts")
-            .insert({
-              user_id: newUser.id,
-              balance: 0,
-              currency: "MRU",
-            })
-            .select()
-            .single();
+          await queryPostgres(
+            "INSERT INTO wallet_accounts (user_id, balance, currency) VALUES ($1, $2, $3)",
+            [user.id, 0, "MRU"]
+          );
         } catch (walletError) {
           console.log("Wallet creation note:", walletError);
         }
-
-        return { user: newUser, isNewUser: true };
       }
+
+      console.log("✅ User logged in:", user);
+      return { user, isNewUser: !user };
     } catch (error) {
-      return { error: error.message };
+      console.error("Direct login error:", error);
+      throw error;
     }
   },
 
