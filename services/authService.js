@@ -72,11 +72,25 @@ export const authService = {
     if (!supabase) throw new Error("Supabase client not initialized");
 
     try {
+      console.log("🔄 Backend: Starting Supabase session termination...");
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      console.log("User signed out");
+      
+      if (error) {
+        console.error("❌ Backend: Supabase session termination failed:", error);
+        throw error;
+      }
+      
+      console.log("✅ Backend: Supabase session cleared successfully");
+      
+      // Clear any cached session data in Supabase client
+      const { data } = await supabase.auth.getSession();
+      if (data?.session === null) {
+        console.log("✅ Backend: Verified - no active session in Supabase");
+      }
+      
+      return true;
     } catch (err) {
-      console.error("Sign out error:", err);
+      console.error("❌ Sign out error:", err);
       throw err;
     }
   },

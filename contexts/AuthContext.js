@@ -69,15 +69,26 @@ export function AuthProvider({ children }) {
   async function signOut() {
     try {
       setLoading(true);
-      console.log("🔄 Starting logout...");
+      console.log("🔄 Frontend: Starting complete logout process...");
+      
+      // Step 1: Clear backend session (Supabase)
+      console.log("📡 Frontend: Notifying backend to clear session...");
       await authService.signOut();
+      console.log("✅ Frontend: Backend session cleared");
+      
+      // Step 2: Clear local storage
       await AsyncStorage.removeItem("ejar_user_session");
-      console.log("✅ Session cleared from AsyncStorage");
+      console.log("✅ Frontend: Local storage session cleared");
+      
+      // Step 3: Clear app state
       setUser(null);
       setSession(null);
-      console.log("✅ User logged out successfully - redirecting to login");
+      console.log("✅ Frontend: App state cleared");
+      
+      console.log("✅ Frontend: User logged out successfully - redirecting to login");
+      return true;
     } catch (error) {
-      console.error("❌ Sign out error:", error);
+      console.error("❌ Frontend: Sign out error:", error);
       throw error;
     } finally {
       setLoading(false);
