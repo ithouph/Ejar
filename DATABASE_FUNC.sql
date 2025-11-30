@@ -1,5 +1,6 @@
 -- ==========================================
--- EJAR APP - DATABASE FUNCTIONS
+-- EJAR APP - DATABASE FUNCTIONS & TRIGGERS
+-- Based on DATABASE_SEEDS.sql structure
 -- ==========================================
 
 -- ==========================================
@@ -21,7 +22,7 @@ BEGIN
 END;
 $$;
 
--- Trigger for reviews
+-- Trigger for reviews insert/update/delete
 DROP TRIGGER IF EXISTS trigger_update_post_rating ON reviews;
 CREATE TRIGGER trigger_update_post_rating
 AFTER INSERT OR UPDATE OR DELETE ON reviews
@@ -29,55 +30,32 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_update_post_rating();
 
 -- ==========================================
--- 2. Update Saved Count on Posts
+-- 2. Update Favorites Count on Posts
 -- ==========================================
-CREATE OR REPLACE FUNCTION fn_update_post_saved_count()
+CREATE OR REPLACE FUNCTION fn_update_post_favorites_count()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
   UPDATE posts
-  SET total_saved = (SELECT COUNT(*) FROM saved_posts WHERE post_id = NEW.post_id),
-      updated_at = NOW()
+  SET 
+    total_favorites = (SELECT COUNT(*) FROM favorites WHERE post_id = NEW.post_id),
+    updated_at = NOW()
   WHERE id = NEW.post_id;
 
   RETURN NEW;
 END;
 $$;
 
--- Trigger for saved_posts
-DROP TRIGGER IF EXISTS trigger_update_post_saved_count ON saved_posts;
-CREATE TRIGGER trigger_update_post_saved_count
-AFTER INSERT OR DELETE ON saved_posts
-FOR EACH ROW
-EXECUTE FUNCTION fn_update_post_saved_count();
-
--- ==========================================
--- 3. Update Likes Count on Posts (Favorites)
--- ==========================================
-CREATE OR REPLACE FUNCTION fn_update_post_likes_count()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-BEGIN
-  UPDATE posts
-  SET likes_count = (SELECT COUNT(*) FROM favorites WHERE post_id = NEW.post_id),
-      updated_at = NOW()
-  WHERE id = NEW.post_id;
-
-  RETURN NEW;
-END;
-$$;
-
--- Trigger for favorites
-DROP TRIGGER IF EXISTS trigger_update_post_likes_count ON favorites;
-CREATE TRIGGER trigger_update_post_likes_count
+-- Trigger for favorites insert/delete
+DROP TRIGGER IF EXISTS trigger_update_post_favorites_count ON favorites;
+CREATE TRIGGER trigger_update_post_favorites_count
 AFTER INSERT OR DELETE ON favorites
 FOR EACH ROW
-EXECUTE FUNCTION fn_update_post_likes_count();
+EXECUTE FUNCTION fn_update_post_favorites_count();
 
 -- ==========================================
--- 4. Atomic Wallet Transaction Function
+-- 3. Atomic Wallet Transaction Function
 -- ==========================================
 CREATE OR REPLACE FUNCTION add_wallet_transaction(
   p_wallet_id UUID,
@@ -133,25 +111,28 @@ END;
 $$;
 
 -- ==========================================
--- 5. Optional: Function for Posts Photos Count
+-- 4. Auto-update timestamps
 -- ==========================================
-CREATE OR REPLACE FUNCTION fn_update_post_photos_count()
+CREATE OR REPLACE FUNCTION fn_update_timestamp()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  UPDATE posts
-  SET total_photos = (SELECT COUNT(*) FROM posts_photos WHERE post_id = NEW.post_id),
-      updated_at = NOW()
-  WHERE id = NEW.post_id;
-
+  NEW.updated_at = NOW();
   RETURN NEW;
 END;
 $$;
 
--- Trigger for posts_photos
-DROP TRIGGER IF EXISTS trigger_update_post_photos_count ON posts_photos;
-CREATE TRIGGER trigger_update_post_photos_count
-AFTER INSERT OR DELETE ON posts_photos
+-- Trigger for posts
+DROP TRIGGER IF EXISTS trigger_posts_updated_at ON posts;
+CREATE TRIGGER trigger_posts_updated_at
+BEFORE UPDATE ON posts
 FOR EACH ROW
-EXECUTE FUNCTION fn_update_post_photos_count();
+EXECUTE FUNCTION fn_update_timestamp();
+
+-- Trigger for users
+DROP TRIGGER IF EXISTS trigger_users_updated_at ON users;
+CREATE TRIGGER trigger_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION fn_update_timestamp();
