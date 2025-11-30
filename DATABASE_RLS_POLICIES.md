@@ -81,6 +81,27 @@ CREATE POLICY "Users can delete own saved posts" ON saved_posts
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
+### 5.5 Favorites Table
+```sql
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+
+-- Users can view their own favorites
+CREATE POLICY "Users can view own favorites" ON favorites
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- Users can insert their own favorites
+CREATE POLICY "Users can insert own favorites" ON favorites
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own favorites
+CREATE POLICY "Users can update own favorites" ON favorites
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Users can delete their own favorites
+CREATE POLICY "Users can delete own favorites" ON favorites
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
 ### 6. Reviews Table
 ```sql
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
@@ -190,6 +211,7 @@ CREATE POLICY "Service categories are viewable by everyone" ON service_categorie
 | posts_photos | ✅ | ❌ |
 | cities | ✅ | ❌ |
 | saved_posts | ❌ | ✅ |
+| favorites | ❌ | ✅ |
 | reviews | ✅ | ✅ (own reviews only) |
 | wallet_accounts | ❌ | ✅ |
 | wallet_transactions | ❌ | ✅ |

@@ -59,14 +59,21 @@ INSERT INTO public.saved_posts (id, user_id, post_id, created_at) VALUES
 ('a50e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440007', NOW()),
 ('a50e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440003', '850e8400-e29b-41d4-a716-446655440009', NOW());
 
--- 7. WALLET TRANSACTIONS
+-- 7. FAVORITES
+INSERT INTO public.favorites (id, user_id, post_id, created_at) VALUES
+('d50e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', '850e8400-e29b-41d4-a716-446655440002', NOW()),
+('d50e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440004', NOW()),
+('d50e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440003', '850e8400-e29b-41d4-a716-446655440001', NOW()),
+('d50e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440005', '850e8400-e29b-41d4-a716-446655440009', NOW());
+
+-- 8. WALLET TRANSACTIONS
 INSERT INTO public.wallet_transactions (id, wallet_id, type, amount, description, category, status, created_at) VALUES
 ('b50e8400-e29b-41d4-a716-446655440001', '750e8400-e29b-41d4-a716-446655440001', 'credit', 10000, 'Money added to wallet', 'topup', 'completed', NOW()),
 ('b50e8400-e29b-41d4-a716-446655440002', '750e8400-e29b-41d4-a716-446655440001', 'debit', 500, 'Posted an item (fee)', 'posting', 'completed', NOW()),
 ('b50e8400-e29b-41d4-a716-446655440003', '750e8400-e29b-41d4-a716-446655440002', 'credit', 20000, 'Money added to wallet', 'topup', 'completed', NOW()),
 ('b50e8400-e29b-41d4-a716-446655440004', '750e8400-e29b-41d4-a716-446655440003', 'debit', 1000, 'Withdrawal', 'withdrawal', 'completed', NOW());
 
--- 8. SERVICE CATEGORIES
+-- 9. SERVICE CATEGORIES
 INSERT INTO public.service_categories (id, name, icon, description, active, created_at) VALUES
 ('c50e8400-e29b-41d4-a716-446655440001', 'Real Estate', 'home', 'Buy, sell, or rent properties', true, NOW()),
 ('c50e8400-e29b-41d4-a716-446655440002', 'Electronics', 'zap', 'Mobile phones, computers, and gadgets', true, NOW()),

@@ -63,6 +63,17 @@ CREATE TABLE public.saved_posts (
   CONSTRAINT saved_posts_unique UNIQUE(user_id, post_id)
 );
 
+CREATE TABLE public.favorites (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  post_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT favorites_pkey PRIMARY KEY (id),
+  CONSTRAINT favorites_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT favorites_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE,
+  CONSTRAINT favorites_unique UNIQUE(user_id, post_id)
+);
+
 CREATE TABLE public.wallet_accounts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL UNIQUE,

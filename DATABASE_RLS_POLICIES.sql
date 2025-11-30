@@ -65,6 +65,23 @@ CREATE POLICY "Users can delete own saved posts" ON saved_posts
   FOR DELETE USING (auth.uid() = user_id);
 
 -- ===============================
+-- 5.5 Favorites Table
+-- ===============================
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own favorites" ON favorites
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own favorites" ON favorites
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own favorites" ON favorites
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own favorites" ON favorites
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- ===============================
 -- 6. Reviews Table
 -- ===============================
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
