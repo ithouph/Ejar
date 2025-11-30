@@ -8,9 +8,9 @@ export const favoritesService = {
         .select(
           `
           id,
-          property_id,
+          post_id,
           created_at,
-          properties (*)
+          posts (*)
         `,
         )
         .eq("user_id", userId)
@@ -24,13 +24,13 @@ export const favoritesService = {
     }
   },
 
-  async addFavorite(userId, propertyId) {
+  async addFavorite(userId, postId) {
     try {
       const { data, error } = await supabase
         .from("favorites")
         .insert({
           user_id: userId,
-          property_id: propertyId,
+          post_id: postId,
         })
         .select()
         .single();
@@ -43,13 +43,13 @@ export const favoritesService = {
     }
   },
 
-  async removeFavorite(userId, propertyId) {
+  async removeFavorite(userId, postId) {
     try {
       const { error } = await supabase
         .from("favorites")
         .delete()
         .eq("user_id", userId)
-        .eq("property_id", propertyId);
+        .eq("post_id", postId);
 
       if (error) throw error;
       return true;
@@ -59,13 +59,13 @@ export const favoritesService = {
     }
   },
 
-  async isFavorite(userId, propertyId) {
+  async isFavorite(userId, postId) {
     try {
       const { data, error } = await supabase
         .from("favorites")
         .select("id")
         .eq("user_id", userId)
-        .eq("property_id", propertyId)
+        .eq("post_id", postId)
         .maybeSingle();
 
       if (error) throw error;
@@ -76,15 +76,15 @@ export const favoritesService = {
     }
   },
 
-  async toggleFavorite(userId, propertyId) {
+  async toggleFavorite(userId, postId) {
     try {
-      const isFav = await this.isFavorite(userId, propertyId);
+      const isFav = await this.isFavorite(userId, postId);
 
       if (isFav) {
-        await this.removeFavorite(userId, propertyId);
+        await this.removeFavorite(userId, postId);
         return { action: "removed", isFavorite: false };
       } else {
-        await this.addFavorite(userId, propertyId);
+        await this.addFavorite(userId, postId);
         return { action: "added", isFavorite: true };
       }
     } catch (error) {
@@ -97,11 +97,11 @@ export const favoritesService = {
     try {
       const { data, error } = await supabase
         .from("favorites")
-        .select("property_id")
+        .select("post_id")
         .eq("user_id", userId);
 
       if (error) throw error;
-      return (data || []).map((fav) => fav.property_id);
+      return (data || []).map((fav) => fav.post_id);
     } catch (error) {
       console.error("Error fetching favorite IDs:", error);
       return [];

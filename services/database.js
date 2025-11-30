@@ -222,12 +222,12 @@ export const posts = {
         .from("posts")
         .insert({
           user_id: userId,
+          city_id: postData.city_id,
+          category_id: postData.category_id,
           title: postData.title,
           description: postData.description,
-          category: postData.category || "property",
           listing_type: postData.listing_type,
           property_type: postData.property_type,
-          location: postData.location,
           price: postData.price,
           image_url: postData.image_url,
           images: postData.images || [],
@@ -235,6 +235,11 @@ export const posts = {
           specifications: postData.specifications || {},
           is_paid: isPaid,
           is_approved: isPaid, // Auto-approve if paid
+          payment_approved: isPaid,
+          likes_count: 0,
+          total_favorites: 0,
+          rating: 0,
+          total_reviews: 0,
         })
         .select()
         .single();
@@ -259,22 +264,25 @@ export const posts = {
     try {
       if (!postId || !userId) throw new Error("Post ID and User ID required");
 
+      const updateData = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (updates.city_id) updateData.city_id = updates.city_id;
+      if (updates.category_id) updateData.category_id = updates.category_id;
+      if (updates.title) updateData.title = updates.title;
+      if (updates.description) updateData.description = updates.description;
+      if (updates.listing_type !== undefined) updateData.listing_type = updates.listing_type;
+      if (updates.property_type !== undefined) updateData.property_type = updates.property_type;
+      if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.image_url) updateData.image_url = updates.image_url;
+      if (updates.images) updateData.images = updates.images;
+      if (updates.amenities) updateData.amenities = updates.amenities;
+      if (updates.specifications) updateData.specifications = updates.specifications;
+
       const { data, error } = await supabase
         .from("posts")
-        .update({
-          title: updates.title,
-          description: updates.description,
-          category: updates.category,
-          listing_type: updates.listing_type,
-          property_type: updates.property_type,
-          location: updates.location,
-          price: updates.price,
-          image_url: updates.image_url,
-          images: updates.images,
-          amenities: updates.amenities,
-          specifications: updates.specifications,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("id", postId)
         .eq("user_id", userId)
         .select()
@@ -312,12 +320,12 @@ export const posts = {
   },
 
   // Search posts by category (only approved)
-  async getByCategory(category, limit = 50) {
+  async getByCategory(categoryId, limit = 50) {
     try {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("category", category)
+        .eq("category_id", categoryId)
         .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -330,13 +338,13 @@ export const posts = {
     }
   },
 
-  // Search posts by location (only approved)
-  async getByLocation(location, limit = 50) {
+  // Search posts by city (only approved)
+  async getByCity(cityId, limit = 50) {
     try {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .ilike("location", `%${location}%`)
+        .eq("city_id", cityId)
         .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -344,7 +352,7 @@ export const posts = {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error("Error fetching posts by location:", error);
+      console.error("Error fetching posts by city:", error);
       return [];
     }
   },
