@@ -1,22 +1,29 @@
--- EJAR DATABASE SEED DATA - SIMPLIFIED
--- Phone number for login + WhatsApp phone
--- With post approval system
+-- EJAR DATABASE SEED DATA - COMPLETE TEST DATA
+-- ═════════════════════════════════════════════════════════════════════
+-- Phone number for login + WhatsApp phone + Post Limits + Member Status
+-- Test Accounts:
+--   22212345678 (Member - can approve payments) OTP: 0000
+--   22287654321 (Regular User) OTP: 0000
+--   22298765432 (Regular User) OTP: 0000
+--   22256789012 (Regular User) OTP: 0000
+--   22289876543 (Member - can approve payments) OTP: 0000
+-- ═════════════════════════════════════════════════════════════════════
 
 -- 1. USERS (Phone number + WhatsApp + Post Limits + Member Status)
 INSERT INTO public.users (id, phone_number, whatsapp_phone, post_limit, posts_count, is_member, created_at) VALUES
-('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 2, true, NOW()),
-('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, false, NOW()),
-('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, false, NOW()),
-('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, false, NOW()),
-('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 2, true, NOW());
+('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 4, true, NOW() - INTERVAL '30 days'),
+('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, false, NOW() - INTERVAL '25 days'),
+('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, false, NOW() - INTERVAL '20 days'),
+('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, false, NOW() - INTERVAL '15 days'),
+('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 3, true, NOW() - INTERVAL '10 days');
 
--- 2. WALLET ACCOUNTS
+-- 2. WALLET ACCOUNTS (MRU Currency)
 INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) VALUES
-('750e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', 5000, 'MRU', NOW()),
-('750e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', 12000, 'MRU', NOW()),
-('750e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440003', 8500, 'MRU', NOW()),
-('750e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440004', 3200, 'MRU', NOW()),
-('750e8400-e29b-41d4-a716-446655440005', '650e8400-e29b-41d4-a716-446655440005', 15000, 'MRU', NOW());
+('750e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', 25000, 'MRU', NOW() - INTERVAL '30 days'),
+('750e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', 12000, 'MRU', NOW() - INTERVAL '25 days'),
+('750e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440003', 8500, 'MRU', NOW() - INTERVAL '20 days'),
+('750e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440004', 3200, 'MRU', NOW() - INTERVAL '15 days'),
+('750e8400-e29b-41d4-a716-446655440005', '650e8400-e29b-41d4-a716-446655440005', 35000, 'MRU', NOW() - INTERVAL '10 days');
 
 -- 3. CITIES
 INSERT INTO public.cities (id, name, created_at) VALUES
@@ -82,6 +89,16 @@ INSERT INTO public.service_categories (id, name, icon, description, active, crea
 ('c50e8400-e29b-41d4-a716-446655440004', 'Furniture', 'box', 'Household furniture and appliances', true, NOW());
 
 -- 10. PAYMENT REQUESTS (Post approval system)
-INSERT INTO public.payment_requests (id, user_id, post_id, amount, status, payment_method, created_at) VALUES
-('f50e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440002', 5000, 'pending', 'bank_transfer', NOW()),
-('f50e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440005', '850e8400-e29b-41d4-a716-446655440005', 3000, 'pending', 'mobile_money', NOW());
+-- Status: pending (awaiting member approval), approved (member approved), rejected (member denied)
+INSERT INTO public.payment_requests (id, user_id, post_id, amount, status, payment_method, admin_notes, rejection_reason, processed_at, created_at) VALUES
+-- PENDING PAYMENTS (awaiting member review)
+('f50e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440002', 5000, 'pending', 'bank_transfer', NULL, NULL, NULL, NOW() - INTERVAL '2 days'),
+('f50e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440005', '850e8400-e29b-41d4-a716-446655440005', 3000, 'pending', 'mobile_money', NULL, NULL, NULL, NOW() - INTERVAL '1 day'),
+('f50e8400-e29b-41d4-a716-446655440005', '650e8400-e29b-41d4-a716-446655440003', '850e8400-e29b-41d4-a716-446655440003', 2500, 'pending', 'bank_transfer', NULL, NULL, NULL, NOW()),
+
+-- APPROVED PAYMENTS (member approved)
+('f50e8400-e29b-41d4-a716-446655440003', '650e8400-e29b-41d4-a716-446655440001', '850e8400-e29b-41d4-a716-446655440001', 4500, 'approved', 'bank_transfer', 'Approved - good quality images', NULL, NOW() - INTERVAL '5 days', NOW() - INTERVAL '6 days'),
+('f50e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440001', '850e8400-e29b-41d4-a716-446655440004', 3500, 'approved', 'mobile_money', 'Approved - excellent condition', NULL, NOW() - INTERVAL '3 days', NOW() - INTERVAL '4 days'),
+
+-- REJECTED PAYMENTS (member denied)
+('f50e8400-e29b-41d4-a716-446655440006', '650e8400-e29b-41d4-a716-446655440002', '850e8400-e29b-41d4-a716-446655440009', 2000, 'rejected', 'bank_transfer', NULL, 'Images quality too low', NOW() - INTERVAL '7 days', NOW() - INTERVAL '8 days');
