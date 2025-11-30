@@ -37,6 +37,7 @@ import {
 } from "../theme/global";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
+import { auth } from "../services/database";
 
 const icons = [
   { name: "calendar", top: "15%", right: "20%" },
@@ -91,12 +92,13 @@ const FloatingIcon = ({ icon, index, theme }) => {
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signInAsGuest } = useAuth();
+  const { signInWithPhoneOTP } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("phone"); // 'phone' | 'otp'
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [phoneInputFocused, setPhoneInputFocused] = useState(false);
+  const [generatedOtp, setGeneratedOtp] = useState(null); // Store OTP for verification
   const otpRefs = useRef([]);
 
   // Focus first OTP input when step changes to OTP
@@ -112,10 +114,22 @@ export default function Login({ navigation }) {
       return;
     }
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(false);
-    setStep("otp");
+    try {
+      const result = await auth.signInWithPhoneOTP(phoneNumber);
+      if (result.error) {
+        Alert.alert("Error", result.error);
+        setLoading(false);
+        return;
+      }
+      setGeneratedOtp(result.otp);
+      console.log(`📱 OTP sent to ${result.phoneNumber}: ${result.otp}`);
+      Alert.alert("Code Sent", `Check your messages for the verification code.\n\nDEMO: Code is ${result.otp}`);
+      setStep("otp");
+    } catch (error) {
+      Alert.alert("Error", error.message || "Failed to send code");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
@@ -125,10 +139,29 @@ export default function Login({ navigation }) {
       return;
     }
     setLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    await signInAsGuest(); // Log the user in
-    setLoading(false);
+    try {
+      // Verify OTP matches (in production, send to backend for validation)
+      if (code !== generatedOtp) {
+        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
+        setLoading(false);
+        return;
+      }
+      
+      // Verify phone OTP and create/login user
+      const result = await auth.verifyPhoneOTP(phoneNumber, code);
+      if (result.error) {
+        Alert.alert("Error", result.error);
+        setLoading(false);
+        return;
+      }
+      
+      // Login with phone OTP
+      await signInWithPhoneOTP(result.user, phoneNumber);
+    } catch (error) {
+      Alert.alert("Error", error.message || "Verification failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleOtpChange = (text, index) => {

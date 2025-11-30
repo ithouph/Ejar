@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { authService } from "../services/authService";
+import { auth as phoneAuth } from "../services/database";
 import { supabase } from "../config/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AuthContext = createContext({});
 
@@ -104,11 +106,49 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function signInWithPhoneOTP(user, phoneNumber) {
+    try {
+      setLoading(true);
+      // Store user data in local storage
+      const userData = {
+        id: user.id,
+        phone: phoneNumber,
+        phone_number: phoneNumber,
+        created_at: user.created_at,
+      };
+      await AsyncStorage.setItem("@ejar_user", JSON.stringify(userData));
+      setUser(userData);
+      return { user: userData };
+    } catch (error) {
+      console.error("Phone OTP sign in error:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadStoredUser() {
+    try {
+      const storedUser = await AsyncStorage.getItem("@ejar_user");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error("Error loading stored user:", error);
+    }
+  }
+
+  useEffect(() => {
+    loadStoredUser();
+  }, []);
+
   const value = {
     user,
     session,
     loading,
     signInWithGoogle,
+    signInWithPhoneOTP,
     signInAsGuest,
     signOut,
   };
