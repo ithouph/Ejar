@@ -342,5 +342,409 @@ npm run dev
 
 ---
 
+## Part 12: Database Functions Reference
+
+All database operations are in `services/database.js`. Import and use them in your components:
+
+```javascript
+import { posts, auth, wallet, paymentRequests, users } from "../services/database";
+```
+
+### 1. AUTHENTICATION
+
+#### `auth.signInWithPhoneOTP(phoneNumber)`
+Request OTP for phone number.
+
+```javascript
+const response = await auth.signInWithPhoneOTP("22212345678");
+// Returns: { phoneNumber, otp, userExists, userId }
+```
+
+#### `auth.verifyPhoneOTP(phoneNumber, otp)`
+Verify OTP and login/create user.
+
+```javascript
+const response = await auth.verifyPhoneOTP("22212345678", "0000");
+// Returns: { user: { id, phone_number, ... }, isNewUser: true/false }
+```
+
+---
+
+### 2. POSTS (Marketplace Listings)
+
+#### `posts.getAllApproved(limit, offset)`
+Get approved posts for feed (public view).
+
+```javascript
+const posts = await posts.getAllApproved(50, 0);
+// Returns: Array of approved posts
+```
+
+#### `posts.getByUser(userId)`
+Get all posts by specific user (their own posts).
+
+```javascript
+const userPosts = await posts.getByUser(userId);
+// Returns: Array of user's posts
+```
+
+#### `posts.getById(postId)`
+Get single post details.
+
+```javascript
+const post = await posts.getById(postId);
+// Returns: { id, title, description, price, images[], ... }
+```
+
+#### `posts.create(userId, postData)`
+Create new post (free or paid).
+
+```javascript
+const newPost = await posts.create(userId, {
+  title: "iPhone 14 Pro",
+  description: "Like new condition",
+  category: "electronics",
+  price: 150000,
+  location: "Nouakchott",
+  images: ["url1", "url2"],
+  isPaid: false  // false = needs approval, true = auto-approved
+});
+// Returns: { id, created_at, ... }
+```
+
+#### `posts.update(postId, userId, updates)`
+Update post details.
+
+```javascript
+const updated = await posts.update(postId, userId, {
+  title: "New Title",
+  description: "Updated description",
+  price: 200000
+});
+```
+
+#### `posts.delete(postId, userId)`
+Delete post.
+
+```javascript
+const success = await posts.delete(postId, userId);
+// Returns: true/false
+```
+
+#### `posts.canUserPost(userId)`
+Check if user can create posts (hasn't hit limit).
+
+```javascript
+const canPost = await posts.canUserPost(userId);
+// Returns: true/false
+```
+
+#### `posts.getUserPostLimit(userId)`
+Get user's post count and limit.
+
+```javascript
+const limit = await posts.getUserPostLimit(userId);
+// Returns: { posts_count: 2, post_limit: 5 }
+```
+
+#### `posts.getByCategory(category, limit)`
+Search posts by category.
+
+```javascript
+const categoryPosts = await posts.getByCategory("property", 50);
+// Returns: Array of approved posts in category
+```
+
+#### `posts.getByLocation(location, limit)`
+Search posts by location.
+
+```javascript
+const locationPosts = await posts.getByLocation("Nouakchott", 50);
+// Returns: Array of approved posts in location
+```
+
+#### `posts.search(searchTerm, limit)`
+Search posts by title/description.
+
+```javascript
+const results = await posts.search("apartment", 50);
+// Returns: Array of matching posts
+```
+
+---
+
+### 3. REVIEWS
+
+#### `postReviews.getForPost(postId)`
+Get all reviews for a post.
+
+```javascript
+const reviews = await postReviews.getForPost(postId);
+// Returns: Array of { rating, comment, user_id, created_at, ... }
+```
+
+#### `postReviews.add(userId, postId, reviewData)`
+Add review/rating to post.
+
+```javascript
+const review = await postReviews.add(userId, postId, {
+  rating: 5,
+  comment: "Great product, fast shipping!"
+});
+```
+
+#### `postReviews.update(reviewId, userId, updates)`
+Update review.
+
+```javascript
+const updated = await postReviews.update(reviewId, userId, {
+  rating: 4,
+  comment: "Updated comment"
+});
+```
+
+#### `postReviews.delete(reviewId, userId)`
+Delete review.
+
+```javascript
+await postReviews.delete(reviewId, userId);
+```
+
+---
+
+### 4. FAVORITES (Saved Posts)
+
+#### `favorites.get(userId)`
+Get all saved posts for user.
+
+```javascript
+const savedPosts = await favorites.get(userId);
+// Returns: Array of favorite post IDs
+```
+
+#### `favorites.add(userId, postId)`
+Save/favorite a post.
+
+```javascript
+await favorites.add(userId, postId);
+// Returns: { id, created_at }
+```
+
+#### `favorites.remove(userId, postId)`
+Remove from favorites.
+
+```javascript
+await favorites.remove(userId, postId);
+// Returns: true/false
+```
+
+#### `favorites.isFavorite(userId, postId)`
+Check if post is favorited.
+
+```javascript
+const isFaved = await favorites.isFavorite(userId, postId);
+// Returns: true/false
+```
+
+---
+
+### 5. WALLET & BALANCE
+
+#### `wallet.get(userId)`
+Get wallet account for user.
+
+```javascript
+const wallet = await wallet.get(userId);
+// Returns: { id, user_id, balance, currency }
+```
+
+#### `wallet.getBalance(userId)`
+Get current balance.
+
+```javascript
+const balance = await wallet.getBalance(userId);
+// Returns: 5000.00 (number)
+```
+
+#### `wallet.addBalance(userId, amount, description)`
+Add money to wallet.
+
+```javascript
+await wallet.addBalance(userId, 1000, "Payment approved");
+// Returns: { id, balance, updated_at }
+```
+
+#### `wallet.deductBalance(userId, amount, description)`
+Deduct money from wallet.
+
+```javascript
+await wallet.deductBalance(userId, 500, "Post payment");
+// Returns: { id, balance, updated_at } or { error: "Insufficient balance" }
+```
+
+#### `wallet.getTransactions(userId, limit)`
+Get transaction history.
+
+```javascript
+const txns = await wallet.getTransactions(userId, 50);
+// Returns: Array of { type, amount, description, created_at, ... }
+```
+
+---
+
+### 6. PAYMENT REQUESTS (Member Approvals)
+
+#### `paymentRequests.create(userId, postId, amount)`
+Create payment request (when user creates paid post).
+
+```javascript
+const request = await paymentRequests.create(userId, postId, 500);
+// Returns: { id, status: "pending", amount, created_at }
+```
+
+#### `paymentRequests.getPending(userId)`
+Get pending requests for specific user.
+
+```javascript
+const pending = await paymentRequests.getPending(userId);
+// Returns: Array of pending payment requests
+```
+
+#### `paymentRequests.getAllPending(limit)`
+Get all pending requests (for member approval page).
+
+```javascript
+const allPending = await paymentRequests.getAllPending(50);
+// Returns: Array of all pending payments awaiting approval
+```
+
+#### `paymentRequests.approve(requestId, adminNotes)`
+Approve payment request (member action).
+
+```javascript
+const approved = await paymentRequests.approve(requestId, "Approved by admin");
+// - Updates status to "approved"
+// - Adds balance to user's wallet
+// - Sets post.is_approved = true
+// - Sets post.payment_approved = true
+```
+
+#### `paymentRequests.deny(requestId, reason)`
+Deny payment request (member action).
+
+```javascript
+const denied = await paymentRequests.deny(requestId, "Image quality poor");
+// - Updates status to "rejected"
+// - Stores rejection reason
+```
+
+#### `paymentRequests.getHistory(userId, limit)`
+Get payment request history.
+
+```javascript
+const history = await paymentRequests.getHistory(userId, 50);
+// Returns: Array of all requests (pending, approved, rejected)
+```
+
+---
+
+### 7. USERS
+
+#### `users.getById(userId)`
+Get user profile.
+
+```javascript
+const user = await users.getById(userId);
+// Returns: { id, phone_number, is_member, posts_count, post_limit, ... }
+```
+
+#### `users.update(userId, updates)`
+Update user profile.
+
+```javascript
+await users.update(userId, {
+  whatsapp_phone: "22212345678",
+  post_limit: 10
+});
+```
+
+#### `users.incrementPostCount(userId)`
+Increment post count (called when post created).
+
+```javascript
+await users.incrementPostCount(userId);
+```
+
+---
+
+## Part 13: Common Usage Patterns
+
+### Create and Publish a Post
+
+```javascript
+// 1. Create post
+const post = await posts.create(userId, {
+  title: "iPhone 14",
+  description: "Good condition",
+  category: "electronics",
+  price: 150000,
+  location: "Nouakchott",
+  images: ["url1", "url2"],
+  isPaid: true  // Auto-approved
+});
+
+// 2. Create payment request
+if (post) {
+  await paymentRequests.create(userId, post.id, 500);
+}
+```
+
+### Member Approval Flow
+
+```javascript
+// 1. Get pending payments
+const pending = await paymentRequests.getAllPending();
+
+// 2. Member approves
+await paymentRequests.approve(paymentId, "Approved");
+// This automatically:
+// - Adds balance to user wallet
+// - Marks post as approved
+// - Sets payment_approved = true
+
+// 3. User can now see post in public feed
+```
+
+### Search and Filter
+
+```javascript
+// Get approved posts by category
+const propertyPosts = await posts.getByCategory("property", 50);
+
+// Search by location
+const noukPosts = await posts.getByLocation("Nouakchott", 50);
+
+// Search by keyword
+const results = await posts.search("apartment", 50);
+```
+
+### User Saved Posts
+
+```javascript
+// Save a post
+await favorites.add(userId, postId);
+
+// Get all saved posts
+const saved = await favorites.get(userId);
+
+// Check if saved
+const isSaved = await favorites.isFavorite(userId, postId);
+
+// Remove from saved
+await favorites.remove(userId, postId);
+```
+
+---
+
 **Last Updated**: November 2025
 **App Version**: Ejar v1.0.0
