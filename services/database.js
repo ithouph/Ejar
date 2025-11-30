@@ -58,6 +58,8 @@ export const auth = {
           .from("users")
           .insert({
             phone_number: formattedPhone,
+            post_limit: 5,
+            posts_count: 0,
           })
           .select()
           .single();
@@ -92,10 +94,28 @@ export const auth = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 2. POSTS (CRUD Operations)
+// 2. POSTS (CRUD Operations with Approval System)
 // ════════════════════════════════════════════════════════════════════
 
 export const posts = {
+  // Get all approved posts (for clients/feed)
+  async getAllApproved(limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching approved posts:", error);
+      return [];
+    }
+  },
+
   // Get all posts (paginated)
   async getAll(limit = 50, offset = 0) {
     try {
@@ -113,7 +133,7 @@ export const posts = {
     }
   },
 
-  // Get posts by user ID
+  // Get posts by user ID (user's own posts - show all)
   async getByUser(userId) {
     try {
       if (!userId) return [];
@@ -149,10 +169,54 @@ export const posts = {
     }
   },
 
-  // Create new post
+  // Check if user can post (hasn't reached post limit)
+  async canUserPost(userId) {
+    try {
+      if (!userId) return false;
+      const { data, error } = await supabase
+        .from("users")
+        .select("posts_count, post_limit")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error || !data) return false;
+      return data.posts_count < data.post_limit;
+    } catch (error) {
+      console.error("Error checking post limit:", error);
+      return false;
+    }
+  },
+
+  // Get user's post limit info
+  async getUserPostLimit(userId) {
+    try {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from("users")
+        .select("posts_count, post_limit")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error getting post limit:", error);
+      return null;
+    }
+  },
+
+  // Create new post (free: not approved, paid: auto-approved)
   async create(userId, postData) {
     try {
       if (!userId) throw new Error("User ID required");
+
+      // Check post limit
+      const canPost = await this.canUserPost(userId);
+      if (!canPost) {
+        return { error: "Post limit reached. Please upgrade or remove a post." };
+      }
+
+      const isPaid = postData.isPaid || false;
 
       const { data, error } = await supabase
         .from("posts")
@@ -169,15 +233,24 @@ export const posts = {
           images: postData.images || [],
           amenities: postData.amenities || [],
           specifications: postData.specifications || {},
+          is_paid: isPaid,
+          is_approved: isPaid, // Auto-approve if paid
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Increment user's post count
+      await supabase
+        .from("users")
+        .update({ posts_count: supabase.rpc('increment_post_count', { user_id: userId }) })
+        .eq("id", userId);
+
       return data;
     } catch (error) {
       console.error("Error creating post:", error);
-      return null;
+      return { error: error.message };
     }
   },
 
@@ -227,6 +300,10 @@ export const posts = {
         .eq("user_id", userId);
 
       if (error) throw error;
+
+      // Decrement user's post count
+      await supabase.rpc('decrement_post_count', { user_id: userId });
+
       return true;
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -234,13 +311,14 @@ export const posts = {
     }
   },
 
-  // Search posts by category
+  // Search posts by category (only approved)
   async getByCategory(category, limit = 50) {
     try {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .eq("category", category)
+        .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -252,13 +330,14 @@ export const posts = {
     }
   },
 
-  // Search posts by location
+  // Search posts by location (only approved)
   async getByLocation(location, limit = 50) {
     try {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .ilike("location", `%${location}%`)
+        .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -270,13 +349,14 @@ export const posts = {
     }
   },
 
-  // Search posts by title/description
+  // Search posts by title/description (only approved)
   async search(searchTerm, limit = 50) {
     try {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
         .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+        .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -432,7 +512,7 @@ export const postReviews = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 4. FAVORITES
+// 4. FAVORITES (CRUD Operations)
 // ════════════════════════════════════════════════════════════════════
 
 export const favorites = {
@@ -442,12 +522,30 @@ export const favorites = {
       const { data, error } = await supabase
         .from("favorites")
         .select("post_id")
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return (data || []).map(f => f.post_id);
     } catch (error) {
       console.error("Error fetching favorites:", error);
+      return [];
+    }
+  },
+
+  async getAllFavoritePosts(userId) {
+    try {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("favorites")
+        .select("posts (*)")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(f => f.posts).filter(Boolean);
+    } catch (error) {
+      console.error("Error fetching favorite posts:", error);
       return [];
     }
   },
@@ -509,10 +607,27 @@ export const favorites = {
       return { action: "error", isFavorite: false };
     }
   },
+
+  async isFavorite(userId, postId) {
+    try {
+      if (!userId || !postId) return false;
+      const { data } = await supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("post_id", postId)
+        .maybeSingle();
+
+      return !!data;
+    } catch (error) {
+      console.error("Error checking favorite:", error);
+      return false;
+    }
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 5. WALLET
+// 5. WALLET & BALANCE
 // ════════════════════════════════════════════════════════════════════
 
 export const wallet = {
@@ -567,16 +682,84 @@ export const wallet = {
     }
   },
 
+  async addBalance(userId, amount, description = "Balance added") {
+    try {
+      if (!userId || !amount) return null;
+
+      const wallet = await this.get(userId);
+      if (!wallet) return null;
+
+      const newBalance = parseFloat(wallet.balance) + parseFloat(amount);
+
+      const { data: updated, error: updateError } = await supabase
+        .from("wallet_accounts")
+        .update({ balance: newBalance })
+        .eq("id", wallet.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      // Record transaction
+      await supabase
+        .from("wallet_transactions")
+        .insert({
+          wallet_id: wallet.id,
+          type: "credit",
+          amount: parseFloat(amount),
+          description,
+          category: "deposit",
+        });
+
+      return updated;
+    } catch (error) {
+      console.error("Error adding balance:", error);
+      return null;
+    }
+  },
+
+  async deductBalance(userId, amount, description = "Balance deducted") {
+    try {
+      if (!userId || !amount) return null;
+
+      const wallet = await this.get(userId);
+      if (!wallet) return null;
+
+      const newBalance = parseFloat(wallet.balance) - parseFloat(amount);
+      if (newBalance < 0) return { error: "Insufficient balance" };
+
+      const { data: updated, error: updateError } = await supabase
+        .from("wallet_accounts")
+        .update({ balance: newBalance })
+        .eq("id", wallet.id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      // Record transaction
+      await supabase
+        .from("wallet_transactions")
+        .insert({
+          wallet_id: wallet.id,
+          type: "debit",
+          amount: parseFloat(amount),
+          description,
+          category: "posting",
+        });
+
+      return updated;
+    } catch (error) {
+      console.error("Error deducting balance:", error);
+      return null;
+    }
+  },
+
   async getTransactions(userId, limit = 50) {
     try {
       if (!userId) return [];
 
-      const { data: wallet } = await supabase
-        .from("wallet_accounts")
-        .select("id")
-        .eq("user_id", userId)
-        .maybeSingle();
-
+      const wallet = await this.get(userId);
       if (!wallet) return [];
 
       const { data, error } = await supabase
@@ -596,7 +779,163 @@ export const wallet = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 6. USERS
+// 6. PAYMENT REQUESTS (Approve/Deny System)
+// ════════════════════════════════════════════════════════════════════
+
+export const paymentRequests = {
+  async create(userId, postId, amount) {
+    try {
+      if (!userId || !amount) throw new Error("User ID and amount required");
+
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .insert({
+          user_id: userId,
+          post_id: postId,
+          amount: parseFloat(amount),
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error creating payment request:", error);
+      return null;
+    }
+  },
+
+  async getPending(userId) {
+    try {
+      if (!userId) return [];
+
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching pending requests:", error);
+      return [];
+    }
+  },
+
+  async getAllPending(limit = 50) {
+    try {
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .select("*")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching all pending requests:", error);
+      return [];
+    }
+  },
+
+  async approve(requestId, adminNotes = "") {
+    try {
+      if (!requestId) throw new Error("Request ID required");
+
+      const request = await supabase
+        .from("payment_requests")
+        .select("*")
+        .eq("id", requestId)
+        .single();
+
+      if (!request.data) throw new Error("Payment request not found");
+
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .update({
+          status: "approved",
+          processed_at: new Date().toISOString(),
+          admin_notes: adminNotes,
+        })
+        .eq("id", requestId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Add balance to user's wallet
+      if (request.data.user_id) {
+        await wallet.addBalance(
+          request.data.user_id,
+          request.data.amount,
+          "Payment approved"
+        );
+      }
+
+      // If it's a post payment, approve the post
+      if (request.data.post_id) {
+        await supabase
+          .from("posts")
+          .update({ is_approved: true })
+          .eq("id", request.data.post_id);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error approving payment:", error);
+      return null;
+    }
+  },
+
+  async deny(requestId, reason = "Rejected") {
+    try {
+      if (!requestId) throw new Error("Request ID required");
+
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .update({
+          status: "rejected",
+          processed_at: new Date().toISOString(),
+          rejection_reason: reason,
+        })
+        .eq("id", requestId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error denying payment:", error);
+      return null;
+    }
+  },
+
+  async getHistory(userId, limit = 50) {
+    try {
+      if (!userId) return [];
+
+      const { data, error } = await supabase
+        .from("payment_requests")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching payment history:", error);
+      return [];
+    }
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 7. USERS
 // ════════════════════════════════════════════════════════════════════
 
 export const users = {
@@ -631,6 +970,38 @@ export const users = {
       return data;
     } catch (error) {
       console.error("Error updating user:", error);
+      return null;
+    }
+  },
+
+  async incrementPostCount(userId) {
+    try {
+      if (!userId) return null;
+
+      const user = await this.getById(userId);
+      if (!user) return null;
+
+      return await this.update(userId, {
+        posts_count: (user.posts_count || 0) + 1,
+      });
+    } catch (error) {
+      console.error("Error incrementing post count:", error);
+      return null;
+    }
+  },
+
+  async decrementPostCount(userId) {
+    try {
+      if (!userId) return null;
+
+      const user = await this.getById(userId);
+      if (!user || user.posts_count <= 0) return null;
+
+      return await this.update(userId, {
+        posts_count: Math.max(0, (user.posts_count || 1) - 1),
+      });
+    } catch (error) {
+      console.error("Error decrementing post count:", error);
       return null;
     }
   },

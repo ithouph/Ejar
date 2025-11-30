@@ -1,10 +1,13 @@
 -- EJAR DATABASE SCHEMA - SIMPLIFIED
 -- Phone number only login system
+-- Posts approval system with paid/unpaid posts
 
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   phone_number text NOT NULL UNIQUE,
   whatsapp_phone text,
+  post_limit integer DEFAULT 5,
+  posts_count integer DEFAULT 0,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT users_pkey PRIMARY KEY (id)
@@ -31,6 +34,8 @@ CREATE TABLE public.posts (
   images text[] DEFAULT '{}'::text[],
   amenities text[] DEFAULT '{}'::text[],
   specifications jsonb DEFAULT '{}'::jsonb,
+  is_paid boolean DEFAULT false,
+  is_approved boolean DEFAULT false,
   likes_count integer DEFAULT 0,
   rating numeric DEFAULT 0,
   total_reviews integer DEFAULT 0,
@@ -102,6 +107,7 @@ CREATE TABLE public.wallet_transactions (
 CREATE TABLE public.payment_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
+  post_id uuid,
   amount numeric NOT NULL,
   status text DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])),
   payment_method text,
@@ -113,7 +119,8 @@ CREATE TABLE public.payment_requests (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT payment_requests_pkey PRIMARY KEY (id),
-  CONSTRAINT payment_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+  CONSTRAINT payment_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT payment_requests_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.service_categories (
