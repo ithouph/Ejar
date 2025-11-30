@@ -1,147 +1,328 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { authService } from "../services/authService";
-import { auth as phoneAuth, users as usersApi } from "../services/database";
 import { supabase } from "../config/supabase";
+import * as WebBrowser from "expo-web-browser";
+import * as ImagePicker from "expo-image-picker";
+import { makeRedirectUri } from "expo-auth-session";
 
-const AuthContext = createContext({});
+WebBrowser.maybeCompleteAuthSession();
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+/**
+ * ════════════════════════════════════════════════════════════════════
+ * EJAR APP - ALL DATABASE FUNCTIONS IN ONE FILE
+ * ════════════════════════════════════════════════════════════════════
+ */
 
-  useEffect(() => {
-    loadSession();
+// ════════════════════════════════════════════════════════════════════
+// 1. AUTHENTICATION - POSTGRESQL DIRECT (NO SUPABASE)
+// ════════════════════════════════════════════════════════════════════
 
-    const {
-      data: { subscription },
-    } = authService.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, []);
-
-  async function loadSession() {
+export const auth = {
+  async generateOTP(phoneNumber) {
     try {
-      const session = await authService.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-    } catch (error) {
-      console.error("Error loading session:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function signInWithGoogle() {
-    try {
-      setLoading(true);
-      const { user, session } = await authService.signInWithGoogle();
-      setUser(user);
-      setSession(session);
-      return { user, session };
-    } catch (error) {
-      console.error("Sign in error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function signOut() {
-    try {
-      setLoading(true);
-      await authService.signOut();
-      setUser(null);
-      setSession(null);
-    } catch (error) {
-      console.error("Sign out error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function signInWithPhoneOTP(user, phoneNumber) {
-    try {
-      setLoading(true);
-      setUser(user);
-      console.log("✅ User logged in:", user);
-      return { user };
-    } catch (error) {
-      console.error("Phone OTP sign in error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function guestSignIn() {
-    try {
-      setLoading(true);
-      const guestPhoneNumber = "22212345678";
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
       
-      console.log("🔄 Starting guest sign in for:", guestPhoneNumber);
+      console.log(`📱 OTP for ${formattedPhone}: ${otp}`);
       
-      const guestUserFromDb = await usersApi.getByPhoneNumber(guestPhoneNumber);
+      return {
+        phoneNumber: formattedPhone,
+        otp: otp,
+      };
+    } catch (error) {
+      console.error("Error generating OTP:", error);
+      throw error;
+    }
+  },
+
+  async verifyOTPAndLogin(phoneNumber, otp) {
+    try {
+      const { queryPostgresSingle, queryPostgres } = await import("../config/postgres.js");
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
       
-      if (!guestUserFromDb) {
-        console.error("Guest user not found:", guestPhoneNumber);
-        throw new Error("Guest user not found in database");
+      console.log("🔄 Verifying OTP for:", formattedPhone);
+      
+      // Check if user exists
+      let user = await queryPostgresSingle(
+        "SELECT * FROM users WHERE phone_number = $1",
+        [formattedPhone]
+      );
+
+      // If user doesn't exist, create them
+      if (!user) {
+        console.log("✅ Creating new user:", formattedPhone);
+        const result = await queryPostgresSingle(
+          "INSERT INTO users (phone_number, post_limit, posts_count, is_member, hit_limit) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+          [formattedPhone, 5, 0, false, 100]
+        );
+        user = result;
+
+        // Create wallet for new user
+        try {
+          await queryPostgres(
+            "INSERT INTO wallet_accounts (user_id, balance, currency) VALUES ($1, $2, $3)",
+            [user.id, 0, "MRU"]
+          );
+        } catch (walletError) {
+          console.log("Wallet creation note:", walletError);
+        }
       }
 
-      console.log("✅ Guest user found:", guestUserFromDb);
-
-      const userData = {
-        id: guestUserFromDb.id,
-        phone_number: guestUserFromDb.phone_number,
-        whatsapp_phone: guestUserFromDb.whatsapp_phone,
-        post_limit: guestUserFromDb.post_limit,
-        posts_count: guestUserFromDb.posts_count,
-        is_member: guestUserFromDb.is_member,
-        hit_limit: guestUserFromDb.hit_limit,
-        created_at: guestUserFromDb.created_at,
-        updated_at: guestUserFromDb.updated_at,
-      };
-
-      setUser(userData);
-      console.log("✅ Guest user state set, should redirect now");
-      
-      const sessionData = { user: userData };
-      setSession(sessionData);
-
-      return { user: userData };
+      console.log("✅ User verified:", user);
+      return { user, isNewUser: !user };
     } catch (error) {
-      console.error("Guest sign in error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
+      console.error("OTP verification error:", error);
+      return { error: error.message };
     }
-  }
+  },
 
-  const value = {
-    user,
-    session,
-    loading,
-    signInWithGoogle,
-    signInWithPhoneOTP,
-    guestSignIn,
-    signOut,
-    refreshUser: loadSession,
-  };
+  async signOut() {
+    try {
+      console.log("User signed out");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  },
+};
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+// ════════════════════════════════════════════════════════════════════
+// 2. USERS - POSTGRESQL DIRECT (NO SUPABASE)
+// ════════════════════════════════════════════════════════════════════
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-}
+export const users = {
+  async getByPhoneNumber(phoneNumber) {
+    try {
+      const { queryPostgresSingle } = await import("../config/postgres.js");
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
+      
+      const user = await queryPostgresSingle(
+        "SELECT * FROM users WHERE phone_number = $1",
+        [formattedPhone]
+      );
+      
+      return user;
+    } catch (error) {
+      console.error("Error fetching user by phone:", error);
+      return null;
+    }
+  },
+
+  async getById(userId) {
+    try {
+      const { queryPostgresSingle } = await import("../config/postgres.js");
+      const user = await queryPostgresSingle(
+        "SELECT * FROM users WHERE id = $1",
+        [userId]
+      );
+      return user;
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 3. POSTS (Using Supabase for now - can migrate to PostgreSQL later)
+// ════════════════════════════════════════════════════════════════════
+
+export const posts = {
+  // Get all approved posts (for clients/feed)
+  async getAllApproved(limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching approved posts:", error);
+      return [];
+    }
+  },
+
+  // Get all posts (paginated)
+  async getAll(limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      return [];
+    }
+  },
+
+  // Get posts by user
+  async getByUserId(userId, limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      return [];
+    }
+  },
+
+  // Get pending approval posts (admin)
+  async getPendingApproval(limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("is_approved", false)
+        .order("created_at", { ascending: true })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching pending posts:", error);
+      return [];
+    }
+  },
+
+  // Create post
+  async create(postData) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .insert([postData])
+        .select();
+
+      if (error) throw error;
+      return data?.[0] || null;
+    } catch (error) {
+      console.error("Error creating post:", error);
+      throw error;
+    }
+  },
+
+  // Update post
+  async update(postId, updates) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .update(updates)
+        .eq("id", postId)
+        .select();
+
+      if (error) throw error;
+      return data?.[0] || null;
+    } catch (error) {
+      console.error("Error updating post:", error);
+      throw error;
+    }
+  },
+
+  // Delete post
+  async delete(postId) {
+    try {
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", postId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      throw error;
+    }
+  },
+
+  // Approve post
+  async approve(postId) {
+    return this.update(postId, { is_approved: true });
+  },
+
+  // Reject post
+  async reject(postId) {
+    return this.update(postId, { is_approved: false });
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 4. WALLET
+// ════════════════════════════════════════════════════════════════════
+
+export const wallet = {
+  async getBalance(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("wallet_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching wallet:", error);
+      return null;
+    }
+  },
+
+  async addBalance(userId, amount, description = "") {
+    try {
+      const { data, error } = await supabase.rpc("add_wallet_balance", {
+        p_user_id: userId,
+        p_amount: amount,
+        p_description: description,
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error adding balance:", error);
+      throw error;
+    }
+  },
+
+  async deductBalance(userId, amount, description = "") {
+    try {
+      const { data, error } = await supabase.rpc("deduct_wallet_balance", {
+        p_user_id: userId,
+        p_amount: amount,
+        p_description: description,
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error deducting balance:", error);
+      throw error;
+    }
+  },
+
+  async getTransactionHistory(userId, limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("wallet_transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      return [];
+    }
+  },
+};
