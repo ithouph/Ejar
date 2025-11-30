@@ -30,6 +30,31 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_update_post_rating();
 
 -- ==========================================
+-- 2. Update Favorites Count on Posts
+-- ==========================================
+CREATE OR REPLACE FUNCTION fn_update_post_favorites_count()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE posts
+  SET 
+    total_favorites = (SELECT COUNT(*) FROM favorites WHERE post_id = NEW.post_id),
+    updated_at = NOW()
+  WHERE id = NEW.post_id;
+
+  RETURN NEW;
+END;
+$$;
+
+-- Trigger for favorites insert/delete
+DROP TRIGGER IF EXISTS trigger_update_post_favorites_count ON favorites;
+CREATE TRIGGER trigger_update_post_favorites_count
+AFTER INSERT OR DELETE ON favorites
+FOR EACH ROW
+EXECUTE FUNCTION fn_update_post_favorites_count();
+
+-- ==========================================
 -- 3. Atomic Wallet Transaction Function
 -- ==========================================
 CREATE OR REPLACE FUNCTION add_wallet_transaction(
