@@ -966,6 +966,10 @@ export const users = {
     }
   },
 
+  async getUser(userId) {
+    return this.getById(userId);
+  },
+
   async update(userId, updates) {
     try {
       if (!userId) return null;
@@ -982,6 +986,10 @@ export const users = {
       console.error("Error updating user:", error);
       return null;
     }
+  },
+
+  async updateUser(userId, updates) {
+    return this.update(userId, updates);
   },
 
   async incrementPostCount(userId) {

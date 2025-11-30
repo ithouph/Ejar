@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, Pressable, Image, TextInput } from "react-native";
+import { View, Pressable, TextInput, Alert, ActivityIndicator } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
@@ -16,16 +15,8 @@ import {
 } from "../theme";
 import { useAuth } from "../contexts/AuthContext";
 import { users as usersApi } from "../services/database";
-import { Alert, ActivityIndicator } from "react-native";
 
-function InputField({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  keyboardType,
-  theme,
-}) {
+function InfoField({ label, value, editable = false, onChangeText, theme }) {
   return (
     <View style={inputStyles.container}>
       <ThemedText
@@ -41,119 +32,17 @@ function InputField({
             backgroundColor: theme.surface,
             color: theme.textPrimary,
             borderColor: theme.border,
+            opacity: editable ? 1 : 0.6,
           },
         ]}
-        value={value}
+        value={value?.toString() || ""}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={label}
         placeholderTextColor={theme.textSecondary}
-        keyboardType={keyboardType || "default"}
+        editable={editable}
+        selectTextOnFocus={editable}
+        keyboardType={label.includes("Post") ? "number-pad" : "default"}
       />
-    </View>
-  );
-}
-
-function DatePickerField({ label, value, onChangeText, theme }) {
-  return (
-    <View style={inputStyles.container}>
-      <ThemedText
-        type="bodySmall"
-        style={[inputStyles.label, { color: theme.textSecondary }]}
-      >
-        {label}
-      </ThemedText>
-      <TextInput
-        style={[
-          inputStyles.input,
-          {
-            backgroundColor: theme.surface,
-            color: theme.textPrimary,
-            borderColor: theme.border,
-          },
-        ]}
-        value={value === "Select date" ? "" : value}
-        onChangeText={onChangeText}
-        placeholder="YYYY-MM-DD"
-        placeholderTextColor={theme.textSecondary}
-      />
-    </View>
-  );
-}
-
-function GenderSelector({ value, onSelect, theme }) {
-  return (
-    <View style={inputStyles.container}>
-      <ThemedText
-        type="bodySmall"
-        style={[inputStyles.label, { color: theme.textSecondary }]}
-      >
-        Gender
-      </ThemedText>
-      <View style={[layoutStyles.row, spacingStyles.gapMd]}>
-        <Pressable
-          onPress={() => onSelect("Male")}
-          style={[
-            inputStyles.input,
-            layoutStyles.rowCenter,
-            spacingStyles.gapSm,
-            {
-              flex: 1,
-              backgroundColor: theme.surface,
-              borderColor: value === "Male" ? theme.primary : theme.border,
-            },
-          ]}
-        >
-          <View
-            style={[
-              inputStyles.radio,
-              { borderColor: value === "Male" ? theme.primary : theme.border },
-            ]}
-          >
-            {value === "Male" ? (
-              <View
-                style={[
-                  inputStyles.radioInner,
-                  { backgroundColor: theme.primary },
-                ]}
-              />
-            ) : null}
-          </View>
-          <ThemedText type="bodyLarge">Male</ThemedText>
-        </Pressable>
-
-        <Pressable
-          onPress={() => onSelect("Female")}
-          style={[
-            inputStyles.input,
-            layoutStyles.rowCenter,
-            spacingStyles.gapSm,
-            {
-              flex: 1,
-              backgroundColor: theme.surface,
-              borderColor: value === "Female" ? theme.primary : theme.border,
-            },
-          ]}
-        >
-          <View
-            style={[
-              inputStyles.radio,
-              {
-                borderColor: value === "Female" ? theme.primary : theme.border,
-              },
-            ]}
-          >
-            {value === "Female" ? (
-              <View
-                style={[
-                  inputStyles.radioInner,
-                  { backgroundColor: theme.primary },
-                ]}
-              />
-            ) : null}
-          </View>
-          <ThemedText type="bodyLarge">Female</ThemedText>
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -163,15 +52,12 @@ export default function EditProfile({ navigation }) {
   const insets = useSafeAreaInsets();
   const { user, refreshUser } = useAuth();
 
-  const [fullName, setFullName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("Select date");
-  const [gender, setGender] = useState("Male");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [whatsappNumber, setWhatsappNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [profilePicture, setProfilePicture] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [postLimit, setPostLimit] = useState("");
+  const [postsCount, setPostsCount] = useState("");
+  const [isMember, setIsMember] = useState("");
+  const [hitLimit, setHitLimit] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -188,58 +74,21 @@ export default function EditProfile({ navigation }) {
     try {
       setLoading(true);
 
-      const [profile, userDetails] = await Promise.all([
-        usersApi.getProfile(user.id),
-        usersApi.getUser(user.id),
-      ]);
-
-      if (profile) {
-        setDateOfBirth(profile.date_of_birth || "Select date");
-        setGender(profile.gender || "Male");
-        setMobileNumber(profile.mobile || "");
-        setWhatsappNumber(profile.whatsapp || "");
-        setWeight(profile.weight || "");
-        setHeight(profile.height || "");
-      }
+      const userDetails = await usersApi.getUser(user.id);
 
       if (userDetails) {
-        setFullName(userDetails.full_name || user.email || "");
-        setProfilePicture(
-          userDetails.photo_url || user?.user_metadata?.avatar_url || null,
-        );
-      } else {
-        setFullName(user.user_metadata?.full_name || user.email || "");
-        setProfilePicture(user?.user_metadata?.avatar_url || null);
+        setPhoneNumber(userDetails.phone_number || "");
+        setWhatsappPhone(userDetails.whatsapp_phone || "");
+        setPostLimit(userDetails.post_limit?.toString() || "0");
+        setPostsCount(userDetails.posts_count?.toString() || "0");
+        setIsMember(userDetails.is_member ? "Yes" : "No");
+        setHitLimit(userDetails.hit_limit ? "Yes" : "No");
       }
-
-      setEmail(user.email || "");
     } catch (error) {
       console.error("Error loading profile:", error);
+      Alert.alert("Error", "Failed to load profile");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const pickProfilePicture = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission Required",
-        "Please allow access to your photos to update your profile picture.",
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      setProfilePicture(result.assets[0].uri);
     }
   };
 
@@ -249,53 +98,12 @@ export default function EditProfile({ navigation }) {
     try {
       setSaving(true);
 
-      const existingProfile = await usersApi.getProfile(user.id);
-
-      const profileData = {
-        date_of_birth: dateOfBirth === "Select date" ? null : dateOfBirth,
-        gender,
-        weight,
-        height,
+      // Only whatsapp_phone is editable
+      const updateData = {
+        whatsapp_phone: whatsappPhone || null,
       };
 
-      if (mobileNumber && mobileNumber.trim()) {
-        profileData.mobile = mobileNumber;
-      } else if (!existingProfile) {
-        profileData.mobile = null;
-      }
-
-      if (whatsappNumber && whatsappNumber.trim()) {
-        profileData.whatsapp = whatsappNumber;
-      } else if (!existingProfile) {
-        profileData.whatsapp = null;
-      }
-
-      if (existingProfile) {
-        await usersApi.updateProfile(user.id, profileData);
-      } else {
-        await usersApi.createProfile(user.id, profileData);
-      }
-
-      const userUpdateData = {};
-
-      if (fullName) {
-        userUpdateData.full_name = fullName;
-      }
-
-      if (
-        profilePicture &&
-        profilePicture !== user?.user_metadata?.avatar_url
-      ) {
-        const photoUrl = await usersApi.uploadProfilePicture(
-          user.id,
-          profilePicture,
-        );
-        userUpdateData.photo_url = photoUrl;
-      }
-
-      if (Object.keys(userUpdateData).length > 0) {
-        await usersApi.updateUser(user.id, userUpdateData);
-      }
+      await usersApi.updateUser(user.id, updateData);
 
       await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -306,13 +114,20 @@ export default function EditProfile({ navigation }) {
       navigation.goBack();
     } catch (error) {
       console.error("Error saving profile:", error);
-      const message =
-        error.message || "Failed to update profile. Please try again.";
+      const message = error.message || "Failed to update profile. Please try again.";
       Alert.alert("Error", message);
     } finally {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <ThemedView style={[layoutStyles.container, layoutStyles.columnCenter]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={layoutStyles.container}>
@@ -345,123 +160,70 @@ export default function EditProfile({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
-          <Image
-            source={{
-              uri: profilePicture || "https://via.placeholder.com/100",
-            }}
-            style={{ width: 100, height: 100, borderRadius: 50 }}
-          />
-          <Pressable
-            onPress={pickProfilePicture}
-            accessibilityLabel="Change Profile Picture"
-            accessibilityRole="button"
-            style={[
-              buttonStyles.iconSmall,
-              {
-                backgroundColor: theme.primary,
-                position: "absolute",
-                bottom: Spacing.xl,
-                right: "50%",
-                marginRight: -60,
-                borderWidth: 3,
-                borderColor: "#FFF",
-              },
-            ]}
-          >
-            <Feather name="edit-2" size={16} color="#FFF" />
-          </Pressable>
-        </View>
-
+        {/* Account Information Section */}
         <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
           <ThemedText
             type="h3"
             style={{ fontWeight: "700", marginBottom: Spacing.xs }}
           >
-            Basic Detail
+            Account Information
           </ThemedText>
 
-          <InputField
-            label="Full name"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Enter your full name"
+          <InfoField
+            label="Phone Number"
+            value={phoneNumber}
+            editable={false}
             theme={theme}
           />
 
-          <DatePickerField
-            label="Date of birth"
-            value={dateOfBirth}
-            onChangeText={setDateOfBirth}
+          <InfoField
+            label="WhatsApp Number"
+            value={whatsappPhone}
+            editable={true}
+            onChangeText={setWhatsappPhone}
             theme={theme}
           />
-
-          <GenderSelector value={gender} onSelect={setGender} theme={theme} />
         </View>
 
+        {/* Account Status Section */}
         <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
           <ThemedText
             type="h3"
             style={{ fontWeight: "700", marginBottom: Spacing.xs }}
           >
-            Contact Detail
+            Account Status
           </ThemedText>
 
-          <InputField
-            label="Mobile number"
-            value={mobileNumber}
-            onChangeText={setMobileNumber}
-            placeholder="Enter mobile number"
-            keyboardType="phone-pad"
+          <InfoField
+            label="Posts Count"
+            value={postsCount}
+            editable={false}
             theme={theme}
           />
 
-          <InputField
-            label="WhatsApp number"
-            value={whatsappNumber}
-            onChangeText={setWhatsappNumber}
-            placeholder="Enter WhatsApp number"
-            keyboardType="phone-pad"
+          <InfoField
+            label="Post Limit"
+            value={postLimit}
+            editable={false}
             theme={theme}
           />
 
-          <InputField
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter email address"
-            keyboardType="email-address"
+          <InfoField
+            label="Member"
+            value={isMember}
+            editable={false}
+            theme={theme}
+          />
+
+          <InfoField
+            label="Hit Limit"
+            value={hitLimit}
+            editable={false}
             theme={theme}
           />
         </View>
 
-        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
-          <ThemedText
-            type="h3"
-            style={{ fontWeight: "700", marginBottom: Spacing.xs }}
-          >
-            Personal Detail
-          </ThemedText>
-
-          <InputField
-            label="Weight (kg)"
-            value={weight}
-            onChangeText={setWeight}
-            placeholder="Enter weight"
-            keyboardType="decimal-pad"
-            theme={theme}
-          />
-
-          <InputField
-            label="Height (cm)"
-            value={height}
-            onChangeText={setHeight}
-            placeholder="Enter height"
-            keyboardType="decimal-pad"
-            theme={theme}
-          />
-        </View>
-
+        {/* Save Button */}
         <Pressable
           onPress={handleSave}
           disabled={saving}
@@ -485,7 +247,7 @@ export default function EditProfile({ navigation }) {
               darkColor="#FFF"
               style={{ fontWeight: "600" }}
             >
-              Save
+              Save Changes
             </ThemedText>
           )}
         </Pressable>
