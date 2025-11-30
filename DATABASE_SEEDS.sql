@@ -25,8 +25,8 @@ INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) 
 ('750e8400-e29b-41d4-a716-446655440004', '650e8400-e29b-41d4-a716-446655440004', 3200, 'MRU', NOW() - INTERVAL '15 days'),
 ('750e8400-e29b-41d4-a716-446655440005', '650e8400-e29b-41d4-a716-446655440005', 35000, 'MRU', NOW() - INTERVAL '10 days');
 
--- 3. REGIONS (13 Mauritanian Regions - Bilingual English/Arabic with codes)
-INSERT INTO public.regions (id, name_en, name_ar, code, created_at) VALUES
+-- 3. CITIES (13 Mauritanian Cities/Regions - Bilingual English/Arabic with codes)
+INSERT INTO public.cities (id, name_en, name_ar, code, created_at) VALUES
 ('550e8400-e29b-41d4-a716-446655440001', 'Nouakchott', 'نواكشوط', 'NKC', NOW()),
 ('550e8400-e29b-41d4-a716-446655440002', 'Dakhlet Nouadhibou', 'داخلت نواديبو', 'DNB', NOW()),
 ('550e8400-e29b-41d4-a716-446655440003', 'Assaba', 'العصابة', 'ASB', NOW()),
@@ -42,7 +42,7 @@ INSERT INTO public.regions (id, name_en, name_ar, code, created_at) VALUES
 ('550e8400-e29b-41d4-a716-446655440013', 'Inchiri', 'إينشيري', 'INC', NOW());
 
 -- 4. POSTS (Properties, Electronics, Vehicles, Furniture with paid/approval status)
-INSERT INTO public.posts (id, user_id, region_id, title, description, category, listing_type, property_type, price, image_url, images, amenities, specifications, is_paid, is_approved, payment_approved, hit_limit, likes_count, rating, total_reviews, created_at, updated_at) VALUES
+INSERT INTO public.posts (id, user_id, city_id, title, description, category, listing_type, property_type, price, image_url, images, amenities, specifications, is_paid, is_approved, payment_approved, hit_limit, likes_count, rating, total_reviews, created_at, updated_at) VALUES
 -- Property Posts
 ('850e8400-e29b-41d4-a716-446655440001', '650e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440001', 'Modern Apartment for Rent', '2 bedroom luxury apartment in downtown with AC and parking', 'property', 'rent', 'apartment', 150000, 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=400&fit=crop', ARRAY['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&h=400&fit=crop'], ARRAY['WiFi', 'Parking', 'AC'], '{"bedrooms": 2, "bathrooms": 1, "size": "120m2", "floor": 3}'::jsonb, true, true, true, false, 12, 4.5, 2, NOW() - INTERVAL '6 days', NOW() - INTERVAL '6 days'),
 ('850e8400-e29b-41d4-a716-446655440002', '650e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440001', 'Beautiful Villa for Sale', 'Spacious 4 bedroom villa with garden and pool', 'property', 'buy', 'villa', 2500000, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop', ARRAY['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&h=400&fit=crop'], ARRAY['Pool', 'Garden', 'Garage'], '{"bedrooms": 4, "bathrooms": 3, "size": "450m2", "hasPool": true}'::jsonb, false, false, false, false, 0, 0, 0, NOW() - INTERVAL '5 days', NOW() - INTERVAL '5 days'),

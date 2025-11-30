@@ -14,19 +14,19 @@ CREATE TABLE public.users (
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.regions (
+CREATE TABLE public.cities (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name_en text NOT NULL,
   name_ar text NOT NULL,
   code text NOT NULL UNIQUE,
   created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT regions_pkey PRIMARY KEY (id)
+  CONSTRAINT cities_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
-  region_id uuid NOT NULL,
+  city_id uuid NOT NULL,
   title text NOT NULL,
   description text,
   category text DEFAULT 'property'::text,
@@ -48,7 +48,7 @@ CREATE TABLE public.posts (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT posts_pkey PRIMARY KEY (id),
   CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT posts_region_id_fkey FOREIGN KEY (region_id) REFERENCES public.regions(id) ON DELETE CASCADE
+  CONSTRAINT posts_city_id_fkey FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.reviews (
