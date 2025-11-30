@@ -4,6 +4,7 @@ import Posts from "../pages/Posts";
 import AddPost from "../pages/AddPost";
 import PostDetail from "../pages/PostDetail";
 import Reviews from "../pages/Reviews";
+import Payment from "../pages/Payment";
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,7 @@ export default function PostsNavigator() {
       <Stack.Screen name="AddPost" component={AddPost} />
       <Stack.Screen name="PostDetail" component={PostDetail} />
       <Stack.Screen name="Reviews" component={Reviews} />
+      <Stack.Screen name="Payment" component={Payment} />
     </Stack.Navigator>
   );
 }

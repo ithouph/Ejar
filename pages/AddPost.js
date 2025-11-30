@@ -446,20 +446,21 @@ export default function AddPost({ navigation }) {
         listingType,
         category,
         specifications: getCategorySpecifications(),
+        isPaid: false,
         userName:
           user?.user_metadata?.full_name || user?.email || "Anonymous User",
         userPhoto:
           user?.user_metadata?.avatar_url || "https://via.placeholder.com/40",
       };
 
-      await postsApi.create(user?.id || "guest", postData);
+      const createdPost = await postsApi.create(user?.id || "guest", postData);
 
-      Alert.alert("Success", "Your post has been created successfully!", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      if (createdPost?.error) {
+        Alert.alert("Error", createdPost.error);
+        return;
+      }
+
+      navigation.navigate("Payment", { post: createdPost });
     } catch (error) {
       console.error("Error creating post:", error);
       Alert.alert("Error", "Failed to create post. Please try again.");

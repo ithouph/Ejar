@@ -109,16 +109,25 @@ export default function Discover({ navigation }) {
     try {
       setLoading(true);
 
-      const filters = {};
-      if (selectedCategory !== "all") filters.category = selectedCategory;
-      if (searchQuery.trim()) filters.search = searchQuery.trim();
-      if (priceRange[0] > 0) filters.minPrice = priceRange[0];
-      if (priceRange[1] < 5000) filters.maxPrice = priceRange[1];
+      let postsData = [];
+      
+      if (selectedCategory === "all") {
+        postsData = await postsApi.getAllApproved();
+      } else if (selectedCategory === "property") {
+        postsData = await postsApi.getByCategory("property");
+      } else if (selectedCategory === "phones") {
+        postsData = await postsApi.getByCategory("phones");
+      } else if (selectedCategory === "electronics") {
+        postsData = await postsApi.getByCategory("electronics");
+      } else if (selectedCategory === "others") {
+        postsData = await postsApi.getAllApproved();
+      }
 
-      const [postsData, favoriteIds] = await Promise.all([
-        postsApi.getAll(filters),
-        user ? savedPostsApi.getIds(user.id) : Promise.resolve([]),
-      ]);
+      if (searchQuery.trim()) {
+        postsData = await postsApi.search(searchQuery.trim());
+      }
+
+      const favoriteIds = user ? await Promise.resolve([]) : Promise.resolve([]);
 
       setPosts(postsData || []);
       setFavorites(favoriteIds || []);
