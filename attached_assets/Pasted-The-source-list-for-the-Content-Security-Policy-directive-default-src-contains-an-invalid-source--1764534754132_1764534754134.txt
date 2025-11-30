@@ -1,0 +1,556 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+VM1213:8 [Coframe] Replit Enterprise watcher loaded
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+Ejar:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+Ejar:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+Ejar:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+77e6c4397db8b574.js:2 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+77e6c4397db8b574.js:2 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+77e6c4397db8b574.js:2 [LaunchDarkly] LaunchDarkly client initialized
+Ejar:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'ambient-light-sensor'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'battery'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-not-rendered'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-out-of-viewport'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'layout-animations'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'legacy-image-formats'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'navigation-override'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'oversized-images'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'publickey-credentials'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'speaker-selection'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'unoptimized-images'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'unsized-media'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'pointer-lock'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowfullscreen'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowpaymentrequest'.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'battery'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'layout-animations'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'legacy-image-formats'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'navigation-override'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'oversized-images'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'publickey-credentials'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'speaker-selection'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'unoptimized-images'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Unrecognized feature: 'unsized-media'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar2m%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+(anonymous) @ injected.js:37
+warnOnce @ index.js:24
+preprocess @ preprocess.js:136
+compileAndInsertAtomic @ index.js:56
+(anonymous) @ index.js:99
+create @ index.js:87
+(anonymous) @ global.js:749
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ ThemedText.js:4
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ ErrorBoundary.js:4
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ App.js:8
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ index.js:3
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:156
+metroRequire @ require.js:74
+(anonymous) @ index.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&transform.reactCompiler=true&unstable_transformProfile=hermes-stable:196638
+injected.js:37 Running application "main" with appParams:
+ {rootTag: '#root', hydrate: undefined} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 📱 OTP for 27600418: 5752
+injected.js:37 📱 OTP for 27600418: 5752
+injected.js:214  GET https://fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/config/postgres.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&transform.reactCompiler=true&unstable_transformProfile=hermes-stable&modulesOnly=true&runModule=false 500 (Internal Server Error)
+apply @ injected.js:214
+fetchAsync @ fetchAsync.ts:10
+fetchThenEvalAsync @ fetchThenEvalJs.ts:15
+fetchThenEvalAsync @ fetchThenEval.web.ts:27
+loadBundleAsync @ loadBundle.ts:21
+universal_loadBundleAsync @ buildAsyncRequire.ts:25
+maybeLoadBundle @ asyncRequireModule.ts:33
+asyncRequireImpl @ asyncRequireModule.ts:42
+asyncRequire @ asyncRequireModule.ts:57
+verifyOTPAndLogin @ database.js:38
+handleVerifyOtp @ Login.js:143
+onClick @ PressResponder.js:314
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1519
+processDispatchQueue @ react-dom-client.development.js:16418
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20658
+dispatchDiscreteEvent @ react-dom-client.development.js:20626
+<div>
+exports.createElement @ react.development.js:1033
+createElement @ index.js:24
+View @ index.js:111
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+<View>
+exports.createElement @ react.development.js:1033
+Pressable @ index.js:124
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1522
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+injected.js:37 OTP verification error: Error: Unable to resolve module pg from /home/runner/workspace/config/postgres.js: pg could not be found within the project or in these directories:
+  node_modules
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m pg [36mfrom[39m [32m'pg'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m [36mconst[39m { [33mClient[39m } [33m=[39m pg[33m;[39m
+ [90m 4 |[39m[0m
+    at index.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot…:4021:15
+    at async Object.verifyOTPAndLogin (index.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot…:154001:13)
+    at async handleVerifyOtp (index.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot…:196196:26)
+(anonymous) @ injected.js:37
+verifyOTPAndLogin @ database.js:72
+await in verifyOTPAndLogin
+handleVerifyOtp @ Login.js:143
+onClick @ PressResponder.js:314
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1519
+processDispatchQueue @ react-dom-client.development.js:16418
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20658
+dispatchDiscreteEvent @ react-dom-client.development.js:20626
+<div>
+exports.createElement @ react.development.js:1033
+createElement @ index.js:24
+View @ index.js:111
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+<View>
+exports.createElement @ react.development.js:1033
+Pressable @ index.js:124
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1522
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+injected.js:37 Disconnected from Metro (1006: "").
+
+To reconnect:
+- Ensure that Metro is running and available on the same network
+- Reload this app (will trigger further help if Metro cannot be connected to)
+      
+(anonymous) @ injected.js:37
+setHMRUnavailableReason @ hmr.ts:286
+(anonymous) @ hmr.ts:249
+emit @ eventemitter3.js:79
+HMRClient._ws.onclose @ HMRClient.js:33
+48f324d39e922734.js:2 WebSocket connection to 'wss://eval.janeway.platform.replit.com/wsv2/v2.public.Q2dZSTY4ZXl5UVlTQmdpSzVMTEpCaUlIYW1GdVpYZGhlVEFBT3I0QkNpUm1ZV014T1dRd09DMHdOekF5TFRRMU4ySXRPVGcxWWkxbU1XUmtNekk1WWprME9EWVNBMjVwZUJvWmNtVndiR2wwTFhKbGNHd3RabWxzWlhNdGFtRnVaWGRoZVNJRVJXcGhjaW9LWTJoaGFHNXBjR3gxYzBKWENocHlaWEJzYVhRdGNtVndiQzFpYkc5amEzTXRhbUZ1WlhkaGVSSVljbVZ3YkdsMExYSmxjR3d0YldWMFlTMXFZVzVsZDJGNUdoOXlaWEJzYVhRdGJXRnlaMkZ5YVc1bExXSnNiMk5yY3kxcVlXNWxkMkY1U2djSSthVDZGeEFCVUFCNEFGSWtDQUVRZ0lDQWdBZ1pBQUFBQUFBQThEOGhBQUFBQUFBQThEOG9nSUNBZ0Fnd0FUZ0FZQUJxRVFqNXBQb1hFZ3BqYUdGb2JtbHdiSFZ6Z2dFQ0tnQ2FBUW9LQ0RBdU1DNHlNakEyb0FFQfat5Nc53OhWTUeLZEuYJ74KUSjupid3pglLLdSh0o4X0XrTjJ37fPMOEsc43RFv4iTZT9RWcovrN3PGsjQ9Ugc.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: 
+(anonymous) @ 48f324d39e922734.js:2
+(anonymous) @ aef1f2c6f8544e95.js:2
+n @ 66c950ae15740dcc.js:2
+a @ 66c950ae15740dcc.js:2
+(anonymous) @ 66c950ae15740dcc.js:2
+(anonymous) @ 66c950ae15740dcc.js:2
+connect @ 48f324d39e922734.js:2
+handleClose @ 48f324d39e922734.js:2
+n @ 48f324d39e922734.js:2
+ed1e693c96a75807.js:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+z @ ed1e693c96a75807.js:2
+(anonymous) @ ed1e693c96a75807.js:2
+iA @ ed1e693c96a75807.js:2
+iV @ ed1e693c96a75807.js:2
+iU @ ed1e693c96a75807.js:2
+i_ @ ed1e693c96a75807.js:2
+C @ ed1e693c96a75807.js:2
+M @ ed1e693c96a75807.js:2
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'battery'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'layout-animations'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'legacy-image-formats'.
+fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhe%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+injected.js:37 "shadow*" style props are deprecated. Use "boxShadow".
+(anonymous) @ injected.js:37
+warnOnce @ index.js:24
+preprocess @ preprocess.js:136
+compileAndInsertAtomic @ index.js:56
+(anonymous) @ index.js:99
+create @ index.js:87
+(anonymous) @ global.js:749
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ ThemedText.js:4
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ ErrorBoundary.js:4
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ App.js:8
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:163
+metroRequire @ require.js:74
+(anonymous) @ index.js:3
+loadModuleImplementation @ require.js:248
+guardedLoadModule @ require.js:156
+metroRequire @ require.js:74
+(anonymous) @ index.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&transform.reactCompiler=true&unstable_transformProfile=hermes-stable:196638
+injected.js:37 Running application "main" with appParams:
+ {rootTag: '#root', hydrate: undefined} 
+Development-level warnings: ON.
+Performance optimizations: OFF.
+injected.js:37 📱 OTP for 12345678: 1284
+injected.js:37 📱 OTP for 12345678: 1284
+injected.js:214  GET https://fac19d08-0702-457b-985b-f1dd329b9486-00-31u860fqzb6sl.janeway.replit.dev/config/postgres.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app&transform.reactCompiler=true&unstable_transformProfile=hermes-stable&modulesOnly=true&runModule=false 500 (Internal Server Error)
+apply @ injected.js:214
+fetchAsync @ fetchAsync.ts:10
+fetchThenEvalAsync @ fetchThenEvalJs.ts:15
+fetchThenEvalAsync @ fetchThenEval.web.ts:27
+loadBundleAsync @ loadBundle.ts:21
+universal_loadBundleAsync @ buildAsyncRequire.ts:25
+maybeLoadBundle @ asyncRequireModule.ts:33
+asyncRequireImpl @ asyncRequireModule.ts:42
+asyncRequire @ asyncRequireModule.ts:57
+verifyOTPAndLogin @ database.js:38
+handleVerifyOtp @ Login.js:143
+onClick @ PressResponder.js:314
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1519
+processDispatchQueue @ react-dom-client.development.js:16418
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20658
+dispatchDiscreteEvent @ react-dom-client.development.js:20626
+<div>
+exports.createElement @ react.development.js:1033
+createElement @ index.js:24
+View @ index.js:111
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+<View>
+exports.createElement @ react.development.js:1033
+Pressable @ index.js:124
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1522
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+injected.js:37 OTP verification error: Error: Unable to resolve module pg from /home/runner/workspace/config/postgres.js: pg could not be found within the project or in these directories:
+  node_modules
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m pg [36mfrom[39m [32m'pg'[39m[33m;[39m
+ [90m   |[39m                 [31m[1m^[22m[39m
+ [90m 2 |[39m
+ [90m 3 |[39m [36mconst[39m { [33mClient[39m } [33m=[39m pg[33m;[39m
+ [90m 4 |[39m[0m
+    at fetchThenEvalJs.ts:21:13
+    at async Object.verifyOTPAndLogin (database.js:38:54)
+    at async handleVerifyOtp (Login.js:143:22)
+(anonymous) @ injected.js:37
+verifyOTPAndLogin @ database.js:72
+await in verifyOTPAndLogin
+handleVerifyOtp @ Login.js:143
+onClick @ PressResponder.js:314
+executeDispatch @ react-dom-client.development.js:16368
+runWithFiberInDEV @ react-dom-client.development.js:1519
+processDispatchQueue @ react-dom-client.development.js:16418
+(anonymous) @ react-dom-client.development.js:17016
+batchedUpdates$1 @ react-dom-client.development.js:3262
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:16572
+dispatchEvent @ react-dom-client.development.js:20658
+dispatchDiscreteEvent @ react-dom-client.development.js:20626
+<div>
+exports.createElement @ react.development.js:1033
+createElement @ index.js:24
+View @ index.js:111
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1519
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250
+<View>
+exports.createElement @ react.development.js:1033
+Pressable @ index.js:124
+react-stack-bottom-frame @ react-dom-client.development.js:23863
+renderWithHooks @ react-dom-client.development.js:5529
+updateForwardRef @ react-dom-client.development.js:8645
+beginWork @ react-dom-client.development.js:10861
+runWithFiberInDEV @ react-dom-client.development.js:1522
+performUnitOfWork @ react-dom-client.development.js:15132
+workLoopSync @ react-dom-client.development.js:14956
+renderRootSync @ react-dom-client.development.js:14936
+performWorkOnRoot @ react-dom-client.development.js:14419
+performSyncWorkOnRoot @ react-dom-client.development.js:16231
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:16079
+processRootScheduleInMicrotask @ react-dom-client.development.js:16116
+(anonymous) @ react-dom-client.development.js:16250

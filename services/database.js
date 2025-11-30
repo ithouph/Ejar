@@ -12,7 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
  */
 
 // ════════════════════════════════════════════════════════════════════
-// 1. AUTHENTICATION - POSTGRESQL DIRECT (NO SUPABASE)
+// 1. AUTHENTICATION - OTP FLOW (Frontend Only)
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
@@ -35,39 +35,26 @@ export const auth = {
 
   async verifyOTPAndLogin(phoneNumber, otp) {
     try {
-      const { queryPostgresSingle, queryPostgres } = await import("../config/postgres.js");
       const formattedPhone = phoneNumber.replace(/\D/g, '');
       
       console.log("🔄 Verifying OTP for:", formattedPhone);
       
-      // Check if user exists
-      let user = await queryPostgresSingle(
-        "SELECT * FROM users WHERE phone_number = $1",
-        [formattedPhone]
-      );
-
-      // If user doesn't exist, create them
-      if (!user) {
-        console.log("✅ Creating new user:", formattedPhone);
-        const result = await queryPostgresSingle(
-          "INSERT INTO users (phone_number, post_limit, posts_count, is_member, hit_limit) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-          [formattedPhone, 5, 0, false, 100]
-        );
-        user = result;
-
-        // Create wallet for new user
-        try {
-          await queryPostgres(
-            "INSERT INTO wallet_accounts (user_id, balance, currency) VALUES ($1, $2, $3)",
-            [user.id, 0, "MRU"]
-          );
-        } catch (walletError) {
-          console.log("Wallet creation note:", walletError);
-        }
-      }
+      // Create a mock user object for frontend
+      // In production, this would call a backend API to verify against database
+      const user = {
+        id: `user_${Date.now()}`,
+        phone_number: formattedPhone,
+        whatsapp_phone: formattedPhone,
+        post_limit: 5,
+        posts_count: 0,
+        is_member: false,
+        hit_limit: 100,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
       console.log("✅ User verified:", user);
-      return { user, isNewUser: !user };
+      return { user, isNewUser: true };
     } catch (error) {
       console.error("OTP verification error:", error);
       return { error: error.message };
@@ -84,21 +71,22 @@ export const auth = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 2. USERS - POSTGRESQL DIRECT (NO SUPABASE)
+// 2. USERS - Using Supabase
 // ════════════════════════════════════════════════════════════════════
 
 export const users = {
   async getByPhoneNumber(phoneNumber) {
     try {
-      const { queryPostgresSingle } = await import("../config/postgres.js");
       const formattedPhone = phoneNumber.replace(/\D/g, '');
       
-      const user = await queryPostgresSingle(
-        "SELECT * FROM users WHERE phone_number = $1",
-        [formattedPhone]
-      );
-      
-      return user;
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", formattedPhone)
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching user by phone:", error);
       return null;
@@ -107,12 +95,14 @@ export const users = {
 
   async getById(userId) {
     try {
-      const { queryPostgresSingle } = await import("../config/postgres.js");
-      const user = await queryPostgresSingle(
-        "SELECT * FROM users WHERE id = $1",
-        [userId]
-      );
-      return user;
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error("Error fetching user:", error);
       return null;
@@ -121,7 +111,7 @@ export const users = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 3. POSTS (Using Supabase for now - can migrate to PostgreSQL later)
+// 3. POSTS (Using Supabase)
 // ════════════════════════════════════════════════════════════════════
 
 export const posts = {
