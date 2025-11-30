@@ -876,11 +876,14 @@ export const paymentRequests = {
         );
       }
 
-      // If it's a post payment, approve the post
+      // If it's a post payment, approve the post and mark payment_approved
       if (request.data.post_id) {
         await supabase
           .from("posts")
-          .update({ is_approved: true })
+          .update({ 
+            is_approved: true,
+            payment_approved: true,
+          })
           .eq("id", request.data.post_id);
       }
 

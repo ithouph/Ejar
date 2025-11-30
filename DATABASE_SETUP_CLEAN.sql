@@ -36,6 +36,8 @@ CREATE TABLE public.posts (
   specifications jsonb DEFAULT '{}'::jsonb,
   is_paid boolean DEFAULT false,
   is_approved boolean DEFAULT false,
+  payment_approved boolean DEFAULT false,
+  hit_limit boolean DEFAULT false,
   likes_count integer DEFAULT 0,
   rating numeric DEFAULT 0,
   total_reviews integer DEFAULT 0,
