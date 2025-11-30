@@ -24,12 +24,12 @@ CREATE TABLE public.cities (
 CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
+  city_id uuid NOT NULL,
   title text NOT NULL,
   description text,
   category text DEFAULT 'property'::text,
   listing_type text,
   property_type text,
-  location text NOT NULL,
   price numeric,
   image_url text,
   images text[] DEFAULT '{}'::text[],
@@ -45,7 +45,8 @@ CREATE TABLE public.posts (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT posts_pkey PRIMARY KEY (id),
-  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT posts_city_id_fkey FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.reviews (
