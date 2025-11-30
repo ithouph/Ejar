@@ -53,7 +53,6 @@ create table public.posts (
   payment_approved boolean null default false,
   hit_limit boolean null default false,
   likes_count integer null default 0,
-  total_favorites integer null default 0,
   rating numeric null default 0,
   total_reviews integer null default 0,
   created_at timestamp with time zone null default now(),
