@@ -10,21 +10,6 @@ WebBrowser.maybeCompleteAuthSession();
  * ════════════════════════════════════════════════════════════════════
  * EJAR APP - ALL DATABASE FUNCTIONS IN ONE FILE
  * ════════════════════════════════════════════════════════════════════
- *
- * This file contains all backend functions organized by feature.
- * Easy to find what you need and make changes.
- *
- * TABLE OF CONTENTS:
- * 1. Authentication (Google OAuth, sign in/out, sessions)
- * 2. Users & Profiles (user info, profile details)
- * 3. Properties (hotels & apartments listing)
- * 4. Favorites (save/unsave properties)
- * 5. Reviews (property ratings & comments)
- * 6. Wallet & Balance (money management)
- * 7. Balance Requests (top-up approval system)
- * 8. Social Posts (feed & sharing)
- * 9. Wedding Events (event planning)
- * 10. Utility Functions (helpers)
  */
 
 // ════════════════════════════════════════════════════════════════════
@@ -32,28 +17,22 @@ WebBrowser.maybeCompleteAuthSession();
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
-  // Phone OTP Sign In (simulated - in production use Twilio/AWS SNS)
   async signInWithPhoneOTP(phoneNumber) {
     try {
-      // Format phone number
       const formattedPhone = phoneNumber.replace(/\D/g, '');
       
-      // Check if user exists
       const { data: existingUser } = await supabase
         .from("users")
         .select("id")
         .eq("phone_number", formattedPhone)
         .maybeSingle();
 
-      // For demo: generate 4-digit OTP (in production use Twilio)
       const otp = Math.floor(1000 + Math.random() * 9000).toString();
-      
-      // Store OTP in session (production: send via SMS)
-      console.log(`OTP for ${formattedPhone}: ${otp}`); // Debug log
+      console.log(`OTP for ${formattedPhone}: ${otp}`);
       
       return {
         phoneNumber: formattedPhone,
-        otp: otp, // In production, this would only be sent via SMS
+        otp: otp,
         userExists: !!existingUser,
         userId: existingUser?.id,
       };
@@ -62,12 +41,10 @@ export const auth = {
     }
   },
 
-  // Verify OTP and create/login user
   async verifyPhoneOTP(phoneNumber, otp, userInfo = {}) {
     try {
       const formattedPhone = phoneNumber.replace(/\D/g, '');
       
-      // Check if user exists
       const { data: existingUser } = await supabase
         .from("users")
         .select("*")
@@ -75,10 +52,8 @@ export const auth = {
         .maybeSingle();
 
       if (existingUser) {
-        // Login existing user
         return { user: existingUser, isNewUser: false };
       } else {
-        // Create new user with phone number only
         const { data: newUser, error } = await supabase
           .from("users")
           .insert({
@@ -89,7 +64,6 @@ export const auth = {
 
         if (error) return { error: error.message };
         
-        // Create wallet account for new user
         try {
           await supabase
             .from("wallet_accounts")
@@ -111,1357 +85,553 @@ export const auth = {
     }
   },
 
-  // Sign in with Google
-  async signInWithGoogle() {
-    const redirectUrl = makeRedirectUri({
-      scheme: "com.ejar.app",
-      path: "auth/callback",
-    });
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: redirectUrl, skipBrowserRedirect: false },
-    });
-
-    if (error) throw error;
-
-    if (data?.url) {
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectUrl,
-      );
-
-      if (result.type === "success") {
-        const url = new URL(result.url);
-        const accessToken = url.searchParams.get("access_token");
-        const refreshToken = url.searchParams.get("refresh_token");
-
-        if (accessToken && refreshToken) {
-          const { data: sessionData, error: sessionError } =
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-
-          if (sessionError) throw sessionError;
-          return { user: sessionData.user, session: sessionData.session };
-        }
-      }
-    }
-
-    throw new Error("Authentication failed");
-  },
-
-  // Sign out
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
+};
 
-  // Get current logged in user
-  async getCurrentUser() {
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-    if (error) return null;
-    return user;
+// ════════════════════════════════════════════════════════════════════
+// 2. POSTS (CRUD Operations)
+// ════════════════════════════════════════════════════════════════════
+
+export const posts = {
+  // Get all posts (paginated)
+  async getAll(limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      return [];
+    }
   },
 
-  // Get current session
-  async getSession() {
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
-    if (error) return null;
-    return session;
+  // Get posts by user ID
+  async getByUser(userId) {
+    try {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      return [];
+    }
   },
 
-  // Listen for auth changes
-  onAuthStateChange(callback) {
-    return supabase.auth.onAuthStateChange((event, session) => {
-      callback(event, session);
-    });
+  // Get single post by ID
+  async getById(postId) {
+    try {
+      if (!postId) return null;
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching post:", error);
+      return null;
+    }
+  },
+
+  // Create new post
+  async create(userId, postData) {
+    try {
+      if (!userId) throw new Error("User ID required");
+
+      const { data, error } = await supabase
+        .from("posts")
+        .insert({
+          user_id: userId,
+          title: postData.title,
+          description: postData.description,
+          category: postData.category || "property",
+          listing_type: postData.listing_type,
+          property_type: postData.property_type,
+          location: postData.location,
+          price: postData.price,
+          image_url: postData.image_url,
+          images: postData.images || [],
+          amenities: postData.amenities || [],
+          specifications: postData.specifications || {},
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error creating post:", error);
+      return null;
+    }
+  },
+
+  // Update post
+  async update(postId, userId, updates) {
+    try {
+      if (!postId || !userId) throw new Error("Post ID and User ID required");
+
+      const { data, error } = await supabase
+        .from("posts")
+        .update({
+          title: updates.title,
+          description: updates.description,
+          category: updates.category,
+          listing_type: updates.listing_type,
+          property_type: updates.property_type,
+          location: updates.location,
+          price: updates.price,
+          image_url: updates.image_url,
+          images: updates.images,
+          amenities: updates.amenities,
+          specifications: updates.specifications,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", postId)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error updating post:", error);
+      return null;
+    }
+  },
+
+  // Delete post
+  async delete(postId, userId) {
+    try {
+      if (!postId || !userId) throw new Error("Post ID and User ID required");
+
+      const { error } = await supabase
+        .from("posts")
+        .delete()
+        .eq("id", postId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      return false;
+    }
+  },
+
+  // Search posts by category
+  async getByCategory(category, limit = 50) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("category", category)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching posts by category:", error);
+      return [];
+    }
+  },
+
+  // Search posts by location
+  async getByLocation(location, limit = 50) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .ilike("location", `%${location}%`)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching posts by location:", error);
+      return [];
+    }
+  },
+
+  // Search posts by title/description
+  async search(searchTerm, limit = 50) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error searching posts:", error);
+      return [];
+    }
   },
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 2. USERS & PROFILES
+// 3. REVIEWS (CRUD Operations)
+// ════════════════════════════════════════════════════════════════════
+
+export const postReviews = {
+  // Get all reviews for a post
+  async getForPost(postId) {
+    try {
+      if (!postId) return [];
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*")
+        .eq("post_id", postId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      return [];
+    }
+  },
+
+  // Add review
+  async add(userId, postId, reviewData) {
+    try {
+      if (!userId || !postId) throw new Error("User ID and Post ID required");
+
+      const { data, error } = await supabase
+        .from("reviews")
+        .insert({
+          user_id: userId,
+          post_id: postId,
+          rating: reviewData.rating,
+          comment: reviewData.comment,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      await this.updatePostRating(postId);
+      return data;
+    } catch (error) {
+      console.error("Error adding review:", error);
+      return null;
+    }
+  },
+
+  // Update review
+  async update(reviewId, userId, updates) {
+    try {
+      if (!reviewId || !userId) throw new Error("Review ID and User ID required");
+
+      const { data, error } = await supabase
+        .from("reviews")
+        .update({
+          rating: updates.rating,
+          comment: updates.comment,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", reviewId)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const review = await supabase
+        .from("reviews")
+        .select("post_id")
+        .eq("id", reviewId)
+        .single();
+
+      if (review?.data) {
+        await this.updatePostRating(review.data.post_id);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error updating review:", error);
+      return null;
+    }
+  },
+
+  // Delete review
+  async delete(reviewId, userId) {
+    try {
+      if (!reviewId || !userId) throw new Error("Review ID and User ID required");
+
+      const review = await supabase
+        .from("reviews")
+        .select("post_id")
+        .eq("id", reviewId)
+        .eq("user_id", userId)
+        .single();
+
+      const { error } = await supabase
+        .from("reviews")
+        .delete()
+        .eq("id", reviewId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      if (review?.data) {
+        await this.updatePostRating(review.data.post_id);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      return false;
+    }
+  },
+
+  // Update post rating based on all reviews
+  async updatePostRating(postId) {
+    try {
+      if (!postId) return;
+
+      const { data: allReviews } = await supabase
+        .from("reviews")
+        .select("rating")
+        .eq("post_id", postId);
+
+      if (allReviews && allReviews.length > 0) {
+        const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+
+        await supabase
+          .from("posts")
+          .update({
+            rating: parseFloat(avgRating.toFixed(1)),
+            total_reviews: allReviews.length,
+          })
+          .eq("id", postId);
+      }
+    } catch (error) {
+      console.error("Error updating post rating:", error);
+    }
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 4. FAVORITES
+// ════════════════════════════════════════════════════════════════════
+
+export const favorites = {
+  async getAll(userId) {
+    try {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("favorites")
+        .select("post_id")
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      return (data || []).map(f => f.post_id);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      return [];
+    }
+  },
+
+  async add(userId, postId) {
+    try {
+      if (!userId || !postId) return null;
+      const { data, error } = await supabase
+        .from("favorites")
+        .insert({ user_id: userId, post_id: postId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      return null;
+    }
+  },
+
+  async remove(userId, postId) {
+    try {
+      if (!userId || !postId) return false;
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", userId)
+        .eq("post_id", postId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      return false;
+    }
+  },
+
+  async toggle(userId, postId) {
+    try {
+      if (!userId || !postId) return { action: "error", isFavorite: false };
+
+      const { data: existing } = await supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("post_id", postId)
+        .maybeSingle();
+
+      if (existing) {
+        await this.remove(userId, postId);
+        return { action: "removed", isFavorite: false };
+      } else {
+        await this.add(userId, postId);
+        return { action: "added", isFavorite: true };
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      return { action: "error", isFavorite: false };
+    }
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 5. WALLET
+// ════════════════════════════════════════════════════════════════════
+
+export const wallet = {
+  async get(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("wallet_accounts")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        return await this.create(userId);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error getting wallet:", error);
+      return null;
+    }
+  },
+
+  async create(userId) {
+    try {
+      const { data, error } = await supabase
+        .from("wallet_accounts")
+        .insert({
+          user_id: userId,
+          balance: 0,
+          currency: "MRU",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error creating wallet:", error);
+      return null;
+    }
+  },
+
+  async getBalance(userId) {
+    try {
+      const wallet = await this.get(userId);
+      return wallet ? parseFloat(wallet.balance) : 0;
+    } catch (error) {
+      console.error("Error getting balance:", error);
+      return 0;
+    }
+  },
+
+  async getTransactions(userId, limit = 50) {
+    try {
+      if (!userId) return [];
+
+      const { data: wallet } = await supabase
+        .from("wallet_accounts")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!wallet) return [];
+
+      const { data, error } = await supabase
+        .from("wallet_transactions")
+        .select("*")
+        .eq("wallet_id", wallet.id)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      return [];
+    }
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 6. USERS
 // ════════════════════════════════════════════════════════════════════
 
 export const users = {
-  // Get user info (name, email, photo)
-  async getUser(userId) {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get user by ID
-  async getUserById(userId) {
+  async getById(userId) {
     try {
+      if (!userId) return null;
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("id", userId)
         .maybeSingle();
 
-      if (error) return null;
+      if (error) throw error;
       return data;
-    } catch (err) {
+    } catch (error) {
+      console.error("Error fetching user:", error);
       return null;
     }
   },
 
-  // Get user profile (birthday, gender, mobile, weight, height)
-  async getProfile(userId) {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Create user profile
-  async createProfile(userId, profile) {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .insert({
-        user_id: userId,
-        date_of_birth: profile.date_of_birth,
-        gender: profile.gender,
-        mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
-        weight: profile.weight,
-        height: profile.height,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Update user profile
-  async updateProfile(userId, profile) {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .update({
-        date_of_birth: profile.date_of_birth,
-        gender: profile.gender,
-        mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
-        weight: profile.weight,
-        height: profile.height,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Upload profile picture
-  async uploadProfilePicture(userId, imageUri) {
+  async update(userId, updates) {
     try {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-
-      const fileName = `${userId}_${Date.now()}.jpg`;
-      const filePath = `profile-pictures/${fileName}`;
-
-      const { data, error } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, blob, {
-          contentType: "image/jpeg",
-          upsert: true,
-        });
-
-      if (error) return null;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
-
-      // Update user's profile photo URL
-      await this.updateUser(userId, { profile_photo_url: publicUrl });
-
-      return publicUrl;
-    } catch (err) {
-      return null;
-    }
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 3. PROPERTIES (Hotels & Apartments)
-// ════════════════════════════════════════════════════════════════════
-
-export const properties = {
-  // Get all properties with optional filters
-  async getAll(filters = {}) {
-    let query = supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    // Apply filters
-    if (filters.type) query = query.eq("type", filters.type);
-    if (filters.location)
-      query = query.ilike("location", `%${filters.location}%`);
-    if (filters.minPrice)
-      query = query.gte("price_per_night", filters.minPrice);
-    if (filters.maxPrice)
-      query = query.lte("price_per_night", filters.maxPrice);
-    if (filters.minRating) query = query.gte("rating", filters.minRating);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get one property by ID
-  async getOne(id) {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Search properties with optional filters
-  async search(searchTerm, filters = {}) {
-    let query = supabase
-      .from("posts")
-      .select("*")
-      .or(
-        `title.ilike.%${searchTerm}%,category.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`,
-      );
-
-    if (filters.category) query = query.eq("category", filters.category);
-    if (filters.search)
-      query = query.ilike("title", `%${filters.search}%`);
-    if (filters.minPrice)
-      query = query.gte("price", filters.minPrice);
-    if (filters.maxPrice)
-      query = query.lte("price", filters.maxPrice);
-
-    query = query.order("created_at", { ascending: false });
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get featured/top properties
-  async getFeatured(limit = 10) {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 4. FAVORITES (Save/Unsave Properties)
-// ════════════════════════════════════════════════════════════════════
-
-export const favorites = {
-  // Get all user's favorites
-  async getAll(userId) {
-    if (!userId) return [];
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Add property to favorites
-  async add(userId, postId) {
-    if (!userId) return null;
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .insert({ user_id: userId, post_id: postId })
-      .select()
-      .single();
-
-    if (error) return null;
-    return data;
-  },
-
-  // Remove property from favorites
-  async remove(userId, postId) {
-    if (!userId) return false;
-    const { error } = await supabase
-      .from("saved_posts")
-      .delete()
-      .eq("user_id", userId)
-      .eq("post_id", postId);
-
-    if (error) return false;
-    return true;
-  },
-
-  // Check if property is favorited
-  async isFavorite(userId, postId) {
-    if (!userId) return false;
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("post_id", postId)
-      .maybeSingle();
-
-    if (error) return false;
-    return !!data;
-  },
-
-  // Toggle favorite (add if not exists, remove if exists)
-  async toggle(userId, postId) {
-    if (!userId) return { action: "error", isFavorite: false };
-    const isFav = await this.isFavorite(userId, postId);
-
-    if (isFav) {
-      await this.remove(userId, postId);
-      return { action: "removed", isFavorite: false };
-    } else {
-      await this.add(userId, postId);
-      return { action: "added", isFavorite: true };
-    }
-  },
-
-  // Get just the IDs of favorited properties
-  async getIds(userId) {
-    if (!userId) return [];
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select("post_id")
-      .eq("user_id", userId);
-
-    if (error) return [];
-    return (data || []).map((fav) => fav.post_id);
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 5. REVIEWS (Property Ratings & Comments)
-// ════════════════════════════════════════════════════════════════════
-
-export const reviews = {
-  // Get all reviews for a property
-  async getForProperty(postId) {
-    if (!postId) return [];
-    const { data, error } = await supabase
-      .from("reviews")
-      .select(
-        `
-        *,
-        users (full_name, photo_url)
-      `,
-      )
-      .eq("post_id", postId)
-      .order("created_at", { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Get all reviews by a user
-  async getByUser(userId) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Add a new review
-  async add(userId, postId, review) {
-    if (!userId || !postId) return null;
-    const { data, error } = await supabase
-      .from("reviews")
-      .insert({
-        user_id: userId,
-        post_id: postId,
-        rating: review.rating,
-        comment: review.comment,
-      })
-      .select()
-      .single();
-
-    if (error) return null;
-    await this.updatePropertyRating(postId);
-    return data;
-  },
-
-  // Update existing review
-  async update(reviewId, userId, updates) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .update({
-        rating: updates.rating,
-        title: updates.title,
-        comment: updates.comment,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", reviewId)
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Get property ID and update its rating
-    const { data: review } = await supabase
-      .from("reviews")
-      .select("property_id")
-      .eq("id", reviewId)
-      .single();
-
-    if (review) {
-      await this.updatePropertyRating(review.property_id);
-    }
-
-    return data;
-  },
-
-  // Delete review
-  async delete(reviewId, userId) {
-    if (!reviewId || !userId) return false;
-    const { data: review } = await supabase
-      .from("reviews")
-      .select("post_id")
-      .eq("id", reviewId)
-      .eq("user_id", userId)
-      .single();
-
-    const { error } = await supabase
-      .from("reviews")
-      .delete()
-      .eq("id", reviewId)
-      .eq("user_id", userId);
-
-    if (error) return false;
-    if (review) {
-      await this.updatePropertyRating(review.post_id);
-    }
-    return true;
-  },
-
-  // Update property's average rating (called automatically after review changes)
-  async updatePropertyRating(postId) {
-    if (!postId) return;
-    const { data: allReviews, error: reviewsError } = await supabase
-      .from("reviews")
-      .select("rating")
-      .eq("post_id", postId);
-
-    if (reviewsError) return;
-
-    if (allReviews && allReviews.length > 0) {
-      const avgRating =
-        allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-
-      await supabase
-        .from("posts")
-        .update({
-          rating: avgRating.toFixed(1),
-          total_reviews: allReviews.length,
-        })
-        .eq("id", propertyId);
-    }
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 6. WALLET & BALANCE (Money Management)
-// ════════════════════════════════════════════════════════════════════
-
-export const wallet = {
-  // Get user's wallet
-  async get(userId) {
-    const { data, error } = await supabase
-      .from("wallet_accounts")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    // Create wallet if doesn't exist
-    if (!data) {
-      try {
-        return await this.create(userId);
-      } catch (createError) {
-        console.error("Error creating wallet:", createError);
-        return null;
-      }
-    }
-
-    return data;
-  },
-
-  // Create new wallet
-  async create(userId) {
-    const { data, error } = await supabase
-      .from("wallet_accounts")
-      .insert({
-        user_id: userId,
-        balance: 0,
-        currency: "USD",
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get just the balance
-  async getBalance(walletId) {
-    const { data, error } = await supabase
-      .from("wallet_accounts")
-      .select("balance")
-      .eq("id", walletId)
-      .single();
-
-    if (error) throw error;
-    return parseFloat(data.balance);
-  },
-
-  // Get transaction history
-  async getTransactions(walletId, limit = 50) {
-    const { data, error } = await supabase
-      .from("wallet_transactions")
-      .select("*")
-      .eq("wallet_id", walletId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Add transaction (internal - uses Supabase function for safety)
-  async addTransaction(walletId, transaction) {
-    const { data, error } = await supabase.rpc("add_wallet_transaction", {
-      p_wallet_id: walletId,
-      p_type: transaction.type,
-      p_amount: transaction.amount,
-      p_description: transaction.description,
-      p_category: transaction.category,
-    });
-
-    if (error) throw error;
-
-    return {
-      transaction: { id: data.transaction_id },
-      newBalance: data.new_balance,
-    };
-  },
-
-  // Add money to wallet
-  async addBalance(walletId, amount, description = "Added balance") {
-    return await this.addTransaction(walletId, {
-      type: "credit",
-      amount: parseFloat(amount),
-      description,
-      category: "deposit",
-    });
-  },
-
-  // Remove money from wallet
-  async deductBalance(walletId, amount, description = "Deducted balance") {
-    return await this.addTransaction(walletId, {
-      type: "debit",
-      amount: parseFloat(amount),
-      description,
-      category: "withdrawal",
-    });
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 7. BALANCE REQUESTS (Top-up Approval System)
-// ════════════════════════════════════════════════════════════════════
-
-export const balanceRequests = {
-  // Upload transaction proof image
-  async uploadImage(userId, imageUri) {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-
-    const fileName = `${userId}_${Date.now()}.jpg`;
-    const filePath = `transaction-proofs/${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from("balance-requests")
-      .upload(filePath, blob, {
-        contentType: "image/jpeg",
-        upsert: false,
-      });
-
-    if (error) throw error;
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("balance-requests").getPublicUrl(filePath);
-
-    return publicUrl;
-  },
-
-  // Create new balance request
-  async create(userId, walletId, amount, imageUri) {
-    const imageUrl = await this.uploadImage(userId, imageUri);
-
-    const { data, error } = await supabase
-      .from("balance_requests")
-      .insert({
-        user_id: userId,
-        wallet_id: walletId,
-        amount: parseFloat(amount),
-        transaction_image_url: imageUrl,
-        status: "pending",
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get all user's requests
-  async getAll(userId) {
-    const { data, error } = await supabase
-      .from("balance_requests")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Get pending requests
-  async getPending(userId) {
-    const { data, error } = await supabase
-      .from("balance_requests")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("status", "pending")
-      .order("created_at", { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Approve request (admin function)
-  async approve(requestId, adminId, notes = "") {
-    const { data, error } = await supabase
-      .from("balance_requests")
-      .update({
-        status: "approved",
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        admin_notes: notes,
-      })
-      .eq("id", requestId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Reject request (admin function)
-  async reject(requestId, adminId, notes) {
-    const { data, error } = await supabase
-      .from("balance_requests")
-      .update({
-        status: "rejected",
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        admin_notes: notes,
-      })
-      .eq("id", requestId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 8. SOCIAL POSTS (Feed & Sharing)
-// ════════════════════════════════════════════════════════════════════
-
-// Specification validation helper
-function validateAndNormalizeSpecifications(
-  category,
-  listingType,
-  propertyType,
-  specifications,
-) {
-  const specs = { ...specifications };
-
-  if (category === "property") {
-    if (propertyType === "land") {
-      if (!specs.land_size) {
-        throw new Error(
-          "Land properties must include land_size in specifications",
-        );
-      }
-      specs.property_type = "land";
-      delete specs.bedrooms;
-      delete specs.bathrooms;
-      delete specs.size_sqft;
-    } else if (["house", "apartment"].includes(propertyType)) {
-      if (listingType === "rent") {
-        if (!specs.nearby_amenities) {
-          specs.nearby_amenities = [];
-        }
-        if (!Array.isArray(specs.nearby_amenities)) {
-          throw new Error("nearby_amenities must be an array");
-        }
-      }
-      specs.property_type = propertyType;
-    } else if (propertyType === "villa") {
-      delete specs.nearby_amenities;
-      specs.property_type = "villa";
-    }
-  }
-
-  return specs;
-}
-
-export const posts = {
-  // Get all posts with optional filters
-  async getAll(filters = {}, limit = 50) {
-    let query = supabase.from("posts").select(`
-        *,
-        users (full_name, photo_url)
-      `);
-
-    // Apply category filter
-    if (filters.category && filters.category !== "all") {
-      if (filters.category === "others") {
-        // "Others" includes cars and laptops
-        query = query.in("category", ["cars", "laptops"]);
-      } else {
-        query = query.eq("category", filters.category);
-      }
-    }
-
-    // Apply price range filter
-    if (filters.minPrice !== undefined && filters.minPrice !== null) {
-      query = query.gte("price", filters.minPrice);
-    }
-    if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
-      query = query.lte("price", filters.maxPrice);
-    }
-
-    // Apply listing type filter (for property category)
-    if (filters.listingType) {
-      query = query.eq("listing_type", filters.listingType);
-    }
-
-    // Apply property type filter (for property category)
-    if (filters.propertyType) {
-      query = query.eq("property_type", filters.propertyType);
-    }
-
-    // Apply search query (title, content, location)
-    if (filters.search && filters.search.trim()) {
-      const searchTerm = `%${filters.search.trim()}%`;
-      query = query.or(
-        `title.ilike.${searchTerm},content.ilike.${searchTerm},location.ilike.${searchTerm}`,
-      );
-    }
-
-    query = query.order("created_at", { ascending: false }).limit(limit);
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    return (data || []).map((post) => ({
-      id: post.id,
-      userId: post.user_id,
-      userName: post.users?.full_name || "Anonymous User",
-      userPhoto: post.users?.photo_url || "https://via.placeholder.com/40",
-      image: post.images?.[0] || post.image_url,
-      images: post.images || (post.image_url ? [post.image_url] : []),
-      text: post.content || post.description,
-      title: post.title,
-      location: post.location || "Location",
-      timeAgo: formatTimeAgo(post.created_at),
-      likes: post.likes_count || 0,
-      comments: post.comments_count || 0,
-      amenities: post.amenities || [],
-      propertyType: post.property_type,
-      price: post.price,
-      listingType: post.listing_type,
-      category: post.category,
-      specifications: post.specifications || {},
-      rating: post.rating,
-      reviewText: post.review_text,
-    }));
-  },
-
-  // Get user's posts
-  async getByUser(userId) {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Create new post
-  async create(userId, post) {
-    if (!post.category) {
-      throw new Error("Post category is required");
-    }
-
-    if (!post.title || !post.title.trim()) {
-      throw new Error("Post title is required");
-    }
-
-    let listingType = post.listingType;
-    if (post.category !== "property") {
-      listingType = null;
-    } else if (!listingType) {
-      listingType = "rent";
-    }
-
-    const validatedSpecs = validateAndNormalizeSpecifications(
-      post.category,
-      listingType,
-      post.propertyType,
-      post.specifications || {},
-    );
-
-    const { data, error } = await supabase
-      .from("posts")
-      .insert({
-        user_id: userId,
-        title: post.title,
-        content: post.description || post.content,
-        description: post.description,
-        images: post.images || [],
-        image_url: post.images?.[0] || post.image_url,
-        property_type: post.propertyType || null,
-        price: post.price,
-        location: post.location,
-        amenities: post.amenities || [],
-        specifications: validatedSpecs,
-        listing_type: listingType,
-        category: post.category,
-        likes_count: 0,
-        comments_count: 0,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Update post
-  async update(postId, userId, updates) {
-    const updateData = {
-      updated_at: new Date().toISOString(),
-    };
-
-    if (updates.title !== undefined) {
-      if (!updates.title || !updates.title.trim()) {
-        throw new Error("Post title is required");
-      }
-      updateData.title = updates.title;
-    }
-
-    if (updates.content !== undefined) {
-      updateData.content = updates.content;
-    }
-
-    if (updates.image_url !== undefined) {
-      updateData.image_url = updates.image_url;
-    }
-
-    if (updates.images !== undefined) {
-      updateData.images = updates.images;
-    }
-
-    if (updates.price !== undefined) {
-      updateData.price = updates.price;
-    }
-
-    if (updates.location !== undefined) {
-      updateData.location = updates.location;
-    }
-
-    if (updates.amenities !== undefined) {
-      updateData.amenities = updates.amenities;
-    }
-
-    if (updates.specifications !== undefined && updates.category) {
-      let listingType = updates.listingType;
-      if (updates.category !== "property") {
-        listingType = null;
-      }
-
-      updateData.specifications = validateAndNormalizeSpecifications(
-        updates.category,
-        listingType,
-        updates.propertyType,
-        updates.specifications,
-      );
-    } else if (updates.specifications !== undefined) {
-      updateData.specifications = updates.specifications;
-    }
-
-    const { data, error } = await supabase
-      .from("posts")
-      .update(updateData)
-      .eq("id", postId)
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Delete post
-  async delete(postId, userId) {
-    const { error } = await supabase
-      .from("posts")
-      .delete()
-      .eq("id", postId)
-      .eq("user_id", userId);
-
-    if (error) throw error;
-    return true;
-  },
-
-  // Like post
-  async addLike(postId) {
-    // Try to use RPC function first
-    const { data, error } = await supabase.rpc("increment_post_likes", {
-      post_id: postId,
-    });
-
-    if (error) {
-      // Fallback to manual increment
-      const { data: post } = await supabase
-        .from("posts")
-        .select("likes_count")
-        .eq("id", postId)
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from("users")
+        .update(updates)
+        .eq("id", userId)
+        .select()
         .single();
 
-      if (post) {
-        await supabase
-          .from("posts")
-          .update({ likes_count: post.likes_count + 1 })
-          .eq("id", postId);
-      }
-    }
-  },
-
-  // Pick images from device
-  async pickImages(maxImages = 5) {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== "granted") {
-      throw new Error("Permission to access camera roll is required");
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-      selectionLimit: maxImages,
-    });
-
-    if (!result.canceled && result.assets) {
-      return result.assets.map((asset) => asset.uri);
-    }
-
-    return [];
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 9. SAVED POSTS (User Saved Posts)
-// ════════════════════════════════════════════════════════════════════
-
-export const savedPosts = {
-  // Get all saved posts for a user
-  async getAll(userId) {
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select(
-        `
-        *,
-        posts (
-          *,
-          users (full_name, photo_url)
-        )
-      `,
-      )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    return (data || []).map((item) => ({
-      id: item.posts.id,
-      userId: item.posts.user_id,
-      userName: item.posts.users?.full_name || "Anonymous User",
-      userPhoto:
-        item.posts.users?.photo_url || "https://via.placeholder.com/40",
-      image: item.posts.images?.[0] || item.posts.image_url,
-      images:
-        item.posts.images ||
-        (item.posts.image_url ? [item.posts.image_url] : []),
-      text: item.posts.content || item.posts.description,
-      title: item.posts.title,
-      location: item.posts.location || "Location",
-      timeAgo: formatTimeAgo(item.posts.created_at),
-      likes: item.posts.likes_count || 0,
-      comments: item.posts.comments_count || 0,
-      amenities: item.posts.amenities || [],
-      propertyType: item.posts.property_type,
-      price: item.posts.price,
-      listingType: item.posts.listing_type,
-      category: item.posts.category,
-      rating: item.posts.rating,
-      reviewText: item.posts.review_text,
-    }));
-  },
-
-  // Get array of saved post IDs for a user
-  async getIds(userId) {
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select("post_id")
-      .eq("user_id", userId);
-
-    if (error) return [];
-    return (data || []).map((item) => item.post_id);
-  },
-
-  // Check if a post is saved
-  async isSaved(userId, postId) {
-    const { data, error } = await supabase
-      .from("saved_posts")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("post_id", postId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return !!data;
-  },
-
-  // Toggle save/unsave a post
-  async toggle(userId, postId) {
-    const isSaved = await this.isSaved(userId, postId);
-
-    if (isSaved) {
-      const { error } = await supabase
-        .from("saved_posts")
-        .delete()
-        .eq("user_id", userId)
-        .eq("post_id", postId);
-
       if (error) throw error;
-      return false;
-    } else {
-      const { error } = await supabase.from("saved_posts").insert({
-        user_id: userId,
-        post_id: postId,
-      });
-
-      if (error) throw error;
-      return true;
+      return data;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return null;
     }
   },
 };
-
-// ════════════════════════════════════════════════════════════════════
-// 9. WEDDING EVENTS (Event Planning)
-// ════════════════════════════════════════════════════════════════════
-
-export const wedding = {
-  // Get wedding event
-  async get(userId) {
-    const { data, error } = await supabase
-      .from("wedding_events")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) throw error;
-
-    // Create if doesn't exist
-    if (!data) {
-      return await this.create(userId);
-    }
-
-    return data;
-  },
-
-  // Create wedding event
-  async create(userId) {
-    const { data, error } = await supabase
-      .from("wedding_events")
-      .insert({
-        user_id: userId,
-        partner1_name: "Christine",
-        partner2_name: "Duncan",
-        event_date: null,
-        location: null,
-        description: null,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Update wedding event
-  async update(userId, updates) {
-    const { data, error } = await supabase
-      .from("wedding_events")
-      .update({
-        partner1_name: updates.partner1_name,
-        partner2_name: updates.partner2_name,
-        event_date: updates.event_date,
-        location: updates.location,
-        description: updates.description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 10. UTILITY FUNCTIONS
-// ════════════════════════════════════════════════════════════════════
-
-// Format time to "2h ago", "5d ago", etc.
-function formatTimeAgo(dateString) {
-  const now = new Date();
-  const past = new Date(dateString);
-  const diffMs = now - past;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return past.toLocaleDateString();
-}
-
-// Pick single image from device
-export async function pickImage() {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-  if (status !== "granted") {
-    throw new Error("Permission to access media library denied");
-  }
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [4, 3],
-    quality: 0.8,
-  });
-
-  if (result.canceled) {
-    return null;
-  }
-
-  return result.assets[0].uri;
-}
-
-// ════════════════════════════════════════════════════════════════════
-// 11. POST REVIEWS (Reviews for Marketplace Posts)
-// ════════════════════════════════════════════════════════════════════
-
-export const postReviews = {
-  // Get all reviews across all posts
-  async getAll() {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select(
-        `
-        *,
-        users (full_name, photo_url, email),
-        posts (title, category, image)
-      `,
-      )
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching all post reviews:", error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Get all reviews for a post
-  async getForPost(postId) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select(
-        `
-        *,
-        users (full_name, photo_url, email)
-      `,
-      )
-      .eq("post_id", postId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching post reviews:", error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Get all reviews by a user
-  async getByUser(userId) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select(
-        `
-        *,
-        posts (title, category)
-      `,
-      )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching user reviews:", error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Add a new review to a post
-  async add(userId, postId, review) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .insert({
-        user_id: userId,
-        post_id: postId,
-        rating: review.rating,
-        comment: review.comment,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error adding post review:", error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  // Update existing review
-  async update(reviewId, userId, updates) {
-    const { data, error } = await supabase
-      .from("reviews")
-      .update({
-        rating: updates.rating,
-        comment: updates.comment,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", reviewId)
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error updating post review:", error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  // Delete review
-  async delete(reviewId, userId) {
-    const { error } = await supabase
-      .from("reviews")
-      .delete()
-      .eq("id", reviewId)
-      .eq("user_id", userId);
-
-    if (error) {
-      console.error("Error deleting post review:", error);
-      throw error;
-    }
-
-    return true;
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// EXPORT ALL (for backward compatibility)
-// ════════════════════════════════════════════════════════════════════
-
-export const db = {
-  auth,
-  users,
-  properties,
-  favorites,
-  reviews,
-  wallet,
-  balanceRequests,
-  posts,
-  wedding,
-  postReviews,
-};
-
-export default db;
