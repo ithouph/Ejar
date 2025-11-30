@@ -27,9 +27,9 @@ CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   city_id uuid NOT NULL,
+  category_id uuid NOT NULL,
   title text NOT NULL,
   description text,
-  category text DEFAULT 'property'::text,
   listing_type text,
   property_type text,
   price numeric,
@@ -48,7 +48,8 @@ CREATE TABLE public.posts (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT posts_pkey PRIMARY KEY (id),
   CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT posts_city_id_fkey FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE
+  CONSTRAINT posts_city_id_fkey FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE,
+  CONSTRAINT posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.service_categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE public.reviews (
