@@ -2,7 +2,6 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { authService } from "../services/authService";
 import { auth as phoneAuth } from "../services/database";
 import { supabase } from "../config/supabase";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AuthContext = createContext({});
 
@@ -68,57 +67,11 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // TEMPORARY: Guest login for testing without Supabase setup
-  // This creates a fake user session so you can test the app
-  // REMOVE THIS when you set up real authentication
-  async function signInAsGuest() {
-    try {
-      setLoading(true);
-
-      // Define guest user
-      const guestUser = {
-        id: "1c3df422-d55c-4ceb-be95-a63b87f0f1c5",
-        email: "custome@ejar.com",
-        full_name: "Guest User",
-        photo_url: null,
-      };
-      // Try inserting into Supabase users table (ignore if exists)
-      const { data, error } = await supabase.auth.signUp(guestUser);
-
-      if (error) {
-        console.error("Error adding guest user to DB:", error);
-      }
-
-      const guestSession = {
-        user: data || guestUser, // use DB record if exists
-        access_token: "guest-token",
-      };
-
-      setUser(guestSession.user);
-      setSession(guestSession);
-
-      return { user: guestSession.user, session: guestSession };
-    } catch (error) {
-      console.error("Guest sign in error:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function signInWithPhoneOTP(user, phoneNumber) {
     try {
       setLoading(true);
-      // Store user data in local storage
-      const userData = {
-        id: user.id,
-        phone: phoneNumber,
-        phone_number: phoneNumber,
-        created_at: user.created_at,
-      };
-      await AsyncStorage.setItem("@ejar_user", JSON.stringify(userData));
-      setUser(userData);
-      return { user: userData };
+      setUser(user);
+      return { user };
     } catch (error) {
       console.error("Phone OTP sign in error:", error);
       throw error;
@@ -127,30 +80,14 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function loadStoredUser() {
-    try {
-      const storedUser = await AsyncStorage.getItem("@ejar_user");
-      if (storedUser) {
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
-      }
-    } catch (error) {
-      console.error("Error loading stored user:", error);
-    }
-  }
-
-  useEffect(() => {
-    loadStoredUser();
-  }, []);
-
   const value = {
     user,
     session,
     loading,
     signInWithGoogle,
     signInWithPhoneOTP,
-    signInAsGuest,
     signOut,
+    refreshUser: loadSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
