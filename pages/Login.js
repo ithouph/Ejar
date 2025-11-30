@@ -37,7 +37,7 @@ import {
 } from "../theme/global";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
-import { auth } from "../services/database";
+import { auth, users as usersApi } from "../services/database";
 
 const icons = [
   { name: "calendar", top: "15%", right: "20%" },
@@ -92,7 +92,7 @@ const FloatingIcon = ({ icon, index, theme }) => {
 export default function Login({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { signInWithPhoneOTP } = useAuth();
+  const { signInWithPhoneOTP, guestSignIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("phone"); // 'phone' | 'otp'
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -100,6 +100,7 @@ export default function Login({ navigation }) {
   const [phoneInputFocused, setPhoneInputFocused] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState(null); // Store OTP for verification
   const otpRefs = useRef([]);
+  const [guestLoading, setGuestLoading] = useState(false);
 
   // Focus first OTP input when step changes to OTP
   useEffect(() => {
@@ -182,6 +183,17 @@ export default function Login({ navigation }) {
   const handleBack = () => {
     setStep("phone");
     setOtp(["", "", "", ""]);
+  };
+
+  const handleGuestSignIn = async () => {
+    try {
+      setGuestLoading(true);
+      await guestSignIn();
+    } catch (error) {
+      Alert.alert("Error", error.message || "Failed to continue as guest");
+    } finally {
+      setGuestLoading(false);
+    }
   };
 
   return (
@@ -344,6 +356,19 @@ export default function Login({ navigation }) {
                       style={{ color: theme.textSecondary }}
                     >
                       Wrong number?
+                    </ThemedText>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handleGuestSignIn}
+                    disabled={guestLoading}
+                    style={{ alignItems: "center", padding: Spacing.sm }}
+                  >
+                    <ThemedText
+                      type="bodySmall"
+                      style={{ color: theme.primary, fontWeight: "600" }}
+                    >
+                      {guestLoading ? "Loading..." : "Continue as Guest"}
                     </ThemedText>
                   </Pressable>
                 </Animated.View>

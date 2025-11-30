@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { authService } from "../services/authService";
-import { auth as phoneAuth } from "../services/database";
+import { auth as phoneAuth, users as usersApi } from "../services/database";
 import { supabase } from "../config/supabase";
 
 const AuthContext = createContext({});
@@ -80,12 +80,52 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function guestSignIn() {
+    try {
+      setLoading(true);
+      const guestPhoneNumber = "22212345678";
+      
+      // Fetch guest user from database
+      const guestUserFromDb = await usersApi.getById(guestPhoneNumber);
+      
+      if (!guestUserFromDb) {
+        throw new Error("Guest user not found in database");
+      }
+
+      // Create a session object with the user data
+      const sessionData = {
+        user: {
+          id: guestUserFromDb.id,
+          phone_number: guestUserFromDb.phone_number,
+          whatsapp_phone: guestUserFromDb.whatsapp_phone,
+          post_limit: guestUserFromDb.post_limit,
+          posts_count: guestUserFromDb.posts_count,
+          is_member: guestUserFromDb.is_member,
+          hit_limit: guestUserFromDb.hit_limit,
+          created_at: guestUserFromDb.created_at,
+          updated_at: guestUserFromDb.updated_at,
+        },
+      };
+
+      setUser(sessionData.user);
+      setSession(sessionData);
+      
+      return sessionData;
+    } catch (error) {
+      console.error("Guest sign in error:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const value = {
     user,
     session,
     loading,
     signInWithGoogle,
     signInWithPhoneOTP,
+    guestSignIn,
     signOut,
     refreshUser: loadSession,
   };
