@@ -126,9 +126,50 @@ export const posts = {
         .range(offset, offset + limit - 1);
 
       if (error) throw error;
+      console.log(`✅ Loaded ${data?.length || 0} approved posts`);
       return data || [];
     } catch (error) {
       console.error("Error fetching approved posts:", error);
+      return [];
+    }
+  },
+
+  // Get posts by category
+  async getByCategory(category, limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("category", category)
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      console.log(`✅ Loaded ${data?.length || 0} posts for category: ${category}`);
+      return data || [];
+    } catch (error) {
+      console.error(`Error fetching posts for category ${category}:`, error);
+      return [];
+    }
+  },
+
+  // Search posts
+  async search(query, limit = 50, offset = 0) {
+    try {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("is_approved", true)
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      console.log(`✅ Found ${data?.length || 0} posts matching: ${query}`);
+      return data || [];
+    } catch (error) {
+      console.error("Error searching posts:", error);
       return [];
     }
   },
