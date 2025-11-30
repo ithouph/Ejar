@@ -966,6 +966,23 @@ export const users = {
     }
   },
 
+  async getByPhoneNumber(phoneNumber) {
+    try {
+      if (!phoneNumber) return null;
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", phoneNumber)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching user by phone:", error);
+      return null;
+    }
+  },
+
   async getUser(userId) {
     return this.getById(userId);
   },

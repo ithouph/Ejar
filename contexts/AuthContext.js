@@ -85,8 +85,8 @@ export function AuthProvider({ children }) {
       setLoading(true);
       const guestPhoneNumber = "22212345678";
       
-      // Fetch guest user from database
-      const guestUserFromDb = await usersApi.getById(guestPhoneNumber);
+      // Fetch guest user from database by phone number
+      const guestUserFromDb = await usersApi.getByPhoneNumber(guestPhoneNumber);
       
       if (!guestUserFromDb) {
         throw new Error("Guest user not found in database");
