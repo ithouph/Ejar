@@ -45,9 +45,10 @@ CREATE TABLE public.users (
 CREATE TABLE public.posts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
+  category_id uuid,
+  subcategory_id uuid,
   title text NOT NULL,
   description text,
-  category text DEFAULT 'category'::text,
   listing_type text,
   property_type text,
   location text NOT NULL,
@@ -62,7 +63,9 @@ CREATE TABLE public.posts (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT posts_pkey PRIMARY KEY (id),
-  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
+  CONSTRAINT posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL,
+  CONSTRAINT posts_subcategory_id_fkey FOREIGN KEY (subcategory_id) REFERENCES public.subcategories(id) ON DELETE SET NULL
 );
 
 CREATE TABLE public.reviews (
