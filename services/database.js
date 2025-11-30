@@ -2,7 +2,6 @@ import { supabase } from "../config/supabase";
 import * as WebBrowser from "expo-web-browser";
 import * as ImagePicker from "expo-image-picker";
 import { makeRedirectUri } from "expo-auth-session";
-import { mockData } from "./mockData";
 
 WebBrowser.maybeCompleteAuthSession();
 

@@ -1,8 +1,6 @@
 import { supabase } from "../config/supabase";
 import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const POSTS_STORAGE_KEY = "@posts_storage";
 const CATEGORIES = ["property", "phones", "electronics", "others"];
 
 export const postsService = {
@@ -26,13 +24,8 @@ export const postsService = {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select(
-          `
-          *,
-          users (full_name, photo_url),
-          posts_photos(url)
-        `,
-        )
+        .select("*")
+        .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .limit(limit);
 
@@ -41,26 +34,21 @@ export const postsService = {
       return data.map((post) => ({
         id: post.id,
         userId: post.user_id,
-        userName: post.users?.full_name || "Anonymous",
-        userPhoto: post.users?.photo_url || "https://via.placeholder.com/40",
-        images: post.posts_photos?.map((p) => p.url) || [],
-        image: post.posts_photos?.[0]?.url || null,
         title: post.title,
         description: post.description,
-        location: post.location || "Unknown",
-        category: CATEGORIES.includes(post.type) ? post.type : "others",
-        likes: post.likes_count || 0,
-        comments: post.total_reviews || 0,
-        totalSaved: post.total_saved || 0,
-        totalPhotos: post.total_photos || 0,
+        image: post.image_url,
+        images: post.images || [],
         price: post.price,
+        likes: post.likes_count || 0,
+        favorites: post.total_favorites || 0,
+        comments: post.total_reviews || 0,
+        rating: post.rating || 0,
         createdAt: post.created_at,
         updatedAt: post.updated_at,
       }));
     } catch (error) {
       console.error("Error fetching posts:", error);
-      const localPosts = await AsyncStorage.getItem(POSTS_STORAGE_KEY);
-      return localPosts ? JSON.parse(localPosts) : [];
+      return [];
     }
   },
 
