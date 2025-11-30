@@ -21,7 +21,7 @@ import { users as usersApi, wallet as walletApi } from "../services/database";
 export default function Settings({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [walletBalance, setWalletBalance] = useState(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
@@ -108,6 +108,31 @@ export default function Settings({ navigation }) {
 
   const handleMemberApprovals = () => {
     navigation.navigate("MemberApprovals");
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => {},
+          isPreferred: true,
+        },
+        {
+          text: "Log Out",
+          onPress: async () => {
+            try {
+              await signOut();
+            } catch (error) {
+              Alert.alert("Error", "Failed to log out. Please try again.");
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
   };
 
   return (
@@ -330,6 +355,36 @@ export default function Settings({ navigation }) {
             </Pressable>
           </Animated.View>
         </View>
+
+        <View style={styles.sectionLabel}>
+          <ThemedText type="bodyLarge" style={styles.sectionLabelText}>
+            Account
+          </ThemedText>
+        </View>
+
+        <Animated.View
+          entering={FadeInDown.delay(300).duration(600)}
+          style={{ paddingHorizontal: Spacing.xl }}
+        >
+          <Pressable
+            onPress={handleLogout}
+            style={[
+              styles.gridCard,
+              {
+                backgroundColor: theme.surface,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: Spacing.md,
+              },
+            ]}
+          >
+            <Feather name="log-out" size={20} color="#E53E3E" />
+            <ThemedText type="bodyMedium" style={{ color: "#E53E3E" }}>
+              Log Out
+            </ThemedText>
+          </Pressable>
+        </Animated.View>
       </ScrollView>
     </ThemedView>
   );
