@@ -1,4 +1,9 @@
 -- ===============================
+-- ROW LEVEL SECURITY POLICIES
+-- Based on simplified schema with phone-only login
+-- ===============================
+
+-- ===============================
 -- 1. Users Table
 -- ===============================
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -17,19 +22,15 @@ CREATE POLICY "Users can insert own data" ON users
 -- ===============================
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 
--- Anyone can read posts
 CREATE POLICY "Posts are viewable by everyone" ON posts
   FOR SELECT USING (true);
 
--- Users can insert their own posts
 CREATE POLICY "Users can insert own posts" ON posts
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Users can update their own posts
 CREATE POLICY "Users can update own posts" ON posts
   FOR UPDATE USING (auth.uid() = user_id);
 
--- Users can delete their own posts
 CREATE POLICY "Users can delete own posts" ON posts
   FOR DELETE USING (auth.uid() = user_id);
 
@@ -50,17 +51,17 @@ CREATE POLICY "Cities are viewable by everyone" ON cities
   FOR SELECT USING (true);
 
 -- ===============================
--- 5. Favorites Table
+-- 5. Saved Posts Table
 -- ===============================
-ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_posts ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own favorites" ON favorites
+CREATE POLICY "Users can view own saved posts" ON saved_posts
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own favorites" ON favorites
+CREATE POLICY "Users can insert own saved posts" ON saved_posts
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own favorites" ON favorites
+CREATE POLICY "Users can delete own saved posts" ON saved_posts
   FOR DELETE USING (auth.uid() = user_id);
 
 -- ===============================
@@ -68,19 +69,15 @@ CREATE POLICY "Users can delete own favorites" ON favorites
 -- ===============================
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
--- Anyone can read reviews
 CREATE POLICY "Reviews are viewable by everyone" ON reviews
   FOR SELECT USING (true);
 
--- Users can insert their own reviews
 CREATE POLICY "Users can insert own reviews" ON reviews
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Users can update their own reviews
 CREATE POLICY "Users can update own reviews" ON reviews
   FOR UPDATE USING (auth.uid() = user_id);
 
--- Users can delete their own reviews
 CREATE POLICY "Users can delete own reviews" ON reviews
   FOR DELETE USING (auth.uid() = user_id);
 
@@ -140,7 +137,29 @@ CREATE POLICY "Users can delete own transactions" ON wallet_transactions
   );
 
 -- ===============================
--- 9. Service Categories Table (Public Read)
+-- 9. Payment Requests Table
+-- ===============================
+ALTER TABLE payment_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own payment requests" ON payment_requests
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own payment requests" ON payment_requests
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ===============================
+-- 10. Support Messages Table
+-- ===============================
+ALTER TABLE support_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own support messages" ON support_messages
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own support messages" ON support_messages
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ===============================
+-- 11. Service Categories Table (Public Read)
 -- ===============================
 ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
 
