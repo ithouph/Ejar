@@ -9,13 +9,13 @@
 --   22289876543 (Member - can approve payments) OTP: 0000
 -- ═════════════════════════════════════════════════════════════════════
 
--- 1. USERS (Phone number + WhatsApp + Post Limits + Member Status)
-INSERT INTO public.users (id, phone_number, whatsapp_phone, post_limit, posts_count, is_member, created_at) VALUES
-('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 4, true, NOW() - INTERVAL '30 days'),
-('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, false, NOW() - INTERVAL '25 days'),
-('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, false, NOW() - INTERVAL '20 days'),
-('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, false, NOW() - INTERVAL '15 days'),
-('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 3, true, NOW() - INTERVAL '10 days');
+-- 1. USERS (Phone number + WhatsApp + Post Limits + Member Status + Hit Limit)
+INSERT INTO public.users (id, phone_number, whatsapp_phone, post_limit, posts_count, is_member, hit_limit, created_at) VALUES
+('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', 5, 4, true, false, NOW() - INTERVAL '30 days'),
+('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', 5, 3, false, false, NOW() - INTERVAL '25 days'),
+('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', 5, 2, false, true, NOW() - INTERVAL '20 days'),
+('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', 5, 1, false, false, NOW() - INTERVAL '15 days'),
+('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', 5, 3, true, false, NOW() - INTERVAL '10 days');
 
 -- 2. WALLET ACCOUNTS (MRU Currency)
 INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) VALUES

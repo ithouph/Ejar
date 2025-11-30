@@ -9,6 +9,7 @@ CREATE TABLE public.users (
   post_limit integer DEFAULT 5,
   posts_count integer DEFAULT 0,
   is_member boolean DEFAULT false,
+  hit_limit boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT users_pkey PRIMARY KEY (id)
@@ -23,34 +24,33 @@ CREATE TABLE public.cities (
   CONSTRAINT cities_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.posts (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  city_id uuid NOT NULL,
-  category_id uuid NOT NULL,
-  title text NOT NULL,
-  description text,
-  listing_type text,
-  property_type text,
-  price numeric,
-  image_url text,
-  images text[] DEFAULT '{}'::text[],
-  amenities text[] DEFAULT '{}'::text[],
-  specifications jsonb DEFAULT '{}'::jsonb,
-  is_paid boolean DEFAULT false,
-  is_approved boolean DEFAULT false,
-  payment_approved boolean DEFAULT false,
-  hit_limit boolean DEFAULT false,
-  likes_count integer DEFAULT 0,
-  rating numeric DEFAULT 0,
-  total_reviews integer DEFAULT 0,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT posts_pkey PRIMARY KEY (id),
-  CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE,
-  CONSTRAINT posts_city_id_fkey FOREIGN KEY (city_id) REFERENCES public.cities(id) ON DELETE CASCADE,
-  CONSTRAINT posts_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.service_categories(id) ON DELETE CASCADE
-);
+create table public.posts (
+  id uuid not null default gen_random_uuid (),
+  user_id uuid not null,
+  city_id uuid not null,
+  category_id uuid not null,
+  title text not null,
+  description text null,
+  listing_type boolean null default false,
+  property_type text null,
+  price numeric null,
+  image_url text null,
+  amenities text[] null default '{}'::jsonb,
+  specifications jsonb null default '{}'::jsonb,
+  is_paid boolean null default false,
+  is_approved boolean null default false,
+  payment_approved boolean null default false,
+  hit_limit boolean null default false,
+  likes_count integer null default 0,
+  rating numeric null default 0,
+  total_reviews integer null default 0,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint posts_pkey primary key (id),
+  constraint posts_category_id_fkey foreign KEY (category_id) references service_categories (id) on delete CASCADE,
+  constraint posts_city_id_fkey foreign KEY (city_id) references cities (id) on delete CASCADE,
+  constraint posts_user_id_fkey foreign KEY (user_id) references users (id) on delete CASCADE
+) TABLESPACE pg_default;
 
 CREATE TABLE public.reviews (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
