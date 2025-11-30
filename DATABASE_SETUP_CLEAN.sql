@@ -11,6 +11,7 @@ CREATE TABLE public.cities (
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   phone_number text NOT NULL UNIQUE,
+  whatsapp_phone text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT users_pkey PRIMARY KEY (id)

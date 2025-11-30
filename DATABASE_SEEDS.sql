@@ -1,13 +1,13 @@
 -- EJAR DATABASE SEED DATA - SIMPLIFIED
--- Only phone number for login
+-- Phone number for login + WhatsApp phone
 
--- 1. USERS (Phone number only)
-INSERT INTO public.users (id, phone_number, created_at) VALUES
-('650e8400-e29b-41d4-a716-446655440001', '22212345678', NOW()),
-('650e8400-e29b-41d4-a716-446655440002', '22287654321', NOW()),
-('650e8400-e29b-41d4-a716-446655440003', '22298765432', NOW()),
-('650e8400-e29b-41d4-a716-446655440004', '22256789012', NOW()),
-('650e8400-e29b-41d4-a716-446655440005', '22289876543', NOW());
+-- 1. USERS (Phone number + WhatsApp)
+INSERT INTO public.users (id, phone_number, whatsapp_phone, created_at) VALUES
+('650e8400-e29b-41d4-a716-446655440001', '22212345678', '22212345678', NOW()),
+('650e8400-e29b-41d4-a716-446655440002', '22287654321', '22287654321', NOW()),
+('650e8400-e29b-41d4-a716-446655440003', '22298765432', '22298765432', NOW()),
+('650e8400-e29b-41d4-a716-446655440004', '22256789012', '22256789012', NOW()),
+('650e8400-e29b-41d4-a716-446655440005', '22289876543', '22289876543', NOW());
 
 -- 2. WALLET ACCOUNTS
 INSERT INTO public.wallet_accounts (id, user_id, balance, currency, created_at) VALUES
