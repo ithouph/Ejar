@@ -41,6 +41,14 @@ export function HotelCard({
     scale.value = withSpring(1, springConfig);
   };
 
+  // Extract image URL (supports both single image or array)
+  const imageUrl = Array.isArray(item.images) && item.images.length > 0 
+    ? item.images[0] 
+    : item.image_url || item.image || "https://via.placeholder.com/300";
+
+  // Format price for display
+  const priceDisplay = item.price ? `$${item.price.toLocaleString()}` : "N/A";
+
   return (
     <AnimatedPressable
       onPress={onPress}
@@ -53,7 +61,7 @@ export function HotelCard({
         Shadows.medium,
       ]}
     >
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: imageUrl }} style={styles.image} />
       <View style={[styles.gradient, { backgroundColor: theme.card }]}>
         <Pressable
           onPress={() => onFavoritePress(item.id)}
@@ -72,8 +80,9 @@ export function HotelCard({
             style={styles.name}
             lightColor="#FFF"
             darkColor="#FFF"
+            numberOfLines={2}
           >
-            {item.name}
+            {item.title || item.name || "Listing"}
           </ThemedText>
           <View style={styles.locationRow}>
             <Feather name="map-pin" size={14} color="#FFF" />
@@ -82,19 +91,20 @@ export function HotelCard({
               style={styles.location}
               lightColor="#FFF"
               darkColor="#FFF"
+              numberOfLines={1}
             >
-              {item.location}
+              {item.location || item.category || "Location"}
             </ThemedText>
           </View>
           <View style={styles.ratingRow}>
-            <Feather name="star" size={14} color="#FBBF24" />
+            <Feather name="tag" size={14} color="#FBBF24" />
             <ThemedText
               type="bodySmall"
               style={styles.rating}
               lightColor="#FFF"
               darkColor="#FFF"
             >
-              {item.rating}
+              {priceDisplay}
             </ThemedText>
           </View>
         </View>
