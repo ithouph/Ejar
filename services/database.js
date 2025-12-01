@@ -95,28 +95,8 @@ export const auth = {
       
       console.log("🔄 Verifying OTP for:", formattedPhone);
       
-      // Generate proper UUID v4
-      const generateUUID = () => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-          const r = Math.random() * 16 | 0;
-          const v = c === 'x' ? r : (r & 0x3 | 0x8);
-          return v.toString(16);
-        });
-      };
-
-      // Create a mock user object for frontend
-      // In production, this would call a backend API to verify against database
-      const user = {
-        id: generateUUID(),
-        phone_number: formattedPhone,
-        whatsapp_phone: formattedPhone,
-        post_limit: 5,
-        posts_count: 0,
-        is_member: false,
-        hit_limit: 100,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      // Create or get user from database
+      const user = await users.createOrGetUser(formattedPhone);
 
       console.log("✅ User verified:", user);
       return { user, isNewUser: true };
@@ -140,6 +120,55 @@ export const auth = {
 // ════════════════════════════════════════════════════════════════════
 
 export const users = {
+  async createOrGetUser(phoneNumber) {
+    try {
+      const formattedPhone = phoneNumber.replace(/\D/g, '');
+      
+      // Try to get existing user
+      const { data: existingUser, error: fetchError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", formattedPhone)
+        .single();
+
+      if (existingUser) {
+        console.log("✅ User exists in database:", existingUser.id);
+        return existingUser;
+      }
+
+      // User doesn't exist, create new one
+      if (fetchError?.code !== 'PGRST116') {
+        // PGRST116 = no rows found (expected for new user)
+        throw fetchError;
+      }
+
+      console.log("🆕 Creating new user for phone:", formattedPhone);
+      
+      const newUser = {
+        phone_number: formattedPhone,
+        whatsapp_phone: formattedPhone,
+        post_limit: 5,
+        posts_count: 0,
+        is_member: false,
+        hit_limit: 100,
+      };
+
+      const { data: createdUser, error: createError } = await supabase
+        .from("users")
+        .insert([newUser])
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      
+      console.log("✅ User created in database:", createdUser.id);
+      return createdUser;
+    } catch (error) {
+      console.error("Error creating or getting user:", error);
+      throw error;
+    }
+  },
+
   async getByPhoneNumber(phoneNumber) {
     try {
       const formattedPhone = phoneNumber.replace(/\D/g, '');
