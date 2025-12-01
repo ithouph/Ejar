@@ -77,6 +77,39 @@ export default function Discover({ navigation }) {
     loadData();
   }, [user, selectedCategory, priceRange, selectedRating, searchQuery]);
 
+  // Handle search state changes
+  useEffect(() => {
+    if (isSearching) {
+      searchContentOpacity.value = withTiming(1, { duration: 300 });
+      mainContentOpacity.value = withTiming(0, { duration: 300 });
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    } else {
+      searchContentOpacity.value = withTiming(0, { duration: 300 });
+      mainContentOpacity.value = withTiming(1, { duration: 300 });
+      searchInputRef.current?.blur();
+    }
+  }, [isSearching]);
+
+  // Animated styles
+  const searchContentAnimatedStyle = useAnimatedStyle(() => ({
+    pointerEvents: isSearching ? "auto" : "none",
+    zIndex: isSearching ? 100 : -1,
+  }));
+
+  const mainContentAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: mainContentOpacity.value,
+    pointerEvents: isSearching ? "none" : "auto",
+  }));
+
+  const buttonsAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: searchContentOpacity.value,
+    transform: [{ translateX: interpolate(searchContentOpacity.value, [0, 1], [20, 0]) }],
+  }));
+
+  const searchInputAnimatedStyle = useAnimatedStyle(() => ({
+    height: interpolate(searchContentOpacity.value, [0, 1], [40, 48]),
+  }));
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -206,13 +239,16 @@ export default function Discover({ navigation }) {
       )}
 
       <SearchOverlay
+        searchContentAnimatedStyle={searchContentAnimatedStyle}
+        searchContentOpacity={searchContentOpacity}
+        buttonsAnimatedStyle={buttonsAnimatedStyle}
+        searchInputAnimatedStyle={searchInputAnimatedStyle}
         theme={theme}
         insets={insets}
         searchInputRef={searchInputRef}
         searchQuery={searchQuery}
         onChangeText={setSearchQuery}
         onClose={() => setIsSearching(false)}
-        isSearching={isSearching}
         categories={CATEGORIES}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
