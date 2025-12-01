@@ -66,13 +66,27 @@ function AuthGate() {
           initialRouteName="Welcome"
           screenOptions={{
             headerShown: false,
+            gestureEnabled: false, // Prevent back swipe gesture
+            animationEnabled: true,
           }}
         >
-          {/* Welcome Screen */}
-          <Stack.Screen name="Welcome" component={Welcome} />
+          {/* Welcome Screen - Entry point, no back navigation */}
+          <Stack.Screen 
+            name="Welcome" 
+            component={Welcome}
+            options={{
+              gestureEnabled: false,
+            }}
+          />
 
-          {/* Login Screen - ADD YOUR CUSTOM LOGIN DESIGN HERE */}
-          <Stack.Screen name="Login" component={Login} />
+          {/* Login Screen - No back to Welcome (user must tap back button explicitly on Welcome) */}
+          <Stack.Screen 
+            name="Login" 
+            component={Login}
+            options={{
+              gestureEnabled: false,
+            }}
+          />
 
           {/* 
               TO ADD MORE AUTH SCREENS:
