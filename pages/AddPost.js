@@ -304,7 +304,11 @@ export default function AddPost({ navigation }) {
     try {
       const selectedImages = await postsApi.pickImages(5);
       if (selectedImages.length > 0) {
-        setImages(selectedImages);
+        // Extract URIs from image objects for display
+        const imageUris = selectedImages.map(img => 
+          typeof img === 'string' ? img : img.uri
+        );
+        setImages(imageUris);
       }
     } catch (error) {
       console.error("Error picking image:", error);
@@ -414,23 +418,29 @@ export default function AddPost({ navigation }) {
   }
 
   async function handleSubmit() {
+    // Validate all required fields
     if (!title.trim()) {
-      Alert.alert("Error", "Please enter a title");
+      Alert.alert("Missing Information", "Please enter a title for your post");
       return;
     }
 
     if (!description.trim()) {
-      Alert.alert("Error", "Please enter a description");
+      Alert.alert("Missing Information", "Please enter a description");
       return;
     }
 
     if (!location.trim()) {
-      Alert.alert("Error", "Please enter a location");
+      Alert.alert("Missing Information", "Please select a location");
+      return;
+    }
+
+    if (!price.trim()) {
+      Alert.alert("Missing Information", "Please enter a price");
       return;
     }
 
     if (images.length < 2) {
-      Alert.alert("Error", "Please add at least 2 images");
+      Alert.alert("Not Enough Images", "Please add at least 2 images to your post");
       return;
     }
 
@@ -450,36 +460,43 @@ export default function AddPost({ navigation }) {
       const postData = {
         title: title.trim(),
         description: description.trim(),
-        price: price ? parseFloat(price) : null,
+        price: parseFloat(price),
         location: location.trim(),
-        images,
-        listingType,
-        category,
+        images: images,
+        listing_type: listingType,
+        category: category,
         specifications: getCategorySpecifications(),
-        isPaid: false,
-        userName:
+        is_approved: false,
+        user_name:
           user?.user_metadata?.full_name || user?.email || "Anonymous User",
-        userPhoto:
+        user_photo:
           user?.user_metadata?.avatar_url || "https://via.placeholder.com/40",
       };
 
+      console.log("📤 Creating post with data:", postData);
       const createdPost = await postsApi.create(user?.id, postData);
 
-      if (createdPost?.error) {
-        Alert.alert("Error", createdPost.error);
+      if (!createdPost || createdPost?.error) {
+        Alert.alert("Error", createdPost?.error || "Failed to create post");
         return;
       }
+
+      console.log("✅ Post created successfully:", createdPost.id);
 
       // Decrement posting limit after successful post creation
       await usersApi.decrementPostLimit(user?.id);
 
       Alert.alert(
         "Post Created Successfully!",
-        "Your post has been created. Complete payment to make it visible to other users.",
+        "Your post has been saved. Complete payment to make it visible to all users.",
         [
           {
-            text: "Go to Payment",
+            text: "Proceed to Payment",
             onPress: () => navigation.navigate("Payment", { post: createdPost }),
+          },
+          {
+            text: "View My Posts",
+            onPress: () => navigation.goBack(),
           },
         ]
       );
