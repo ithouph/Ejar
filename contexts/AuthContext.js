@@ -12,40 +12,44 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Priority: Load from AsyncStorage first (for offline persistence)
+    // Then check authService (for online sessions)
     loadSession();
-
-    const {
-      data: { subscription },
-    } = authService.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
   }, []);
 
   async function loadSession() {
     try {
-      // Try to restore session from AsyncStorage
+      setLoading(true);
+      
+      // Step 1: Try to restore session from AsyncStorage (persistent across restarts)
       const savedSession = await AsyncStorage.getItem("ejar_user_session");
       if (savedSession) {
         const userData = JSON.parse(savedSession);
         setUser(userData);
         setSession({ user: userData });
-        console.log("✅ Session restored from storage:", userData.id);
+        console.log("✅ Session restored from AsyncStorage:", userData.id);
         setLoading(false);
-        return;
+        return; // Exit early - session restored successfully
       }
 
-      // Fallback to authService
+      // Step 2: Fallback to authService if no cached session
       const session = await authService.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setSession(session);
+        setUser(session.user);
+        // Cache this session for next time
+        await AsyncStorage.setItem("ejar_user_session", JSON.stringify(session.user));
+        console.log("✅ Session restored from authService:", session.user.id);
+      } else {
+        // No session found anywhere
+        setSession(null);
+        setUser(null);
+        console.log("ℹ️ No session found - user needs to login");
+      }
     } catch (error) {
       console.error("Error loading session:", error);
+      setSession(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
