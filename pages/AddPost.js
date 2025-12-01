@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -17,7 +17,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../contexts/AuthContext";
 import { useScreenInsets } from "../hooks/useScreenInsets";
 import { Spacing, BorderRadius } from "../theme/global";
-import { posts as postsApi, users as usersApi } from "../services/database";
+import { posts as postsApi, users as usersApi, cities as citiesApi } from "../services/database";
 
 const LISTING_TYPES = [
   { id: "rent", label: "Rent" },
@@ -275,7 +275,6 @@ export default function AddPost({ navigation }) {
 
   async function loadCities() {
     try {
-      const { cities: citiesApi } = await import("../services/database");
       const citiesList = await citiesApi.getAll();
       setCities(citiesList);
       console.log(`✅ Loaded ${citiesList.length} cities`);
@@ -1210,9 +1209,13 @@ export default function AddPost({ navigation }) {
 
           <LocationAutocomplete
             label="Location"
-            value={location}
-            onChangeText={setLocation}
-            onSelect={setLocation}
+            value={cityName}
+            onChangeText={setCityName}
+            onSelect={(city) => {
+              setCityId(city.id);
+              setCityName(city.name_en);
+            }}
+            cities={cities}
             theme={theme}
           />
         </View>
