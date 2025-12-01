@@ -150,13 +150,12 @@ export const users = {
         post_limit: 5,
         posts_count: 0,
         is_member: false,
-        hit_limit: 100,
       };
 
       const { data: createdUser, error: createError } = await supabase
         .from("users")
         .insert([newUser])
-        .select()
+        .select("id, phone_number, whatsapp_phone, post_limit, posts_count, is_member, hit_limit, created_at, updated_at")
         .single();
 
       if (createError) throw createError;
