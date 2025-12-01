@@ -352,7 +352,7 @@ export const posts = {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaType.Images,
         allowsEditing: false,
         allowsMultiple: true,
         quality: 0.8,
