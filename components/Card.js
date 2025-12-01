@@ -79,10 +79,10 @@ export function HotelCard({
         </View>
       )}
       
-      {!imageError && (
+      {!imageError && !imageLoading && (
         <Image 
           source={{ uri: imageUrl }} 
-          style={[styles.image, { display: imageLoading ? "none" : "flex" }]}
+          style={styles.image}
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
