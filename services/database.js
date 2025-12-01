@@ -209,7 +209,7 @@ export const posts = {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, service_categories(*)")
         .eq("is_approved", true)
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
@@ -228,7 +228,7 @@ export const posts = {
     try {
       let query = supabase
         .from("posts")
-        .select("*")
+        .select("*, service_categories(*)")
         .eq("is_approved", true);
 
       // Filter by listing_type if it's one of the valid types
@@ -255,7 +255,7 @@ export const posts = {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, service_categories(*)")
         .eq("is_approved", true)
         .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
         .order("created_at", { ascending: false })
@@ -275,7 +275,7 @@ export const posts = {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, service_categories(*)")
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -292,7 +292,7 @@ export const posts = {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, service_categories(*)")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);

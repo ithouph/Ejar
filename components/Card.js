@@ -137,29 +137,12 @@ export function HotelCard({
             {item.title || item.name || "Listing"}
           </ThemedText>
           
-          {/* Show category-specific specs from database */}
-          {item.specifications && typeof item.specifications === 'object' && (
+          {/* Show category from service_categories table */}
+          {item.service_categories && (
             <View style={styles.specsRow}>
-              {item.specifications.battery_health && (
-                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  {item.specifications.battery_health}
-                </ThemedText>
-              )}
-              {item.specifications.storage && (
-                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  {item.specifications.storage}
-                </ThemedText>
-              )}
-              {item.specifications.condition && (
-                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  {item.specifications.condition}
-                </ThemedText>
-              )}
-              {item.specifications.year && (
-                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  {item.specifications.year}
-                </ThemedText>
-              )}
+              <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
+                {item.service_categories.name || item.service_categories.description}
+              </ThemedText>
             </View>
           )}
           
