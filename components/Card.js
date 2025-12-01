@@ -73,23 +73,21 @@ export function HotelCard({
         Shadows.medium,
       ]}
     >
+      <Image 
+        source={{ uri: imageUrl }} 
+        style={styles.image}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+      
       {imageLoading && !imageError && (
-        <View style={[styles.image, { backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }]}>
+        <View style={[styles.loadingOverlay, { backgroundColor: "rgba(0,0,0,0.3)" }]}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       )}
       
-      {!imageError && !imageLoading && (
-        <Image 
-          source={{ uri: imageUrl }} 
-          style={styles.image}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      )}
-      
       {imageError && (
-        <View style={[styles.image, { backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }]}>
+        <View style={[styles.loadingOverlay, { backgroundColor: theme.background }]}>
           <Feather name="image-off" size={48} color={theme.textSecondary} />
         </View>
       )}
@@ -161,6 +159,14 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+    position: "absolute",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   gradient: {
     position: "absolute",
