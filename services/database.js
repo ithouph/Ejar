@@ -348,11 +348,11 @@ export const posts = {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (!permission.granted) {
-        throw new Error("Permission to access media library was denied");
+        throw new Error("Permission to access media library was denied. Please enable photo library access in your device settings.");
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
+        mediaTypes: [ImagePicker.MediaType.Images],
         allowsEditing: false,
         allowsMultiple: true,
         quality: 0.8,
@@ -371,7 +371,11 @@ export const posts = {
       return [];
     } catch (error) {
       console.error("Error picking images:", error);
-      throw error;
+      // On web or when picker isn't available, provide helpful message
+      if (error.message && error.message.includes("denied")) {
+        throw error;
+      }
+      throw new Error("Unable to access image library. Please try again or use a mobile device.");
     }
   },
 };
