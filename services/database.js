@@ -349,6 +349,8 @@ export const posts = {
         throw new Error(`Invalid category: ${postData.category}`);
       }
 
+      console.log("📝 Creating post with data:", { userId, category: postData.category, title: postData.title, location: postData.location });
+
       // First create the post to get its ID for image storage organization
       const tempPost = {
         user_id: userId,
@@ -356,21 +358,29 @@ export const posts = {
         title: postData.title,
         description: postData.description,
         price: postData.price,
+        listing_type: postData.listingType || "sell",
+        location: postData.location, // Include location
         images: [],
+        specifications: postData.specifications || {},
         is_approved: true,
         is_paid: true,
         payment_approved: true,
       };
+
+      console.log("📝 Inserting post data:", tempPost);
 
       const { data: createdPost, error: createError } = await supabase
         .from("posts")
         .insert([tempPost])
         .select();
 
-      if (createError) throw createError;
+      if (createError) {
+        console.error("❌ Post creation error:", createError);
+        throw createError;
+      }
       
       const postId = createdPost?.[0]?.id;
-      console.log(`📝 Post created with ID: ${postId}`);
+      console.log(`✅ Post created with ID: ${postId}`);
 
       // Upload images to Supabase storage and get URLs
       let uploadedImageUrls = [];
@@ -381,24 +391,31 @@ export const posts = {
             uploadImageToSupabase(imageUri, postId, index)
           )
         );
+        console.log(`✅ Uploaded ${uploadedImageUrls.length} images:`, uploadedImageUrls);
       }
 
-      // Update post with image URLs and specifications
-      const { data: updatedPost, error: updateError } = await supabase
-        .from("posts")
-        .update({ 
-          images: uploadedImageUrls,
-          specifications: postData.specifications || {}
-        })
-        .eq("id", postId)
-        .select();
+      // Update post with image URLs if they were uploaded
+      if (uploadedImageUrls.length > 0) {
+        const { data: updatedPost, error: updateError } = await supabase
+          .from("posts")
+          .update({ 
+            images: uploadedImageUrls
+          })
+          .eq("id", postId)
+          .select();
 
-      if (updateError) throw updateError;
+        if (updateError) {
+          console.error("❌ Image update error:", updateError);
+          throw updateError;
+        }
+        
+        console.log(`✅ Post ${postId} updated with ${uploadedImageUrls.length} images`);
+        return updatedPost?.[0] || null;
+      }
       
-      console.log(`✅ Post created and approved with ${uploadedImageUrls.length} images: ${postId}`);
-      return updatedPost?.[0] || null;
+      return createdPost?.[0] || null;
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error("❌ Error creating post:", error);
       throw error;
     }
   },
