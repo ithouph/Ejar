@@ -126,13 +126,13 @@ export function HotelCard({
               {item.location || item.category || "Location"}
             </ThemedText>
           </View>
-          <View style={styles.ratingRow}>
-            <Feather name="tag" size={14} color="#FBBF24" />
+          <View style={[styles.ratingRow, styles.priceTag]}>
+            <Feather name="tag" size={14} color="#1E40AF" />
             <ThemedText
               type="bodySmall"
               style={styles.rating}
-              lightColor="#FFF"
-              darkColor="#FFF"
+              lightColor="#1E40AF"
+              darkColor="#1E40AF"
             >
               {priceDisplay}
             </ThemedText>
@@ -210,5 +210,12 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontWeight: "600",
+  },
+  priceTag: {
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.medium,
+    alignSelf: "flex-start",
   },
 });
