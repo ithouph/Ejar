@@ -137,27 +137,27 @@ export function HotelCard({
             {item.title || item.name || "Listing"}
           </ThemedText>
           
-          {/* Show category-specific specs */}
-          {item.specifications && (
+          {/* Show category-specific specs from database */}
+          {item.specifications && typeof item.specifications === 'object' && (
             <View style={styles.specsRow}>
               {item.specifications.battery_health && (
                 <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  🔋 {item.specifications.battery_health}
+                  {item.specifications.battery_health}
                 </ThemedText>
               )}
               {item.specifications.storage && (
                 <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  💾 {item.specifications.storage}
+                  {item.specifications.storage}
                 </ThemedText>
               )}
               {item.specifications.condition && (
                 <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  ✓ {item.specifications.condition}
+                  {item.specifications.condition}
                 </ThemedText>
               )}
               {item.specifications.year && (
                 <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
-                  📅 {item.specifications.year}
+                  {item.specifications.year}
                 </ThemedText>
               )}
             </View>
@@ -266,5 +266,18 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.medium,
     alignSelf: "flex-start",
+  },
+  specsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.xs,
+  },
+  specText: {
+    fontSize: 11,
+    fontWeight: "500",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: BorderRadius.small,
   },
 });
