@@ -14,6 +14,52 @@ const CATEGORY_MAP = {
   others: "1496e4fd-6972-400a-bf97-5901981eadc5",
 };
 
+// Upload image to Supabase storage and return public URL
+async function uploadImageToSupabase(imageUri, postId, index) {
+  try {
+    if (imageUri.startsWith("http")) {
+      // Already a URL (from Unsplash test images)
+      return imageUri;
+    }
+
+    // For mobile: convert base64 or fetch local image
+    let imageData;
+    
+    if (imageUri.startsWith("data:")) {
+      // Base64 image
+      const base64String = imageUri.split(",")[1];
+      imageData = Buffer.from(base64String, "base64");
+    } else {
+      // Local file URI - fetch it
+      const response = await fetch(imageUri);
+      imageData = await response.blob();
+    }
+
+    const timestamp = Date.now();
+    const fileName = `${postId}/${timestamp}-${index}.jpg`;
+
+    const { data, error } = await supabase.storage
+      .from("post-images")
+      .upload(fileName, imageData, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const { data: publicData } = supabase.storage
+      .from("post-images")
+      .getPublicUrl(fileName);
+
+    return publicData?.publicUrl || imageUri;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    // Return original URI if upload fails
+    return imageUri;
+  }
+}
+
 /**
  * ════════════════════════════════════════════════════════════════════
  * EJAR APP - ALL DATABASE FUNCTIONS IN ONE FILE
