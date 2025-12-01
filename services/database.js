@@ -108,6 +108,31 @@ export const users = {
       return null;
     }
   },
+
+  async decrementPostLimit(userId) {
+    try {
+      const user = await this.getById(userId);
+      if (!user) throw new Error("User not found");
+      
+      if (user.post_limit <= 0) {
+        throw new Error("Post limit reached. Please make a payment to add more posts.");
+      }
+
+      const { data, error } = await supabase
+        .from("users")
+        .update({ post_limit: user.post_limit - 1 })
+        .eq("id", userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      console.log(`✅ Post limit decremented for user ${userId}. New limit: ${data.post_limit}`);
+      return data;
+    } catch (error) {
+      console.error("Error decrementing post limit:", error);
+      throw error;
+    }
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -251,14 +276,22 @@ export const posts = {
   },
 
   // Create post
-  async create(postData) {
+  async create(userId, postData) {
     try {
+      // Create post with is_approved = false (hidden until payment)
+      const postWithDefaults = {
+        ...postData,
+        user_id: userId,
+        is_approved: false,
+      };
+
       const { data, error } = await supabase
         .from("posts")
-        .insert([postData])
+        .insert([postWithDefaults])
         .select();
 
       if (error) throw error;
+      console.log(`✅ Post created (pending payment): ${data?.[0]?.id}`);
       return data?.[0] || null;
     } catch (error) {
       console.error("Error creating post:", error);
