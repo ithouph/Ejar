@@ -27,41 +27,44 @@ export function AuthProvider({ children }) {
         return uuidRegex.test(id);
       };
       
-      // Step 1: Try to restore session from AsyncStorage (persistent across restarts)
+      // CRITICAL: Clear all old sessions with invalid ID formats (migration from old string-based IDs)
       const savedSession = await AsyncStorage.getItem("ejar_user_session");
       if (savedSession) {
-        const userData = JSON.parse(savedSession);
-        
-        // Validate that the user ID is a proper UUID
-        if (!isValidUUID(userData.id)) {
-          console.log("⚠️ Invalid session ID format (not UUID). Clearing old session:", userData.id);
-          await AsyncStorage.removeItem("ejar_user_session");
-          setUser(null);
-          setSession(null);
+        try {
+          const userData = JSON.parse(savedSession);
+          if (!isValidUUID(userData.id)) {
+            console.log("🧹 CLEARING INVALID SESSION FORMAT. Old ID:", userData.id);
+            await AsyncStorage.removeItem("ejar_user_session");
+            // Force complete logout
+            setUser(null);
+            setSession(null);
+            setLoading(false);
+            return;
+          }
+          
+          // Valid UUID - restore it
+          setUser(userData);
+          setSession({ user: userData });
+          console.log("✅ Session restored from AsyncStorage with UUID:", userData.id);
           setLoading(false);
-          return; // Force user to login again
+          return;
+        } catch (parseError) {
+          console.error("Error parsing saved session:", parseError);
+          await AsyncStorage.removeItem("ejar_user_session");
         }
-        
-        setUser(userData);
-        setSession({ user: userData });
-        console.log("✅ Session restored from AsyncStorage:", userData.id);
-        setLoading(false);
-        return; // Exit early - session restored successfully
       }
 
-      // Step 2: Fallback to authService if no cached session
+      // No valid cached session - try authService
       const session = await authService.getSession();
       if (session?.user) {
         setSession(session);
         setUser(session.user);
-        // Cache this session for next time
         await AsyncStorage.setItem("ejar_user_session", JSON.stringify(session.user));
-        console.log("✅ Session restored from authService:", session.user.id);
+        console.log("✅ Session from authService:", session.user.id);
       } else {
-        // No session found anywhere
         setSession(null);
         setUser(null);
-        console.log("ℹ️ No session found - user needs to login");
+        console.log("ℹ️ No session - user needs to login");
       }
     } catch (error) {
       console.error("Error loading session:", error);
