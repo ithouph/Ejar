@@ -339,14 +339,14 @@ export const posts = {
         throw new Error(`Invalid category: ${postData.category}`);
       }
 
-      // Auto-approve posts so they go live immediately
-      const postWithDefaults = {
+      // First create the post to get its ID for image storage organization
+      const tempPost = {
         user_id: userId,
         category_id: categoryId,
         title: postData.title,
         description: postData.description,
         price: postData.price,
-        images: postData.images || [],
+        images: [],
         is_approved: true,
         is_paid: true,
         payment_approved: true,
@@ -354,14 +354,38 @@ export const posts = {
         total_favorites: 0,
       };
 
-      const { data, error } = await supabase
+      const { data: createdPost, error: createError } = await supabase
         .from("posts")
-        .insert([postWithDefaults])
+        .insert([tempPost])
         .select();
 
-      if (error) throw error;
-      console.log(`✅ Post created and approved: ${data?.[0]?.id}`);
-      return data?.[0] || null;
+      if (createError) throw createError;
+      
+      const postId = createdPost?.[0]?.id;
+      console.log(`📝 Post created with ID: ${postId}`);
+
+      // Upload images to Supabase storage and get URLs
+      let uploadedImageUrls = [];
+      if (postData.images && postData.images.length > 0) {
+        console.log(`📸 Uploading ${postData.images.length} images...`);
+        uploadedImageUrls = await Promise.all(
+          postData.images.map((imageUri, index) =>
+            uploadImageToSupabase(imageUri, postId, index)
+          )
+        );
+      }
+
+      // Update post with image URLs
+      const { data: updatedPost, error: updateError } = await supabase
+        .from("posts")
+        .update({ images: uploadedImageUrls })
+        .eq("id", postId)
+        .select();
+
+      if (updateError) throw updateError;
+      
+      console.log(`✅ Post created and approved with ${uploadedImageUrls.length} images: ${postId}`);
+      return updatedPost?.[0] || null;
     } catch (error) {
       console.error("Error creating post:", error);
       throw error;
