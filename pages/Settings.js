@@ -368,23 +368,38 @@ export default function Settings({ navigation }) {
 
         <Animated.View
           entering={FadeInDown.delay(300).duration(600)}
-          style={{ paddingHorizontal: Spacing.xl }}
+          style={{ 
+            paddingHorizontal: Spacing.xl,
+            marginTop: Spacing.lg,
+            marginBottom: Spacing.xl
+          }}
         >
           <Pressable
             onPress={handleLogout}
-            style={[
-              styles.gridCard,
+            style={({ pressed }) => [
               {
-                backgroundColor: theme.surface,
+                backgroundColor: "#DC2626",
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: Spacing.md,
+                paddingVertical: Spacing.lg,
+                paddingHorizontal: Spacing.xl,
+                borderRadius: 12,
+                opacity: pressed ? 0.85 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
               },
             ]}
           >
-            <Feather name="log-out" size={20} color="#E53E3E" />
-            <ThemedText type="bodyMedium" style={{ color: "#E53E3E" }}>
+            <Feather name="log-out" size={22} color="#FFF" />
+            <ThemedText 
+              type="bodyLarge" 
+              style={{ 
+                color: "#FFF",
+                fontWeight: "600",
+                letterSpacing: 0.3
+              }}
+            >
               Log Out
             </ThemedText>
           </Pressable>
