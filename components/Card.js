@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, Pressable, Image, View, Dimensions } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, Pressable, Image, View, Dimensions, ActivityIndicator } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -28,6 +28,8 @@ export function HotelCard({
 }) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -39,6 +41,16 @@ export function HotelCard({
 
   const handlePressOut = () => {
     scale.value = withSpring(1, springConfig);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
   };
 
   // Extract image URL (supports both single image or array)
@@ -61,7 +73,27 @@ export function HotelCard({
         Shadows.medium,
       ]}
     >
-      <Image source={{ uri: imageUrl }} style={styles.image} />
+      {imageLoading && !imageError && (
+        <View style={[styles.image, { backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }]}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      )}
+      
+      {!imageError && (
+        <Image 
+          source={{ uri: imageUrl }} 
+          style={[styles.image, { display: imageLoading ? "none" : "flex" }]}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
+      )}
+      
+      {imageError && (
+        <View style={[styles.image, { backgroundColor: theme.background, justifyContent: "center", alignItems: "center" }]}>
+          <Feather name="image-off" size={48} color={theme.textSecondary} />
+        </View>
+      )}
+      
       <View style={[styles.gradient, { backgroundColor: theme.card }]}>
         <Pressable
           onPress={() => onFavoritePress(item.id)}
