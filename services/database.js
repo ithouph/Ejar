@@ -5,6 +5,15 @@ import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
 
+// Category mapping - maps category names to UUIDs
+const CATEGORY_MAP = {
+  phones: "92edda9d-aff7-423f-9d5d-467c7251fc2e",
+  electronics: "09b9ff92-9125-4882-9431-45d3540a82bb",
+  property: "7ff96de1-4711-4d90-b6f2-3c2a6b5d2760",
+  cars: "bcd5ba4e-a70d-48e9-be8a-2214b06b1795",
+  others: "1496e4fd-6972-400a-bf97-5901981eadc5",
+};
+
 /**
  * ════════════════════════════════════════════════════════════════════
  * EJAR APP - ALL DATABASE FUNCTIONS IN ONE FILE
@@ -278,12 +287,25 @@ export const posts = {
   // Create post
   async create(userId, postData) {
     try {
+      // Get category_id from category string
+      const categoryId = CATEGORY_MAP[postData.category];
+      if (!categoryId) {
+        throw new Error(`Invalid category: ${postData.category}`);
+      }
+
       // Auto-approve posts so they go live immediately
       const postWithDefaults = {
-        ...postData,
         user_id: userId,
+        category_id: categoryId,
+        title: postData.title,
+        description: postData.description,
+        price: postData.price,
+        images: postData.images || [],
         is_approved: true,
-        created_at: new Date().toISOString(),
+        is_paid: true,
+        payment_approved: true,
+        likes_count: 0,
+        total_favorites: 0,
       };
 
       const { data, error } = await supabase
