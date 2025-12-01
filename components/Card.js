@@ -173,9 +173,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    top: 0,
+    height: "50%",
     justifyContent: "flex-end",
     padding: Spacing.lg,
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
   favoriteButton: {
     position: "absolute",
