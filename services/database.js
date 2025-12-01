@@ -5,13 +5,14 @@ import { makeRedirectUri } from "expo-auth-session";
 
 WebBrowser.maybeCompleteAuthSession();
 
-// Category mapping - maps category names to UUIDs
+// Category mapping - maps category names to UUIDs from service_categories table
 const CATEGORY_MAP = {
-  phones: "92edda9d-aff7-423f-9d5d-467c7251fc2e",
-  electronics: "09b9ff92-9125-4882-9431-45d3540a82bb",
-  property: "7ff96de1-4711-4d90-b6f2-3c2a6b5d2760",
-  cars: "bcd5ba4e-a70d-48e9-be8a-2214b06b1795",
-  others: "1496e4fd-6972-400a-bf97-5901981eadc5",
+  phones: "8d818e84-530b-427f-9cc2-0b6392929c3f",
+  laptops: "f4273828-1646-4efa-a918-0bb4df49c9b3",
+  electronics: "d4aae44a-b16f-4176-b708-d1b143abeb7e",
+  cars: "5c2437ac-6562-43b1-b044-be02b68bf3c9",
+  property: "466f8fcd-0cba-4224-97e5-0c2ba7b003a2",
+  others: "57fde837-398f-4da4-9463-d765cfe3a214",
 };
 
 // Upload image to Supabase storage and return public URL
