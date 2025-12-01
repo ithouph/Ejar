@@ -57,7 +57,6 @@ export default function EditProfile({ navigation }) {
   const [postLimit, setPostLimit] = useState("");
   const [postsCount, setPostsCount] = useState("");
   const [isMember, setIsMember] = useState("");
-  const [hitLimit, setHitLimit] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -82,7 +81,6 @@ export default function EditProfile({ navigation }) {
         setPostLimit(userDetails.post_limit?.toString() || "0");
         setPostsCount(userDetails.posts_count?.toString() || "0");
         setIsMember(userDetails.is_member ? "Yes" : "No");
-        setHitLimit(userDetails.hit_limit ? "Yes" : "No");
       }
     } catch (error) {
       console.error("Error loading profile:", error);

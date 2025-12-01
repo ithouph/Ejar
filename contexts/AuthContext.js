@@ -180,7 +180,6 @@ export function AuthProvider({ children }) {
         post_limit: guestUserFromDb.post_limit,
         posts_count: guestUserFromDb.posts_count,
         is_member: guestUserFromDb.is_member,
-        hit_limit: guestUserFromDb.hit_limit,
         created_at: guestUserFromDb.created_at,
         updated_at: guestUserFromDb.updated_at,
       };
