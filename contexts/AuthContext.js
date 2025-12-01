@@ -73,26 +73,48 @@ export function AuthProvider({ children }) {
   async function signOut() {
     try {
       setLoading(true);
-      console.log("🔄 Frontend: Starting complete logout process...");
       
-      // Step 1: Clear backend session (Supabase)
-      console.log("📡 Frontend: Notifying backend to clear session...");
+      console.log("\n========================================");
+      console.log("🔄 LOGOUT PROCESS STARTED");
+      console.log("========================================\n");
+      
+      // Step 1: Log current session before deletion
+      const currentSession = await AsyncStorage.getItem("ejar_user_session");
+      if (currentSession) {
+        const sessionData = JSON.parse(currentSession);
+        console.log("📋 Current Session (BEFORE DELETION):");
+        console.log("   User ID:", sessionData.id);
+        console.log("   Phone:", sessionData.phone_number);
+        console.log("   Member Status:", sessionData.is_member);
+        console.log("   Post Limit:", sessionData.post_limit);
+        console.log("   Created At:", sessionData.created_at);
+      }
+      
+      console.log("\n🔄 Clearing backend session...");
       await authService.signOut();
-      console.log("✅ Frontend: Backend session cleared");
+      console.log("✅ Backend session cleared\n");
       
       // Step 2: Clear local storage
+      console.log("🗑️  Deleting saved session from AsyncStorage...");
       await AsyncStorage.removeItem("ejar_user_session");
-      console.log("✅ Frontend: Local storage session cleared");
+      console.log("✅ Session deleted from AsyncStorage\n");
       
       // Step 3: Clear app state
+      console.log("🧹 Clearing app state...");
       setUser(null);
       setSession(null);
-      console.log("✅ Frontend: App state cleared");
+      console.log("✅ App state cleared\n");
       
-      console.log("✅ Frontend: User logged out successfully - redirecting to login");
+      console.log("========================================");
+      console.log("✅ LOGOUT COMPLETE!");
+      console.log("========================================");
+      console.log("📌 Status: Session deleted successfully");
+      console.log("📌 Action: You will be redirected to login page");
+      console.log("📌 Next Step: Log in again to use the app\n");
+      
       return true;
     } catch (error) {
-      console.error("❌ Frontend: Sign out error:", error);
+      console.error("❌ Logout error:", error);
       throw error;
     } finally {
       setLoading(false);

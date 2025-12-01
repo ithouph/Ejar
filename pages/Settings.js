@@ -113,23 +113,31 @@ export default function Settings({ navigation }) {
   const handleLogout = () => {
     Alert.alert(
       "Log Out",
-      "Are you sure you want to log out?",
+      "Are you sure you want to log out? Check the console to see session details.",
       [
         {
           text: "Cancel",
-          onPress: () => {},
+          onPress: () => {
+            console.log("ℹ️  Logout cancelled");
+          },
           isPreferred: true,
         },
         {
           text: "Log Out",
           onPress: async () => {
             try {
-              console.log("🔄 Starting logout...");
+              console.log("📱 User confirmed logout");
               await signOut();
-              console.log("✅ Logout complete - session deleted, redirecting to login");
-              Alert.alert("Logged Out", "Your session has been cleared. You will be redirected to login.");
+              Alert.alert("Logged Out Successfully", "Your session has been deleted. Please log in again.", [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    console.log("✅ User acknowledged logout message - app will redirect to login");
+                  }
+                }
+              ]);
             } catch (error) {
-              console.error("❌ Logout error:", error);
+              console.error("❌ Logout failed:", error);
               Alert.alert("Error", "Failed to log out. Please try again.");
             }
           },
