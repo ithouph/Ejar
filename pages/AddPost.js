@@ -473,7 +473,16 @@ export default function AddPost({ navigation }) {
       // Decrement posting limit after successful post creation
       await usersApi.decrementPostLimit(user?.id);
 
-      navigation.navigate("Payment", { post: createdPost });
+      Alert.alert(
+        "Post Created Successfully!",
+        "Your post has been created. Complete payment to make it visible to other users.",
+        [
+          {
+            text: "Go to Payment",
+            onPress: () => navigation.navigate("Payment", { post: createdPost }),
+          },
+        ]
+      );
     } catch (error) {
       console.error("Error creating post:", error);
       Alert.alert("Error", error.message || "Failed to create post. Please try again.");
