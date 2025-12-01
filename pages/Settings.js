@@ -124,8 +124,12 @@ export default function Settings({ navigation }) {
           text: "Log Out",
           onPress: async () => {
             try {
+              console.log("🔄 Starting logout...");
               await signOut();
+              console.log("✅ Logout complete - session deleted, redirecting to login");
+              Alert.alert("Logged Out", "Your session has been cleared. You will be redirected to login.");
             } catch (error) {
+              console.error("❌ Logout error:", error);
               Alert.alert("Error", "Failed to log out. Please try again.");
             }
           },
