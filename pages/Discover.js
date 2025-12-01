@@ -401,11 +401,12 @@ export default function Discover({ navigation }) {
       style={[
         {
           position: "absolute",
-          top: insets.top,
+          top: 0,
           left: 0,
           right: 0,
           zIndex: 9,
           paddingVertical: Spacing.sm,
+          paddingTop: insets.top,
           overflow: "hidden",
         },
         stickySearchAnimatedStyle,
