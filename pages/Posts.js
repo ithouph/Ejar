@@ -9,6 +9,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { ThemedText } from "../components/ThemedText";
 import { ThemedView } from "../components/ThemedView";
+import { StickyHeader } from "../components/StickyHeader";
 import { HotelCard } from "../components/Card";
 import { useTheme } from "../hooks/useTheme";
 import { useScreenInsets } from "../hooks/useScreenInsets";
