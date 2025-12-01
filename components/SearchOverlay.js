@@ -114,6 +114,13 @@ export function SearchOverlay({
             value={searchQuery}
             onChangeText={onChangeText}
           />
+          {searchQuery.trim().length > 0 && (
+            <View style={{ marginLeft: Spacing.xs, paddingLeft: Spacing.sm, borderLeftWidth: 1, borderLeftColor: theme.border }}>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                Results
+              </ThemedText>
+            </View>
+          )}
         </Animated.View>
 
         <Animated.View style={buttonsAnimatedStyle}>
