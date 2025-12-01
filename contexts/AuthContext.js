@@ -21,10 +21,27 @@ export function AuthProvider({ children }) {
     try {
       setLoading(true);
       
+      // UUID validation function
+      const isValidUUID = (id) => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        return uuidRegex.test(id);
+      };
+      
       // Step 1: Try to restore session from AsyncStorage (persistent across restarts)
       const savedSession = await AsyncStorage.getItem("ejar_user_session");
       if (savedSession) {
         const userData = JSON.parse(savedSession);
+        
+        // Validate that the user ID is a proper UUID
+        if (!isValidUUID(userData.id)) {
+          console.log("⚠️ Invalid session ID format (not UUID). Clearing old session:", userData.id);
+          await AsyncStorage.removeItem("ejar_user_session");
+          setUser(null);
+          setSession(null);
+          setLoading(false);
+          return; // Force user to login again
+        }
+        
         setUser(userData);
         setSession({ user: userData });
         console.log("✅ Session restored from AsyncStorage:", userData.id);
