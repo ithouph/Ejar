@@ -416,6 +416,17 @@ export default function AddPost({ navigation }) {
   }
 
   async function handleSubmit() {
+    // Validate user is logged in
+    if (!user?.id) {
+      Alert.alert("Error", "You must be logged in to create a post");
+      return;
+    }
+
+    if (!category) {
+      Alert.alert("Error", "Please select a category");
+      return;
+    }
+
     if (!title.trim()) {
       Alert.alert("Error", "Please enter a title");
       return;
@@ -431,8 +442,13 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (images.length < 2) {
-      Alert.alert("Error", "Please add at least 2 images");
+    if (images.length < 1) {
+      Alert.alert("Error", "Please add at least 1 image");
+      return;
+    }
+
+    if (!price || parseFloat(price) <= 0) {
+      Alert.alert("Error", "Please enter a valid price");
       return;
     }
 
@@ -449,44 +465,62 @@ export default function AddPost({ navigation }) {
         return;
       }
 
+      console.log("📝 Creating post with userId:", user?.id);
+      console.log("📝 Category:", category);
+      console.log("📝 Title:", title);
+      console.log("📝 Location:", location);
+
+      // Collect all post data with user_id
       const postData = {
+        user_id: user?.id, // Explicitly include user_id
         title: title.trim(),
         description: description.trim(),
-        price: price ? parseFloat(price) : null,
+        price: parseFloat(price),
         location: location.trim(),
         images,
+        category, // Include category
         listingType,
-        category,
         specifications: getCategorySpecifications(),
-        isPaid: false,
-        userName:
-          user?.user_metadata?.full_name || user?.email || "Anonymous User",
-        userPhoto:
-          user?.user_metadata?.avatar_url || "https://via.placeholder.com/40",
       };
 
+      console.log("📝 Post data prepared:", postData);
+
+      // Create post - backend expects (userId, postData)
       const createdPost = await postsApi.create(user?.id, postData);
 
-      if (createdPost?.error) {
-        Alert.alert("Error", createdPost.error);
-        return;
+      if (!createdPost || createdPost?.error) {
+        throw new Error(createdPost?.error || "Failed to create post");
       }
+
+      console.log("✅ Post created successfully:", createdPost?.id);
 
       // Decrement posting limit after successful post creation
       await usersApi.decrementPostLimit(user?.id);
 
       Alert.alert(
         "Post Created Successfully!",
-        "Your post has been created. Complete payment to make it visible to other users.",
+        "Your post is now live on the marketplace!",
         [
           {
-            text: "Go to Payment",
-            onPress: () => navigation.navigate("Payment", { post: createdPost }),
+            text: "View My Posts",
+            onPress: () => navigation.navigate("Posts"),
+          },
+          {
+            text: "Create Another",
+            onPress: () => {
+              // Reset form
+              setTitle("");
+              setDescription("");
+              setPrice("");
+              setLocation("");
+              setImages([]);
+              setCategory("phones");
+            },
           },
         ]
       );
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error("❌ Error creating post:", error);
       Alert.alert("Error", error.message || "Failed to create post. Please try again.");
     } finally {
       setLoading(false);
