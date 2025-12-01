@@ -144,6 +144,13 @@ export default function AddPost({ navigation }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Phone specs
+  const [model, setModel] = useState("");
+  const [batteryHealth, setBatteryHealth] = useState("");
+  const [storage, setStorage] = useState("");
+  const [color, setColor] = useState("");
+  const [condition, setCondition] = useState("Good");
+
   async function handlePickImages() {
     try {
       const selectedImages = await postsApi.pickImages(5);
@@ -197,6 +204,13 @@ export default function AddPost({ navigation }) {
         images: images,
         category: category,
         is_approved: true,
+        specifications: category === "phones" ? {
+          model,
+          battery_health: batteryHealth,
+          storage,
+          color,
+          condition,
+        } : {},
       };
 
       console.log("📤 Creating post:", postData);

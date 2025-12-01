@@ -94,10 +94,19 @@ export const auth = {
       
       console.log("🔄 Verifying OTP for:", formattedPhone);
       
+      // Generate proper UUID v4
+      const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      };
+
       // Create a mock user object for frontend
       // In production, this would call a backend API to verify against database
       const user = {
-        id: `user_${Date.now()}`,
+        id: generateUUID(),
         phone_number: formattedPhone,
         whatsapp_phone: formattedPhone,
         post_limit: 5,
