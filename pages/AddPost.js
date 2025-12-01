@@ -1071,41 +1071,60 @@ export default function AddPost({ navigation }) {
         </View>
 
         <View style={styles.section}>
-          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-            Photos
-          </ThemedText>
+          <View style={styles.photoHeaderRow}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Photos
+            </ThemedText>
+            <ThemedText 
+              type="bodySmall" 
+              style={{ 
+                color: images.length >= 2 ? theme.primary : theme.textSecondary,
+                fontWeight: "500"
+              }}
+            >
+              {images.length}/2 minimum
+            </ThemedText>
+          </View>
 
           {images.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.imagesScroll}
-            >
-              {images.map((uri, index) => (
-                <View key={index} style={styles.imageContainer}>
-                  <Image source={{ uri }} style={styles.uploadedImage} />
+            <View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imagesScroll}
+              >
+                {images.map((uri, index) => (
+                  <View key={index} style={styles.imageContainer}>
+                    <Image source={{ uri }} style={styles.uploadedImage} />
+                    <Pressable
+                      onPress={() =>
+                        setImages(images.filter((_, i) => i !== index))
+                      }
+                      style={styles.removeImageButton}
+                    >
+                      <Feather name="x" size={16} color="#FFF" />
+                    </Pressable>
+                  </View>
+                ))}
+                {images.length < 5 && (
                   <Pressable
-                    onPress={() =>
-                      setImages(images.filter((_, i) => i !== index))
-                    }
-                    style={styles.removeImageButton}
+                    onPress={handlePickImages}
+                    style={[
+                      styles.addImageButton,
+                      { backgroundColor: theme.surface },
+                    ]}
                   >
-                    <Feather name="x" size={16} color="#FFF" />
+                    <Feather name="plus" size={32} color={theme.textSecondary} />
                   </Pressable>
-                </View>
-              ))}
-              {images.length < 5 && (
-                <Pressable
-                  onPress={handlePickImages}
-                  style={[
-                    styles.addImageButton,
-                    { backgroundColor: theme.surface },
-                  ]}
-                >
-                  <Feather name="plus" size={32} color={theme.textSecondary} />
-                </Pressable>
-              )}
-            </ScrollView>
+                )}
+              </ScrollView>
+              <ThemedText 
+                type="bodySmall" 
+                style={{ color: theme.textSecondary, marginTop: Spacing.sm }}
+              >
+                Tap X to remove, tap + to add more (up to 5 total)
+              </ThemedText>
+            </View>
           ) : (
             <Pressable
               onPress={handlePickImages}
@@ -1113,7 +1132,7 @@ export default function AddPost({ navigation }) {
             >
               <Feather name="image" size={48} color={theme.textSecondary} />
               <ThemedText type="body" style={{ color: theme.textSecondary }}>
-                Tap to add photos (up to 5)
+                Tap to add photos (minimum 2 required)
               </ThemedText>
             </Pressable>
           )}
