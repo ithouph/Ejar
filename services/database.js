@@ -350,8 +350,6 @@ export const posts = {
         is_approved: true,
         is_paid: true,
         payment_approved: true,
-        likes_count: 0,
-        total_favorites: 0,
       };
 
       const { data: createdPost, error: createError } = await supabase
