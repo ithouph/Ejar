@@ -420,6 +420,48 @@ export const posts = {
     }
   },
 
+  // Update post with new images
+  async updateWithImages(postId, updates, newImages = []) {
+    try {
+      // Upload new images if provided
+      let uploadedImageUrls = [];
+      if (newImages && newImages.length > 0) {
+        console.log(`📸 Uploading ${newImages.length} new images for post ${postId}...`);
+        uploadedImageUrls = await Promise.all(
+          newImages.map((imageUri, index) =>
+            uploadImageToSupabase(imageUri, postId, index)
+          )
+        );
+      }
+
+      // Merge with existing images if not replacing
+      let finalImages = uploadedImageUrls;
+      if (updates.images && Array.isArray(updates.images) && updates.images.length > 0) {
+        finalImages = [...updates.images, ...uploadedImageUrls];
+      }
+
+      // Update post with image URLs and other updates
+      const updateData = { ...updates };
+      if (finalImages.length > 0) {
+        updateData.images = finalImages;
+      }
+
+      const { data: updatedPost, error: updateError } = await supabase
+        .from("posts")
+        .update(updateData)
+        .eq("id", postId)
+        .select();
+
+      if (updateError) throw updateError;
+
+      console.log(`✅ Post ${postId} updated with ${uploadedImageUrls.length} new images`);
+      return updatedPost?.[0] || null;
+    } catch (error) {
+      console.error("Error updating post with images:", error);
+      throw error;
+    }
+  },
+
   // Delete post
   async delete(postId) {
     try {
