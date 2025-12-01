@@ -66,6 +66,7 @@ export default function Discover({ navigation }) {
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedRating, setSelectedRating] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [unpaidPostsCount, setUnpaidPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [collapsibleHeaderHeight, setCollapsibleHeaderHeight] = useState(0);
   const [pinnedSavedHeight, setPinnedSavedHeight] = useState(0);
@@ -126,6 +127,10 @@ export default function Discover({ navigation }) {
       if (searchQuery.trim()) {
         postsData = await postsApi.search(searchQuery.trim());
       }
+
+      // Load unpaid posts count for pinned section visibility
+      const unpaidCount = await postsApi.getUnpaidPostsCount();
+      setUnpaidPostsCount(unpaidCount);
 
       const favoriteIds = user ? await Promise.resolve([]) : Promise.resolve([]);
 
@@ -427,7 +432,7 @@ export default function Discover({ navigation }) {
           onScroll={scrollHandler}
         >
           <View style={layoutStyles.section}>
-            {isDefaultState() && (
+            {isDefaultState() && unpaidPostsCount > 0 && posts.length > 0 && (
               <>
                 <View
                   style={[

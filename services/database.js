@@ -216,7 +216,7 @@ export const posts = {
     }
   },
 
-  // Get pending approval posts (admin)
+  // Get pending approval posts (admin) - unpaid posts
   async getPendingApproval(limit = 50, offset = 0) {
     try {
       const { data, error } = await supabase
@@ -231,6 +231,22 @@ export const posts = {
     } catch (error) {
       console.error("Error fetching pending posts:", error);
       return [];
+    }
+  },
+
+  // Get unpaid posts count (for pinned section visibility)
+  async getUnpaidPostsCount() {
+    try {
+      const { count, error } = await supabase
+        .from("posts")
+        .select("*", { count: "exact", head: true })
+        .eq("is_approved", false);
+
+      if (error) throw error;
+      return count || 0;
+    } catch (error) {
+      console.error("Error fetching unpaid posts count:", error);
+      return 0;
     }
   },
 
