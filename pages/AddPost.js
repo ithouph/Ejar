@@ -145,11 +145,32 @@ export default function AddPost({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   // Phone specs
-  const [model, setModel] = useState("");
+  const [phoneModel, setPhoneModel] = useState("");
   const [batteryHealth, setBatteryHealth] = useState("");
-  const [storage, setStorage] = useState("");
-  const [color, setColor] = useState("");
-  const [condition, setCondition] = useState("Good");
+  const [phoneStorage, setPhoneStorage] = useState("");
+  const [phoneColor, setPhoneColor] = useState("");
+  const [phoneCondition, setPhoneCondition] = useState("Good");
+
+  // Laptop specs
+  const [laptopModel, setLaptopModel] = useState("");
+  const [processor, setProcessor] = useState("");
+  const [ram, setRam] = useState("");
+  const [laptopStorage, setLaptopStorage] = useState("");
+  const [laptopCondition, setLaptopCondition] = useState("Good");
+
+  // Electronics specs
+  const [brand, setBrand] = useState("");
+  const [warranty, setWarranty] = useState("");
+  const [electronicsCondition, setElectronicsCondition] = useState("Good");
+
+  // Car specs
+  const [carMake, setCarMake] = useState("");
+  const [carModel, setCarModel] = useState("");
+  const [year, setYear] = useState("");
+  const [mileage, setMileage] = useState("");
+  const [fuelType, setFuelType] = useState("Petrol");
+  const [gearType, setGearType] = useState("Automatic");
+  const [carCondition, setCarCondition] = useState("Good");
 
   async function handlePickImages() {
     try {
@@ -196,6 +217,15 @@ export default function AddPost({ navigation }) {
     try {
       setLoading(true);
 
+      let specifications = {};
+      if (category === "phones") {
+        specifications = { model: phoneModel, battery_health: batteryHealth, storage: phoneStorage, color: phoneColor, condition: phoneCondition };
+      } else if (category === "electronics") {
+        specifications = { processor, ram, storage: laptopStorage, model: laptopModel, condition: laptopCondition };
+      } else if (category === "cars") {
+        specifications = { make: carMake, model: carModel, year, mileage, fuel_type: fuelType, gear_type: gearType, condition: carCondition };
+      }
+
       const postData = {
         title: title.trim(),
         description: description.trim(),
@@ -204,13 +234,7 @@ export default function AddPost({ navigation }) {
         images: images,
         category: category,
         is_approved: true,
-        specifications: category === "phones" ? {
-          model,
-          battery_health: batteryHealth,
-          storage,
-          color,
-          condition,
-        } : {},
+        specifications: specifications,
       };
 
       console.log("📤 Creating post:", postData);

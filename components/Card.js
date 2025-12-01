@@ -19,6 +19,28 @@ const springConfig = {
   stiffness: 150,
 };
 
+// Category-specific detail rendering
+function getSpecDetails(specs, category) {
+  if (!specs) return [];
+  const details = [];
+  
+  if (category === "phones" || specs.battery_health) {
+    if (specs.battery_health) details.push(`${specs.battery_health} Battery`);
+    if (specs.storage) details.push(specs.storage);
+    if (specs.condition) details.push(specs.condition);
+  } else if (category === "electronics" || specs.processor) {
+    if (specs.processor) details.push(specs.processor);
+    if (specs.ram) details.push(`${specs.ram} RAM`);
+    if (specs.condition) details.push(specs.condition);
+  } else if (category === "cars" || specs.year) {
+    if (specs.year) details.push(specs.year);
+    if (specs.mileage) details.push(specs.mileage);
+    if (specs.fuel_type) details.push(specs.fuel_type);
+  }
+  
+  return details;
+}
+
 export function HotelCard({
   item,
   onPress,
@@ -114,6 +136,33 @@ export function HotelCard({
           >
             {item.title || item.name || "Listing"}
           </ThemedText>
+          
+          {/* Show category-specific specs */}
+          {item.specifications && (
+            <View style={styles.specsRow}>
+              {item.specifications.battery_health && (
+                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
+                  🔋 {item.specifications.battery_health}
+                </ThemedText>
+              )}
+              {item.specifications.storage && (
+                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
+                  💾 {item.specifications.storage}
+                </ThemedText>
+              )}
+              {item.specifications.condition && (
+                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
+                  ✓ {item.specifications.condition}
+                </ThemedText>
+              )}
+              {item.specifications.year && (
+                <ThemedText type="bodySmall" lightColor="#FFF" darkColor="#FFF" style={styles.specText}>
+                  📅 {item.specifications.year}
+                </ThemedText>
+              )}
+            </View>
+          )}
+          
           <View style={styles.locationRow}>
             <Feather name="map-pin" size={14} color="#FFF" />
             <ThemedText

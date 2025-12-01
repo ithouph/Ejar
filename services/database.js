@@ -382,10 +382,13 @@ export const posts = {
         );
       }
 
-      // Update post with image URLs
+      // Update post with image URLs and specifications
       const { data: updatedPost, error: updateError } = await supabase
         .from("posts")
-        .update({ images: uploadedImageUrls })
+        .update({ 
+          images: uploadedImageUrls,
+          specifications: postData.specifications || {}
+        })
         .eq("id", postId)
         .select();
 
