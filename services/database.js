@@ -341,6 +341,39 @@ export const posts = {
   async reject(postId) {
     return this.update(postId, { is_approved: false });
   },
+
+  // Pick images from library
+  async pickImages(maxImages = 5) {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permission.granted) {
+        throw new Error("Permission to access media library was denied");
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        allowsMultiple: true,
+        quality: 0.8,
+        selectionLimit: maxImages,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        return result.assets.map((asset) => ({
+          uri: asset.uri,
+          width: asset.width,
+          height: asset.height,
+          size: asset.fileSize,
+        }));
+      }
+
+      return [];
+    } catch (error) {
+      console.error("Error picking images:", error);
+      throw error;
+    }
+  },
 };
 
 // ════════════════════════════════════════════════════════════════════

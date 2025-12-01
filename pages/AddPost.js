@@ -17,7 +17,7 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../contexts/AuthContext";
 import { useScreenInsets } from "../hooks/useScreenInsets";
 import { Spacing, BorderRadius } from "../theme/global";
-import { posts as postsApi } from "../services/database";
+import { posts as postsApi, users as usersApi } from "../services/database";
 
 const LISTING_TYPES = [
   { id: "rent", label: "Rent" },
@@ -437,6 +437,16 @@ export default function AddPost({ navigation }) {
     try {
       setLoading(true);
 
+      // Check posting limit before creating post
+      const currentUser = await usersApi.getById(user?.id);
+      if (!currentUser || currentUser.post_limit <= 0) {
+        Alert.alert(
+          "Posting Limit Reached",
+          "You've reached your posting limit. Please make a payment to add more posts."
+        );
+        return;
+      }
+
       const postData = {
         title: title.trim(),
         description: description.trim(),
@@ -453,17 +463,20 @@ export default function AddPost({ navigation }) {
           user?.user_metadata?.avatar_url || "https://via.placeholder.com/40",
       };
 
-      const createdPost = await postsApi.create(user?.id || "guest", postData);
+      const createdPost = await postsApi.create(user?.id, postData);
 
       if (createdPost?.error) {
         Alert.alert("Error", createdPost.error);
         return;
       }
 
+      // Decrement posting limit after successful post creation
+      await usersApi.decrementPostLimit(user?.id);
+
       navigation.navigate("Payment", { post: createdPost });
     } catch (error) {
       console.error("Error creating post:", error);
-      Alert.alert("Error", "Failed to create post. Please try again.");
+      Alert.alert("Error", error.message || "Failed to create post. Please try again.");
     } finally {
       setLoading(false);
     }
