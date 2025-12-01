@@ -429,8 +429,8 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (images.length === 0) {
-      Alert.alert("Error", "Please add at least one image");
+    if (images.length < 2) {
+      Alert.alert("Error", "Please add at least 2 images");
       return;
     }
 
