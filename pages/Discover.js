@@ -403,13 +403,15 @@ export default function Discover({ navigation }) {
           left: 0,
           right: 0,
           zIndex: 9,
-          backgroundColor: theme.background,
           paddingVertical: Spacing.sm,
+          overflow: "hidden",
         },
         stickySearchAnimatedStyle,
       ]}
     >
-      <SearchBar />
+      <BlurView intensity={80} style={{ paddingVertical: Spacing.sm }}>
+        <SearchBar />
+      </BlurView>
     </Animated.View>
   );
 

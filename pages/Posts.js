@@ -29,6 +29,7 @@ export default function Posts({ navigation }) {
   const [myPosts, setMyPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
     loadMyPosts();
@@ -96,41 +97,14 @@ export default function Posts({ navigation }) {
 
   return (
     <ThemedView style={layoutStyles.container}>
-      <View
-        style={[
-          spacingStyles.pxLg,
-          spacingStyles.ptMd,
-          {
-            paddingTop: insets.top + Spacing.lg,
-            borderBottomWidth: 1,
-            borderBottomColor: theme.border,
-          },
-        ]}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: Spacing.lg,
-          }}
-        >
-          <ThemedText type="h2">My Listings</ThemedText>
-          <Pressable
-            onPress={() => navigation.navigate("AddPost")}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: theme.primary + "20",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Feather name="plus" size={20} color={theme.primary} />
-          </Pressable>
-        </View>
-      </View>
+      <StickyHeader
+        title="My Listings"
+        theme={theme}
+        scrollY={scrollY}
+        insets={insets}
+        actionIcon="plus"
+        onAction={() => navigation.navigate("AddPost")}
+      />
 
       {loading ? (
         <View
@@ -145,11 +119,13 @@ export default function Posts({ navigation }) {
         <EmptyState />
       ) : (
         <FlatList
+          onScroll={(e) => setScrollY(e.nativeEvent.contentOffset.y)}
+          scrollEventThrottle={16}
           data={myPosts}
           contentContainerStyle={{
             paddingHorizontal: Spacing.lg,
             paddingVertical: Spacing.lg,
-            paddingBottom: insets.bottom + Spacing.xl,
+            paddingBottom: insets.bottom + Spacing.xl + (Spacing.tabBarHeight || 80),
           }}
           renderItem={({ item }) => (
             <View style={{ marginBottom: Spacing.lg }}>
