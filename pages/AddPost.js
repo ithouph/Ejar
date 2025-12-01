@@ -142,7 +142,7 @@ function SelectButton({ label, selected, onPress, theme }) {
   );
 }
 
-function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
+function LocationAutocomplete({ label, value, onChangeText, onSelect, cities, theme }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredLocations, setFilteredLocations] = useState([]);
 
@@ -150,8 +150,8 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
     onChangeText(text);
 
     if (text.trim().length > 0) {
-      const filtered = LOCATIONS.filter((location) =>
-        location.toLowerCase().includes(text.toLowerCase()),
+      const filtered = cities.filter((city) =>
+        city.name_en.toLowerCase().includes(text.toLowerCase()),
       );
       setFilteredLocations(filtered);
       setShowDropdown(true);
@@ -161,8 +161,8 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
     }
   };
 
-  const handleSelect = (location) => {
-    onSelect(location);
+  const handleSelect = (city) => {
+    onSelect(city);
     setShowDropdown(false);
     setFilteredLocations([]);
   };
@@ -178,7 +178,7 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
       <TextInput
         value={value}
         onChangeText={handleTextChange}
-        placeholder="Search for a location..."
+        placeholder="Search for a city..."
         placeholderTextColor={theme.textSecondary}
         style={[
           styles.input,
@@ -204,17 +204,17 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
             nestedScrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           >
-            {filteredLocations.map((location, index) => (
+            {filteredLocations.map((city, index) => (
               <Pressable
-                key={index}
-                onPress={() => handleSelect(location)}
+                key={city.id}
+                onPress={() => handleSelect(city)}
                 style={[
                   styles.dropdownItem,
                   { borderBottomColor: theme.border },
                 ]}
               >
                 <ThemedText type="body" style={{ color: theme.textPrimary }}>
-                  {location}
+                  {city.name_en}
                 </ThemedText>
               </Pressable>
             ))}
@@ -262,9 +262,27 @@ export default function AddPost({ navigation }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [location, setLocation] = useState("");
+  const [cityId, setCityId] = useState("");
+  const [cityName, setCityName] = useState("");
+  const [cities, setCities] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Load cities on component mount
+  useEffect(() => {
+    loadCities();
+  }, []);
+
+  async function loadCities() {
+    try {
+      const { cities: citiesApi } = await import("../services/database");
+      const citiesList = await citiesApi.getAll();
+      setCities(citiesList);
+      console.log(`✅ Loaded ${citiesList.length} cities`);
+    } catch (error) {
+      console.error("Error loading cities:", error);
+    }
+  }
 
   const [batteryHealth, setBatteryHealth] = useState("");
   const [storage, setStorage] = useState("");
@@ -438,8 +456,8 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (!location.trim()) {
-      Alert.alert("Error", "Please enter a location");
+    if (!cityId) {
+      Alert.alert("Error", "Please select a city");
       return;
     }
 
@@ -473,7 +491,7 @@ export default function AddPost({ navigation }) {
       console.log("📝 Creating post with userId:", user?.id);
       console.log("📝 Category:", category);
       console.log("📝 Title:", title);
-      console.log("📝 Location:", location);
+      console.log("📝 City ID:", cityId);
       console.log("📝 User post_limit:", user.post_limit);
 
       // Collect all post data with user_id
@@ -482,7 +500,7 @@ export default function AddPost({ navigation }) {
         title: title.trim(),
         description: description.trim(),
         price: parseFloat(price),
-        location: location.trim(),
+        city_id: cityId, // Use city_id instead of location
         images,
         category, // Include category
         listingType,

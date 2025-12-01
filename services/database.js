@@ -204,6 +204,58 @@ export const users = {
 // 3. POSTS (Using Supabase)
 // ════════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════════
+// CITIES - Get all cities from database
+// ════════════════════════════════════════════════════════════════════
+
+export const cities = {
+  async getAll() {
+    try {
+      const { data, error } = await supabase
+        .from("cities")
+        .select("id, name_en, name_ar");
+
+      if (error) throw error;
+      console.log(`✅ Loaded ${data?.length || 0} cities`);
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+      return [];
+    }
+  },
+
+  async getById(cityId) {
+    try {
+      const { data, error } = await supabase
+        .from("cities")
+        .select("id, name_en, name_ar")
+        .eq("id", cityId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching city:", error);
+      return null;
+    }
+  },
+
+  async searchByName(searchText) {
+    try {
+      const { data, error } = await supabase
+        .from("cities")
+        .select("id, name_en, name_ar")
+        .or(`name_en.ilike.%${searchText}%,name_ar.ilike.%${searchText}%`);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Error searching cities:", error);
+      return [];
+    }
+  },
+};
+
 export const posts = {
   // Get all approved posts (for clients/feed)
   async getAllApproved(limit = 50, offset = 0) {
@@ -359,7 +411,7 @@ export const posts = {
         description: postData.description,
         price: postData.price,
         listing_type: postData.listingType || "sell",
-        location: postData.location, // Include location
+        city_id: postData.city_id, // Use city_id instead of location
         images: [],
         specifications: postData.specifications || {},
         is_approved: true,
