@@ -17,44 +17,15 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../contexts/AuthContext";
 import { useScreenInsets } from "../hooks/useScreenInsets";
 import { Spacing, BorderRadius } from "../theme/global";
-import { posts as postsApi, users as usersApi } from "../services/database";
-
-const LISTING_TYPES = [
-  { id: "rent", label: "Rent" },
-  { id: "sell", label: "Sell" },
-];
+import { posts as postsApi } from "../services/database";
 
 const CATEGORIES = [
   { id: "phones", label: "Phones", icon: "smartphone" },
-  { id: "laptops", label: "Laptops", icon: "monitor" },
   { id: "electronics", label: "Electronics", icon: "zap" },
-  { id: "cars", label: "Cars", icon: "truck" },
   { id: "property", label: "Property", icon: "home" },
+  { id: "cars", label: "Cars", icon: "truck" },
+  { id: "others", label: "Others", icon: "box" },
 ];
-
-const PROPERTY_TYPES = [
-  { id: "apartment", label: "Apartment" },
-  { id: "house", label: "House" },
-  { id: "villa", label: "Villa" },
-  { id: "land", label: "Land" },
-];
-
-const AMENITIES = [
-  { id: "wifi", label: "Wi-Fi", icon: "wifi" },
-  { id: "parking", label: "Parking", icon: "truck" },
-  { id: "ac", label: "Air Conditioning", icon: "wind" },
-  { id: "kitchen", label: "Kitchen", icon: "coffee" },
-];
-
-const NEARBY_AMENITIES = [
-  { id: "mosque", label: "Mosque", icon: "map-pin" },
-  { id: "laundry", label: "Laundry", icon: "refresh-cw" },
-  { id: "gym", label: "Gym", icon: "activity" },
-];
-
-const CONDITION_OPTIONS = ["Excellent", "Good", "Fair", "Poor"];
-const FUEL_TYPES = ["Petrol", "Diesel", "Electric", "Hybrid"];
-const GEAR_TYPES = ["Automatic", "Manual"];
 
 const LOCATIONS = [
   "Adel Bagrou",
@@ -257,7 +228,6 @@ export default function AddPost({ navigation }) {
   const { user } = useAuth();
   const insets = useScreenInsets();
 
-  const [listingType, setListingType] = useState("rent");
   const [category, setCategory] = useState("phones");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -265,40 +235,6 @@ export default function AddPost({ navigation }) {
   const [location, setLocation] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [batteryHealth, setBatteryHealth] = useState("");
-  const [storage, setStorage] = useState("");
-  const [condition, setCondition] = useState("Good");
-  const [model, setModel] = useState("");
-  const [color, setColor] = useState("");
-
-  const [processor, setProcessor] = useState("");
-  const [ram, setRam] = useState("");
-
-  const [brand, setBrand] = useState("");
-  const [warranty, setWarranty] = useState("");
-
-  const [make, setMake] = useState("");
-  const [year, setYear] = useState("");
-  const [mileage, setMileage] = useState("");
-  const [gearType, setGearType] = useState("Automatic");
-  const [fuelType, setFuelType] = useState("Petrol");
-
-  const [bedrooms, setBedrooms] = useState("");
-  const [bathrooms, setBathrooms] = useState("");
-  const [sizeSqft, setSizeSqft] = useState("");
-  const [propertyType, setPropertyType] = useState("apartment");
-  const [selectedAmenities, setSelectedAmenities] = useState([]);
-  const [selectedNearbyAmenities, setSelectedNearbyAmenities] = useState([]);
-  const [landSize, setLandSize] = useState("");
-  const [monthlyRent, setMonthlyRent] = useState("");
-  const [deposit, setDeposit] = useState("");
-  const [minContract, setMinContract] = useState("");
-  const [furnished, setFurnished] = useState("No");
-  const [salePrice, setSalePrice] = useState("");
-  const [ownershipType, setOwnershipType] = useState("");
-  const [propertyAge, setPropertyAge] = useState("");
-  const [paymentOptions, setPaymentOptions] = useState("");
 
   async function handlePickImages() {
     try {
