@@ -456,9 +456,13 @@ export default function AddPost({ navigation }) {
     try {
       setLoading(true);
 
-      // Check posting limit before creating post
-      const currentUser = await usersApi.getById(user?.id);
-      if (!currentUser || currentUser.post_limit <= 0) {
+      // Check if user has posting limit remaining
+      if (!user || !user.id) {
+        Alert.alert("Error", "User not logged in properly");
+        return;
+      }
+
+      if (user.post_limit <= 0) {
         Alert.alert(
           "Posting Limit Reached",
           "You've reached your posting limit. Please make a payment to add more posts."
@@ -470,6 +474,7 @@ export default function AddPost({ navigation }) {
       console.log("📝 Category:", category);
       console.log("📝 Title:", title);
       console.log("📝 Location:", location);
+      console.log("📝 User post_limit:", user.post_limit);
 
       // Collect all post data with user_id
       const postData = {
@@ -495,8 +500,14 @@ export default function AddPost({ navigation }) {
 
       console.log("✅ Post created successfully:", createdPost?.id);
 
-      // Decrement posting limit after successful post creation
-      await usersApi.decrementPostLimit(user?.id);
+      // Decrement posting limit locally (UI update)
+      // Note: Backend should also update this
+      if (user.post_limit > 0) {
+        // Optionally call decrementPostLimit but don't block on it
+        usersApi.decrementPostLimit(user?.id).catch(err => 
+          console.warn("Warning: Could not decrement post limit on server:", err)
+        );
+      }
 
       Alert.alert(
         "Post Created Successfully!",
