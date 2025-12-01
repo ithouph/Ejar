@@ -6,6 +6,12 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  interpolate,
+  withTiming,
+} from "react-native-reanimated";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "../components/ThemedText";
@@ -62,6 +68,10 @@ export default function Discover({ navigation }) {
   const [scrollY, setScrollY] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef(null);
+
+  // Animated values for search overlay
+  const searchContentOpacity = useSharedValue(0);
+  const mainContentOpacity = useSharedValue(1);
 
   useEffect(() => {
     loadData();
