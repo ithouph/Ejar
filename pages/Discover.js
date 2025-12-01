@@ -385,12 +385,14 @@ export default function Discover({ navigation }) {
         headerAnimatedStyle,
       ]}
     >
-      <SearchBar />
-      <CategoryTabs
-        categories={CATEGORIES}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
+      <BlurView intensity={80}>
+        <SearchBar />
+        <CategoryTabs
+          categories={CATEGORIES}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+      </BlurView>
     </Animated.View>
   );
 
