@@ -306,7 +306,8 @@ export default function AddPost({ navigation }) {
       if (selectedImages.length > 0) {
         // Extract URIs from the image objects
         const imageUris = selectedImages.map(img => img.uri);
-        setImages(imageUris);
+        // APPEND new images instead of replacing
+        setImages(prev => [...prev, ...imageUris].slice(0, 5));
       }
     } catch (error) {
       console.error("Error picking image:", error);
