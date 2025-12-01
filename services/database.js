@@ -278,11 +278,12 @@ export const posts = {
   // Create post
   async create(userId, postData) {
     try {
-      // Create post with is_approved = false (hidden until payment)
+      // Auto-approve posts so they go live immediately
       const postWithDefaults = {
         ...postData,
         user_id: userId,
-        is_approved: false,
+        is_approved: true,
+        created_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
@@ -291,7 +292,7 @@ export const posts = {
         .select();
 
       if (error) throw error;
-      console.log(`✅ Post created (pending payment): ${data?.[0]?.id}`);
+      console.log(`✅ Post created and approved: ${data?.[0]?.id}`);
       return data?.[0] || null;
     } catch (error) {
       console.error("Error creating post:", error);
