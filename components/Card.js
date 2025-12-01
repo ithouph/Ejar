@@ -88,7 +88,7 @@ export function HotelCard({
       
       {imageError && (
         <View style={[styles.loadingOverlay, { backgroundColor: theme.background }]}>
-          <Feather name="image-off" size={48} color={theme.textSecondary} />
+          <Feather name="image" size={48} color={theme.textSecondary} />
         </View>
       )}
       
