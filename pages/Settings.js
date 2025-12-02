@@ -128,8 +128,12 @@ export default function Settings({ navigation }) {
             try {
               console.log("\n🔴 LOGOUT INITIATED FROM SETTINGS PAGE");
               await signOut();
-              // Logout is complete - AuthGate will automatically show Welcome page
-              console.log("✅ LOGOUT COMPLETE - App will now show Welcome page");
+              console.log("✅ LOGOUT COMPLETE - Redirecting to Welcome page...");
+              // Explicitly navigate to Welcome page after logout
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Welcome" }],
+              });
             } catch (error) {
               console.error("❌ Logout failed:", error);
               Alert.alert("Error", "Failed to log out. Please try again.");
