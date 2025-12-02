@@ -19,11 +19,6 @@ import { useScreenInsets } from "../hooks/useScreenInsets";
 import { Spacing, BorderRadius } from "../theme/global";
 import { posts as postsApi, users as usersApi, cities as citiesApi, categories as categoriesApi } from "../services/database";
 
-const LISTING_TYPES = [
-  { id: "rent", label: "Rent" },
-  { id: "sell", label: "Sell" },
-];
-
 // Category icons mapping
 const CATEGORY_ICONS = {
   Phones: "smartphone",
@@ -33,59 +28,6 @@ const CATEGORY_ICONS = {
   Property: "home",
   Others: "box",
 };
-
-const PROPERTY_TYPES = [
-  { id: "apartment", label: "Apartment" },
-  { id: "house", label: "House" },
-  { id: "villa", label: "Villa" },
-  { id: "land", label: "Land" },
-];
-
-const AMENITIES = [
-  { id: "wifi", label: "Wi-Fi", icon: "wifi" },
-  { id: "parking", label: "Parking", icon: "truck" },
-  { id: "ac", label: "Air Conditioning", icon: "wind" },
-  { id: "kitchen", label: "Kitchen", icon: "coffee" },
-];
-
-const NEARBY_AMENITIES = [
-  { id: "mosque", label: "Mosque", icon: "map-pin" },
-  { id: "laundry", label: "Laundry", icon: "refresh-cw" },
-  { id: "gym", label: "Gym", icon: "activity" },
-];
-
-const CONDITION_OPTIONS = ["Excellent", "Good", "Fair", "Poor"];
-const FUEL_TYPES = ["Petrol", "Diesel", "Electric", "Hybrid"];
-const GEAR_TYPES = ["Automatic", "Manual"];
-
-const LOCATIONS = [
-  "Adel Bagrou",
-  "Akjoujt",
-  "Aleg",
-  "Atar",
-  "Ayoun el Atrous (Aiún el Atrus)",
-  "Bassikounou",
-  "Bir Moghrein",
-  "Bogué",
-  "Bou Mdeid",
-  "Boutilimit",
-  "Chinguetti",
-  "Fdérik",
-  "Guerou",
-  "Kaédi",
-  "Kiffa",
-  "M'bout",
-  "Néma",
-  "Nouadhibou (Port-Étienne)",
-  "Nouakchott (Capital city)",
-  "Ouadane",
-  "Oualata",
-  "Rosso",
-  "Sélibaby",
-  "Tidjikdja",
-  "Timbédra",
-  "Zouerat",
-];
 
 function InputField({
   label,
@@ -262,6 +204,13 @@ export default function AddPost({ navigation }) {
   const [listingType, setListingType] = useState("rent");
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState([]);
+  const [listingTypes, setListingTypes] = useState([]);
+  const [propertyTypes, setPropertyTypes] = useState([]);
+  const [amenities, setAmenities] = useState([]);
+  const [nearbyAmenities, setNearbyAmenities] = useState([]);
+  const [conditionOptions, setConditionOptions] = useState([]);
+  const [fuelTypes, setFuelTypes] = useState([]);
+  const [gearTypes, setGearTypes] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -271,11 +220,19 @@ export default function AddPost({ navigation }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load cities and categories on component mount
+  // Load cities, categories, and options on component mount
   useEffect(() => {
     loadCities();
     loadCategories();
+    loadOptions();
   }, []);
+
+  // Update options when category changes
+  useEffect(() => {
+    if (categoryId && categories.length > 0) {
+      updateOptionsForCategory();
+    }
+  }, [categoryId, categories]);
 
   async function loadCities() {
     try {
@@ -372,6 +329,38 @@ export default function AddPost({ navigation }) {
         ? prev.filter((id) => id !== amenityId)
         : [...prev, amenityId],
     );
+  }
+
+  async function loadOptions() {
+    try {
+      const [cond, fuel, gear, nearby] = await Promise.all([
+        categoriesApi.getConditionOptions(),
+        categoriesApi.getFuelTypes(),
+        categoriesApi.getGearTypes(),
+        categoriesApi.getNearbyAmenities(),
+      ]);
+      setConditionOptions(cond);
+      setFuelTypes(fuel);
+      setGearTypes(gear);
+      setNearbyAmenities(nearby);
+    } catch (error) {
+      console.error("Error loading options:", error);
+    }
+  }
+
+  async function updateOptionsForCategory() {
+    try {
+      const [listing, property, amenity] = await Promise.all([
+        categoriesApi.getListingTypes(categoryId, categories),
+        categoriesApi.getPropertyTypes(categories),
+        categoriesApi.getAmenities(categories),
+      ]);
+      setListingTypes(listing);
+      setPropertyTypes(property);
+      setAmenities(amenity);
+    } catch (error) {
+      console.error("Error updating category options:", error);
+    }
   }
 
   function getCategorySpecifications() {
@@ -1127,22 +1116,24 @@ export default function AddPost({ navigation }) {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-            Listing Type
-          </ThemedText>
-          <View style={styles.optionsRow}>
-            {LISTING_TYPES.map((type) => (
-              <SelectButton
-                key={type.id}
-                label={type.label}
-                selected={listingType === type.id}
-                onPress={() => setListingType(type.id)}
-                theme={theme}
-              />
-            ))}
+        {listingTypes.length > 0 && (
+          <View style={styles.section}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Listing Type
+            </ThemedText>
+            <View style={styles.optionsRow}>
+              {listingTypes.map((type) => (
+                <SelectButton
+                  key={type.id}
+                  label={type.label}
+                  selected={listingType === type.id}
+                  onPress={() => setListingType(type.id)}
+                  theme={theme}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>

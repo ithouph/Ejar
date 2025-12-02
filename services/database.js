@@ -320,6 +320,88 @@ export const categories = {
       return null;
     }
   },
+
+  // Get listing types for a specific category
+  async getListingTypes(categoryId, allCategories) {
+    try {
+      const category = allCategories?.find(c => c.id === categoryId);
+      if (category?.listing_types) {
+        return category.listing_types.map(id => ({
+          id,
+          label: id === 'rent' ? 'Rent' : id === 'sell' ? 'Sell' : id,
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting listing types:", error);
+      return [];
+    }
+  },
+
+  // Get property types from property category
+  async getPropertyTypes(allCategories) {
+    try {
+      const propertyCategory = allCategories?.find(c => c.name?.toLowerCase() === 'property');
+      if (propertyCategory?.property_types) {
+        return propertyCategory.property_types.map(id => ({
+          id,
+          label: id.charAt(0).toUpperCase() + id.slice(1),
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting property types:", error);
+      return [];
+    }
+  },
+
+  // Get amenities from property category
+  async getAmenities(allCategories) {
+    try {
+      const propertyCategory = allCategories?.find(c => c.name?.toLowerCase() === 'property');
+      if (propertyCategory?.amenities) {
+        const iconMap = {
+          wifi: 'wifi',
+          parking: 'truck',
+          ac: 'wind',
+          kitchen: 'coffee',
+        };
+        return propertyCategory.amenities.map(id => ({
+          id,
+          label: id.charAt(0).toUpperCase() + id.slice(1),
+          icon: iconMap[id] || 'check',
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error getting amenities:", error);
+      return [];
+    }
+  },
+
+  // Get nearby amenities
+  async getNearbyAmenities() {
+    return [
+      { id: 'mosque', label: 'Mosque', icon: 'map-pin' },
+      { id: 'laundry', label: 'Laundry', icon: 'refresh-cw' },
+      { id: 'gym', label: 'Gym', icon: 'activity' },
+    ];
+  },
+
+  // Get condition options
+  async getConditionOptions() {
+    return ['Excellent', 'Good', 'Fair', 'Poor'];
+  },
+
+  // Get fuel types
+  async getFuelTypes() {
+    return ['Petrol', 'Diesel', 'Electric', 'Hybrid'];
+  },
+
+  // Get gear types
+  async getGearTypes() {
+    return ['Automatic', 'Manual'];
+  },
 };
 
 export const posts = {
