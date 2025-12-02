@@ -1129,27 +1129,22 @@ export default function AddPost({ navigation }) {
           </View>
         </View>
 
-        {/* Listing Type Selector - Dynamic based on category */}
-        {categoryId && categories.find(c => c.id === categoryId)?.listing_types?.length > 0 && (
-          <View style={styles.section}>
-            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-              Listing Type
-            </ThemedText>
-            <View style={styles.optionsRow}>
-              {LISTING_TYPES.filter(type => 
-                categories.find(c => c.id === categoryId)?.listing_types?.includes(type.id)
-              ).map((type) => (
-                <SelectButton
-                  key={type.id}
-                  label={type.label}
-                  selected={listingType === type.id}
-                  onPress={() => setListingType(type.id)}
-                  theme={theme}
-                />
-              ))}
-            </View>
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Listing Type
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {LISTING_TYPES.map((type) => (
+              <SelectButton
+                key={type.id}
+                label={type.label}
+                selected={listingType === type.id}
+                onPress={() => setListingType(type.id)}
+                theme={theme}
+              />
+            ))}
           </View>
-        )}
+        </View>
 
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>
