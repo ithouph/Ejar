@@ -1130,32 +1130,26 @@ export default function AddPost({ navigation }) {
         </View>
 
         {/* Listing Type Selector - Dynamic based on category */}
-        {categoryId && (() => {
-          const selectedCategory = categories.find(c => c.id === categoryId);
-          const availableListingTypes = selectedCategory?.listing_types || [];
-          
-          if (availableListingTypes.length > 0) {
-            return (
-              <View style={styles.section}>
-                <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                  Listing Type
-                </ThemedText>
-                <View style={styles.optionsRow}>
-                  {LISTING_TYPES.filter(type => availableListingTypes.includes(type.id)).map((type) => (
-                    <SelectButton
-                      key={type.id}
-                      label={type.label}
-                      selected={listingType === type.id}
-                      onPress={() => setListingType(type.id)}
-                      theme={theme}
-                    />
-                  ))}
-                </View>
-              </View>
-            );
-          }
-          return null;
-        })()}
+        {categoryId && categories.find(c => c.id === categoryId)?.listing_types?.length > 0 ? (
+          <View style={styles.section}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Listing Type
+            </ThemedText>
+            <View style={styles.optionsRow}>
+              {LISTING_TYPES.filter(type => 
+                categories.find(c => c.id === categoryId)?.listing_types?.includes(type.id)
+              ).map((type) => (
+                <SelectButton
+                  key={type.id}
+                  label={type.label}
+                  selected={listingType === type.id}
+                  onPress={() => setListingType(type.id)}
+                  theme={theme}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>
