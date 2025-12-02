@@ -124,9 +124,12 @@ export function AuthProvider({ children }) {
       
       // Step 2: Clear local storage
       console.log("🗑️  Deleting saved session from AsyncStorage...");
+      const uuidToRemove = sessionData?.id || "unknown";
       console.log("📍 Running: AsyncStorage.removeItem('ejar_user_session')");
+      console.log(`🔑 UUID Being Removed: ${uuidToRemove}`);
       await AsyncStorage.removeItem("ejar_user_session");
-      console.log("✅ AsyncStorage.removeItem('ejar_user_session') - COMPLETED\n");
+      console.log(`✅ AsyncStorage.removeItem('ejar_user_session') - COMPLETED`);
+      console.log(`✅ UUID Session Deleted: ${uuidToRemove}\n`);
       
       // Step 3: Clear app state
       console.log("🧹 Clearing app state...");
