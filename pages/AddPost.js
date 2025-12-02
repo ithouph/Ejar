@@ -587,7 +587,10 @@ export default function AddPost({ navigation }) {
   }
 
   function renderCategoryFields() {
-    switch (category) {
+    const selectedCategory = categories.find(c => c.id === categoryId);
+    const categoryName = selectedCategory?.name?.toLowerCase() || "";
+    
+    switch (categoryName) {
       case "phones":
         return (
           <>
