@@ -116,8 +116,9 @@ export function AuthProvider({ children }) {
       
       // Step 2: Clear local storage
       console.log("🗑️  Deleting saved session from AsyncStorage...");
+      console.log("📍 Running: AsyncStorage.removeItem('ejar_user_session')");
       await AsyncStorage.removeItem("ejar_user_session");
-      console.log("✅ Session deleted from AsyncStorage\n");
+      console.log("✅ AsyncStorage.removeItem('ejar_user_session') - COMPLETED\n");
       
       // Step 3: Clear app state
       console.log("🧹 Clearing app state...");
