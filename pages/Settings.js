@@ -113,7 +113,7 @@ export default function Settings({ navigation }) {
   const handleLogout = () => {
     Alert.alert(
       "Log Out",
-      "Are you sure you want to log out? Check the console to see session details.",
+      "Are you sure you want to log out?",
       [
         {
           text: "Cancel",
@@ -126,16 +126,10 @@ export default function Settings({ navigation }) {
           text: "Log Out",
           onPress: async () => {
             try {
-              console.log("📱 User confirmed logout");
+              console.log("\n🔴 LOGOUT INITIATED FROM SETTINGS PAGE");
               await signOut();
-              Alert.alert("Logged Out Successfully", "Your session has been deleted. Please log in again.", [
-                {
-                  text: "OK",
-                  onPress: () => {
-                    console.log("✅ User acknowledged logout message - app will redirect to login");
-                  }
-                }
-              ]);
+              // Logout is complete - AuthGate will automatically show Welcome page
+              console.log("✅ LOGOUT COMPLETE - App will now show Welcome page");
             } catch (error) {
               console.error("❌ Logout failed:", error);
               Alert.alert("Error", "Failed to log out. Please try again.");
