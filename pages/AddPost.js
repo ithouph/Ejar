@@ -201,6 +201,7 @@ export default function AddPost({ navigation }) {
   const { user } = useAuth();
   const insets = useScreenInsets();
 
+  // All state declarations must be at the top before any effects
   const [listingType, setListingType] = useState("rent");
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState([]);
@@ -219,6 +220,37 @@ export default function AddPost({ navigation }) {
   const [cities, setCities] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Category-specific state
+  const [batteryHealth, setBatteryHealth] = useState("");
+  const [storage, setStorage] = useState("");
+  const [condition, setCondition] = useState("Good");
+  const [model, setModel] = useState("");
+  const [color, setColor] = useState("");
+  const [processor, setProcessor] = useState("");
+  const [ram, setRam] = useState("");
+  const [brand, setBrand] = useState("");
+  const [warranty, setWarranty] = useState("");
+  const [make, setMake] = useState("");
+  const [year, setYear] = useState("");
+  const [mileage, setMileage] = useState("");
+  const [gearType, setGearType] = useState("Automatic");
+  const [fuelType, setFuelType] = useState("Petrol");
+  const [bedrooms, setBedrooms] = useState("");
+  const [bathrooms, setBathrooms] = useState("");
+  const [sizeSqft, setSizeSqft] = useState("");
+  const [propertyType, setPropertyType] = useState("apartment");
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [selectedNearbyAmenities, setSelectedNearbyAmenities] = useState([]);
+  const [landSize, setLandSize] = useState("");
+  const [monthlyRent, setMonthlyRent] = useState("");
+  const [deposit, setDeposit] = useState("");
+  const [minContract, setMinContract] = useState("");
+  const [furnished, setFurnished] = useState("No");
+  const [salePrice, setSalePrice] = useState("");
+  const [ownershipType, setOwnershipType] = useState("");
+  const [propertyAge, setPropertyAge] = useState("");
+  const [paymentOptions, setPaymentOptions] = useState("");
 
   // Load cities, categories, and options on component mount
   useEffect(() => {
@@ -264,40 +296,6 @@ export default function AddPost({ navigation }) {
       console.error("Error loading categories:", error);
     }
   }
-
-  const [batteryHealth, setBatteryHealth] = useState("");
-  const [storage, setStorage] = useState("");
-  const [condition, setCondition] = useState("Good");
-  const [model, setModel] = useState("");
-  const [color, setColor] = useState("");
-
-  const [processor, setProcessor] = useState("");
-  const [ram, setRam] = useState("");
-
-  const [brand, setBrand] = useState("");
-  const [warranty, setWarranty] = useState("");
-
-  const [make, setMake] = useState("");
-  const [year, setYear] = useState("");
-  const [mileage, setMileage] = useState("");
-  const [gearType, setGearType] = useState("Automatic");
-  const [fuelType, setFuelType] = useState("Petrol");
-
-  const [bedrooms, setBedrooms] = useState("");
-  const [bathrooms, setBathrooms] = useState("");
-  const [sizeSqft, setSizeSqft] = useState("");
-  const [propertyType, setPropertyType] = useState("apartment");
-  const [selectedAmenities, setSelectedAmenities] = useState([]);
-  const [selectedNearbyAmenities, setSelectedNearbyAmenities] = useState([]);
-  const [landSize, setLandSize] = useState("");
-  const [monthlyRent, setMonthlyRent] = useState("");
-  const [deposit, setDeposit] = useState("");
-  const [minContract, setMinContract] = useState("");
-  const [furnished, setFurnished] = useState("No");
-  const [salePrice, setSalePrice] = useState("");
-  const [ownershipType, setOwnershipType] = useState("");
-  const [propertyAge, setPropertyAge] = useState("");
-  const [paymentOptions, setPaymentOptions] = useState("");
 
   async function handlePickImages() {
     try {
