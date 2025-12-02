@@ -582,8 +582,6 @@ export default function AddPost({ navigation }) {
   }
 
   function renderCategoryFields() {
-    const { theme } = useTheme();
-
     switch (category) {
       case "phones":
         return (
