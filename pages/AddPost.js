@@ -222,14 +222,21 @@ export default function AddPost({ navigation }) {
 
   // Load cities, categories, and options on component mount
   useEffect(() => {
-    loadCities();
-    loadCategories();
-    loadOptions();
+    const initializeData = async () => {
+      try {
+        await loadCities();
+        await loadCategories();
+        await loadOptions();
+      } catch (error) {
+        console.error("Error initializing data:", error);
+      }
+    };
+    initializeData();
   }, []);
 
   // Update options when category changes
   useEffect(() => {
-    if (categoryId && categories.length > 0) {
+    if (categoryId && categories && categories.length > 0) {
       updateOptionsForCategory();
     }
   }, [categoryId, categories]);
@@ -333,33 +340,44 @@ export default function AddPost({ navigation }) {
 
   async function loadOptions() {
     try {
-      const [cond, fuel, gear, nearby] = await Promise.all([
-        categoriesApi.getConditionOptions(),
-        categoriesApi.getFuelTypes(),
-        categoriesApi.getGearTypes(),
-        categoriesApi.getNearbyAmenities(),
-      ]);
-      setConditionOptions(cond);
-      setFuelTypes(fuel);
-      setGearTypes(gear);
-      setNearbyAmenities(nearby);
+      const cond = await categoriesApi.getConditionOptions();
+      const fuel = await categoriesApi.getFuelTypes();
+      const gear = await categoriesApi.getGearTypes();
+      const nearby = await categoriesApi.getNearbyAmenities();
+      
+      setConditionOptions(cond || []);
+      setFuelTypes(fuel || []);
+      setGearTypes(gear || []);
+      setNearbyAmenities(nearby || []);
     } catch (error) {
       console.error("Error loading options:", error);
+      setConditionOptions(['Excellent', 'Good', 'Fair', 'Poor']);
+      setFuelTypes(['Petrol', 'Diesel', 'Electric', 'Hybrid']);
+      setGearTypes(['Automatic', 'Manual']);
+      setNearbyAmenities([
+        { id: 'mosque', label: 'Mosque', icon: 'map-pin' },
+        { id: 'laundry', label: 'Laundry', icon: 'refresh-cw' },
+        { id: 'gym', label: 'Gym', icon: 'activity' },
+      ]);
     }
   }
 
   async function updateOptionsForCategory() {
+    if (!categoryId || !categories || categories.length === 0) return;
+    
     try {
-      const [listing, property, amenity] = await Promise.all([
-        categoriesApi.getListingTypes(categoryId, categories),
-        categoriesApi.getPropertyTypes(categories),
-        categoriesApi.getAmenities(categories),
-      ]);
-      setListingTypes(listing);
-      setPropertyTypes(property);
-      setAmenities(amenity);
+      const listing = await categoriesApi.getListingTypes(categoryId, categories);
+      const property = await categoriesApi.getPropertyTypes(categories);
+      const amenity = await categoriesApi.getAmenities(categories);
+      
+      setListingTypes(listing || []);
+      setPropertyTypes(property || []);
+      setAmenities(amenity || []);
     } catch (error) {
       console.error("Error updating category options:", error);
+      setListingTypes([]);
+      setPropertyTypes([]);
+      setAmenities([]);
     }
   }
 
