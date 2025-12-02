@@ -119,8 +119,20 @@ export function AuthProvider({ children }) {
       }
       
       console.log("\n🔄 Clearing backend session...");
-      await authService.signOut();
-      console.log("✅ Backend session cleared\n");
+      // Non-blocking Supabase signOut with timeout (doesn't block logout)
+      try {
+        const timeoutPromise = new Promise((resolve) => 
+          setTimeout(() => {
+            console.log("⚠️  Backend: Supabase signOut timeout (continuing without blocking)");
+            resolve(null);
+          }, 2000)
+        );
+        await Promise.race([authService.signOut(), timeoutPromise]);
+        console.log("✅ Backend session cleared\n");
+      } catch (backendError) {
+        console.warn("⚠️  Backend error (non-blocking):", backendError.message);
+        console.log("✅ Continuing logout without backend session (using local session only)\n");
+      }
       
       // Step 2: Clear local storage
       console.log("🗑️  Deleting saved session from AsyncStorage...");
