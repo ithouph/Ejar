@@ -615,7 +615,7 @@ export default function AddPost({ navigation }) {
                 Condition
               </ThemedText>
               <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map((opt) => (
+                {conditionOptions.map((opt) => (
                   <SelectButton
                     key={opt}
                     label={opt}
@@ -672,7 +672,7 @@ export default function AddPost({ navigation }) {
                 Condition
               </ThemedText>
               <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map((opt) => (
+                {conditionOptions.map((opt) => (
                   <SelectButton
                     key={opt}
                     label={opt}
@@ -715,7 +715,7 @@ export default function AddPost({ navigation }) {
                 Condition
               </ThemedText>
               <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map((opt) => (
+                {conditionOptions.map((opt) => (
                   <SelectButton
                     key={opt}
                     label={opt}
@@ -773,7 +773,7 @@ export default function AddPost({ navigation }) {
                 Fuel Type
               </ThemedText>
               <View style={styles.optionsRow}>
-                {FUEL_TYPES.map((fuel) => (
+                {fuelTypes.map((fuel) => (
                   <SelectButton
                     key={fuel}
                     label={fuel}
@@ -791,7 +791,7 @@ export default function AddPost({ navigation }) {
                 Gear Type
               </ThemedText>
               <View style={styles.optionsRow}>
-                {GEAR_TYPES.map((gear) => (
+                {gearTypes.map((gear) => (
                   <SelectButton
                     key={gear}
                     label={gear}
@@ -809,7 +809,7 @@ export default function AddPost({ navigation }) {
                 Condition
               </ThemedText>
               <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map((opt) => (
+                {conditionOptions.map((opt) => (
                   <SelectButton
                     key={opt}
                     label={opt}
@@ -838,7 +838,7 @@ export default function AddPost({ navigation }) {
                 Property Type
               </ThemedText>
               <View style={styles.optionsRow}>
-                {PROPERTY_TYPES.map((type) => (
+                {propertyTypes.map((type) => (
                   <SelectButton
                     key={type.id}
                     label={type.label}
@@ -894,7 +894,7 @@ export default function AddPost({ navigation }) {
                 Amenities
               </ThemedText>
               <View style={styles.amenitiesGrid}>
-                {AMENITIES.map((amenity) => (
+                {amenities.map((amenity) => (
                   <AmenityChip
                     key={amenity.id}
                     amenity={amenity}
@@ -918,7 +918,7 @@ export default function AddPost({ navigation }) {
                       Nearby
                     </ThemedText>
                     <View style={styles.amenitiesGrid}>
-                      {NEARBY_AMENITIES.map((amenity) => (
+                      {nearbyAmenities.map((amenity) => (
                         <AmenityChip
                           key={amenity.id}
                           amenity={amenity}
