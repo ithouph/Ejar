@@ -102,12 +102,20 @@ export function AuthProvider({ children }) {
       const currentSession = await AsyncStorage.getItem("ejar_user_session");
       if (currentSession) {
         const sessionData = JSON.parse(currentSession);
-        console.log("📋 Current Session (BEFORE DELETION):");
-        console.log("   User ID:", sessionData.id);
-        console.log("   Phone:", sessionData.phone_number);
-        console.log("   Member Status:", sessionData.is_member);
-        console.log("   Post Limit:", sessionData.post_limit);
-        console.log("   Created At:", sessionData.created_at);
+        console.log("📋 SESSION LOGGED - BEFORE DELETION:");
+        console.log("✅ Session Found in AsyncStorage:");
+        console.log({
+          user_id: sessionData.id,
+          phone_number: sessionData.phone_number,
+          whatsapp_phone: sessionData.whatsapp_phone,
+          is_member: sessionData.is_member,
+          post_limit: sessionData.post_limit,
+          posts_count: sessionData.posts_count,
+          created_at: sessionData.created_at,
+          updated_at: sessionData.updated_at
+        });
+      } else {
+        console.log("⚠️  No session found in AsyncStorage");
       }
       
       console.log("\n🔄 Clearing backend session...");
