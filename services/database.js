@@ -284,6 +284,44 @@ export const cities = {
   },
 };
 
+// ════════════════════════════════════════════════════════════════════
+// CATEGORIES - Get all categories with details from database
+// ════════════════════════════════════════════════════════════════════
+
+export const categories = {
+  async getAll() {
+    try {
+      const { data, error } = await supabase
+        .from("service_categories")
+        .select("id, name, listing_types, property_types, amenities")
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+      console.log(`✅ Loaded ${data?.length || 0} categories`);
+      return data || [];
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return [];
+    }
+  },
+
+  async getById(categoryId) {
+    try {
+      const { data, error } = await supabase
+        .from("service_categories")
+        .select("id, name, listing_types, property_types, amenities")
+        .eq("id", categoryId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      return null;
+    }
+  },
+};
+
 export const posts = {
   // Get all approved posts (for clients/feed)
   async getAllApproved(limit = 50, offset = 0) {

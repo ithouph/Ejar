@@ -17,20 +17,22 @@ import { useTheme } from "../hooks/useTheme";
 import { useAuth } from "../contexts/AuthContext";
 import { useScreenInsets } from "../hooks/useScreenInsets";
 import { Spacing, BorderRadius } from "../theme/global";
-import { posts as postsApi, users as usersApi, cities as citiesApi } from "../services/database";
+import { posts as postsApi, users as usersApi, cities as citiesApi, categories as categoriesApi } from "../services/database";
 
 const LISTING_TYPES = [
   { id: "rent", label: "Rent" },
   { id: "sell", label: "Sell" },
 ];
 
-const CATEGORIES = [
-  { id: "phones", label: "Phones", icon: "smartphone" },
-  { id: "laptops", label: "Laptops", icon: "monitor" },
-  { id: "electronics", label: "Electronics", icon: "zap" },
-  { id: "cars", label: "Cars", icon: "truck" },
-  { id: "property", label: "Property", icon: "home" },
-];
+// Category icons mapping
+const CATEGORY_ICONS = {
+  Phones: "smartphone",
+  Laptops: "monitor",
+  Electronics: "zap",
+  Cars: "truck",
+  Property: "home",
+  Others: "box",
+};
 
 const PROPERTY_TYPES = [
   { id: "apartment", label: "Apartment" },
@@ -258,7 +260,8 @@ export default function AddPost({ navigation }) {
   const insets = useScreenInsets();
 
   const [listingType, setListingType] = useState("rent");
-  const [category, setCategory] = useState("phones");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -268,9 +271,10 @@ export default function AddPost({ navigation }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load cities on component mount
+  // Load cities and categories on component mount
   useEffect(() => {
     loadCities();
+    loadCategories();
   }, []);
 
   async function loadCities() {
@@ -280,6 +284,20 @@ export default function AddPost({ navigation }) {
       console.log(`✅ Loaded ${citiesList.length} cities`);
     } catch (error) {
       console.error("Error loading cities:", error);
+    }
+  }
+
+  async function loadCategories() {
+    try {
+      const categoriesList = await categoriesApi.getAll();
+      setCategories(categoriesList);
+      if (categoriesList.length > 0) {
+        setCategoryId(categoriesList[0].id);
+        setListingType(categoriesList[0].listing_types?.[0] || "rent");
+      }
+      console.log(`✅ Loaded ${categoriesList.length} categories`);
+    } catch (error) {
+      console.error("Error loading categories:", error);
     }
   }
 
@@ -357,7 +375,10 @@ export default function AddPost({ navigation }) {
   }
 
   function getCategorySpecifications() {
-    switch (category) {
+    const selectedCategory = categories.find(c => c.id === categoryId);
+    const categoryName = selectedCategory?.name?.toLowerCase() || "";
+    
+    switch (categoryName) {
       case "phones":
         return {
           battery_health: batteryHealth,
@@ -440,7 +461,7 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (!category) {
+    if (!categoryId) {
       Alert.alert("Error", "Please select a category");
       return;
     }
@@ -488,10 +509,14 @@ export default function AddPost({ navigation }) {
       }
 
       console.log("📝 Creating post with userId:", user?.id);
-      console.log("📝 Category:", category);
+      console.log("📝 Category ID:", categoryId);
       console.log("📝 Title:", title);
       console.log("📝 City ID:", cityId);
       console.log("📝 User post_limit:", user.post_limit);
+
+      // Find the selected category to get its name
+      const selectedCategory = categories.find(c => c.id === categoryId);
+      const categoryName = selectedCategory?.name?.toLowerCase() || "others";
 
       // Collect all post data with user_id
       const postData = {
@@ -501,7 +526,7 @@ export default function AddPost({ navigation }) {
         price: parseFloat(price),
         city_id: cityId, // Use city_id instead of location
         images,
-        category, // Include category
+        category: categoryName, // Include category name for CATEGORY_MAP lookup
         listingType,
         specifications: getCategorySpecifications(),
       };
@@ -1081,37 +1106,40 @@ export default function AddPost({ navigation }) {
             Category
           </ThemedText>
           <View style={styles.typeGrid}>
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <Pressable
                 key={cat.id}
-                onPress={() => setCategory(cat.id)}
+                onPress={() => {
+                  setCategoryId(cat.id);
+                  setListingType(cat.listing_types?.[0] || "rent");
+                }}
                 style={[
                   styles.typeChip,
                   {
                     backgroundColor:
-                      category === cat.id
+                      categoryId === cat.id
                         ? theme.primary + "20"
                         : theme.surface,
                     borderColor:
-                      category === cat.id ? theme.primary : theme.border,
+                      categoryId === cat.id ? theme.primary : theme.border,
                   },
                 ]}
               >
                 <Feather
-                  name={cat.icon}
+                  name={CATEGORY_ICONS[cat.name] || "box"}
                   size={20}
                   color={
-                    category === cat.id ? theme.primary : theme.textSecondary
+                    categoryId === cat.id ? theme.primary : theme.textSecondary
                   }
                 />
                 <ThemedText
                   type="body"
                   style={{
                     color:
-                      category === cat.id ? theme.primary : theme.textSecondary,
+                      categoryId === cat.id ? theme.primary : theme.textSecondary,
                   }}
                 >
-                  {cat.label}
+                  {cat.name}
                 </ThemedText>
               </Pressable>
             ))}
