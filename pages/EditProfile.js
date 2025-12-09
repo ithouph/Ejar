@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Pressable, Image, TextInput } from 'react-native';
+import { View, Pressable, Image, TextInput, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
@@ -7,12 +7,11 @@ import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles } from '../theme';
+import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles, BorderRadius } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
-import { users as usersApi } from '../services/database';
-import { Alert, ActivityIndicator } from 'react-native';
+import { users as usersApi, cities as citiesApi } from '../services/database';
 
-function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
+function InputField({ label, value, onChangeText, placeholder, keyboardType, theme, editable = true }) {
   return (
     <View style={inputStyles.container}>
       <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
@@ -21,7 +20,7 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType, the
       <TextInput
         style={[inputStyles.input, { 
           backgroundColor: theme.surface, 
-          color: theme.textPrimary,
+          color: editable ? theme.textPrimary : theme.textSecondary,
           borderColor: theme.border 
         }]}
         value={value}
@@ -29,67 +28,8 @@ function InputField({ label, value, onChangeText, placeholder, keyboardType, the
         placeholder={placeholder}
         placeholderTextColor={theme.textSecondary}
         keyboardType={keyboardType || 'default'}
+        editable={editable}
       />
-    </View>
-  );
-}
-
-function DatePickerField({ label, value, theme }) {
-  return (
-    <View style={inputStyles.container}>
-      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-        {label}
-      </ThemedText>
-      <Pressable style={[inputStyles.picker, { 
-        backgroundColor: theme.surface,
-        borderColor: theme.border 
-      }]}>
-        <ThemedText type="bodyLarge">{value}</ThemedText>
-        <Feather name="chevron-down" size={20} color={theme.textSecondary} />
-      </Pressable>
-    </View>
-  );
-}
-
-function GenderSelector({ value, onSelect, theme }) {
-  return (
-    <View style={inputStyles.container}>
-      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-        Gender
-      </ThemedText>
-      <View style={[layoutStyles.row, spacingStyles.gapMd]}>
-        <Pressable
-          onPress={() => onSelect('Male')}
-          style={[inputStyles.input, layoutStyles.rowCenter, spacingStyles.gapSm, { 
-            flex: 1,
-            backgroundColor: theme.surface,
-            borderColor: value === 'Male' ? theme.primary : theme.border 
-          }]}
-        >
-          <View style={[inputStyles.radio, { borderColor: value === 'Male' ? theme.primary : theme.border }]}>
-            {value === 'Male' ? (
-              <View style={[inputStyles.radioInner, { backgroundColor: theme.primary }]} />
-            ) : null}
-          </View>
-          <ThemedText type="bodyLarge">Male</ThemedText>
-        </Pressable>
-        
-        <Pressable
-          onPress={() => onSelect('Female')}
-          style={[inputStyles.input, layoutStyles.rowCenter, spacingStyles.gapSm, { 
-            flex: 1,
-            backgroundColor: theme.surface,
-            borderColor: value === 'Female' ? theme.primary : theme.border 
-          }]}
-        >
-          <View style={[inputStyles.radio, { borderColor: value === 'Female' ? theme.primary : theme.border }]}>
-            {value === 'Female' ? (
-              <View style={[inputStyles.radioInner, { backgroundColor: theme.primary }]} />
-            ) : null}
-          </View>
-          <ThemedText type="bodyLarge">Female</ThemedText>
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -97,58 +37,42 @@ function GenderSelector({ value, onSelect, theme }) {
 export default function EditProfile({ navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { user, refreshUser } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   
-  const [fullName, setFullName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('Select date');
-  const [gender, setGender] = useState('Male');
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [email, setEmail] = useState('');
-  const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [cities, setCities] = useState([]);
+  const [showCities, setShowCities] = useState(false);
   const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadUserProfile();
-  }, [user]);
+    loadData();
+  }, [user, profile]);
 
-  const loadUserProfile = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
+  const loadData = async () => {
     try {
       setLoading(true);
       
-      const [profile, userDetails] = await Promise.all([
-        usersApi.getProfile(user.id),
-        usersApi.getUser(user.id)
-      ]);
+      const citiesData = await citiesApi.getAll();
+      setCities(citiesData);
       
       if (profile) {
-        setDateOfBirth(profile.date_of_birth || 'Select date');
-        setGender(profile.gender || 'Male');
-        setMobileNumber(profile.mobile || '');
-        setWhatsappNumber(profile.whatsapp || '');
-        setWeight(profile.weight || '');
-        setHeight(profile.height || '');
+        setFirstName(profile.first_name || '');
+        setLastName(profile.last_name || '');
+        setWhatsapp(profile.whatsapp_number?.replace('+222', '') || '');
+        setProfilePicture(profile.profile_photo_url || null);
+        
+        if (profile.city_id) {
+          const city = citiesData.find(c => c.id === profile.city_id);
+          setSelectedCity(city || null);
+        }
       }
-      
-      if (userDetails) {
-        setFullName(userDetails.full_name || user.email || '');
-        setProfilePicture(userDetails.photo_url || user?.user_metadata?.avatar_url || null);
-      } else {
-        setFullName(user.user_metadata?.full_name || user.email || '');
-        setProfilePicture(user?.user_metadata?.avatar_url || null);
-      }
-      
-      setEmail(user.email || '');
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
@@ -177,66 +101,70 @@ export default function EditProfile({ navigation }) {
   const handleSave = async () => {
     if (!user) return;
 
+    if (!firstName.trim()) {
+      Alert.alert('Required', 'Please enter your first name');
+      return;
+    }
+    if (!lastName.trim()) {
+      Alert.alert('Required', 'Please enter your last name');
+      return;
+    }
+    if (!selectedCity) {
+      Alert.alert('Required', 'Please select your city');
+      return;
+    }
+
     try {
       setSaving(true);
       
-      const existingProfile = await usersApi.getProfile(user.id);
-      
-      const profileData = {
-        date_of_birth: dateOfBirth === 'Select date' ? null : dateOfBirth,
-        gender,
-        weight,
-        height,
+      const updates = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        whatsapp_number: whatsapp ? '+222' + whatsapp.replace(/[^\d]/g, '') : profile?.phone,
+        city_id: selectedCity.id,
       };
 
-      if (mobileNumber && mobileNumber.trim()) {
-        profileData.mobile = mobileNumber;
-      } else if (!existingProfile) {
-        profileData.mobile = null;
+      if (profilePicture && profilePicture !== profile?.profile_photo_url) {
+        if (!profilePicture.startsWith('http')) {
+          const photoUrl = await usersApi.uploadProfilePicture(user.id, profilePicture);
+          updates.profile_photo_url = photoUrl;
+        }
       }
 
-      if (whatsappNumber && whatsappNumber.trim()) {
-        profileData.whatsapp = whatsappNumber;
-      } else if (!existingProfile) {
-        profileData.whatsapp = null;
-      }
-      
-      if (existingProfile) {
-        await usersApi.updateProfile(user.id, profileData);
-      } else {
-        await usersApi.createProfile(user.id, profileData);
-      }
-
-      const userUpdateData = {};
-      
-      if (fullName) {
-        userUpdateData.full_name = fullName;
-      }
-
-      if (profilePicture && profilePicture !== user?.user_metadata?.avatar_url) {
-        const photoUrl = await usersApi.uploadProfilePicture(user.id, profilePicture);
-        userUpdateData.photo_url = photoUrl;
-      }
-
-      if (Object.keys(userUpdateData).length > 0) {
-        await usersApi.updateUser(user.id, userUpdateData);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await refreshUser();
-      await loadUserProfile();
+      await updateProfile(updates);
 
       Alert.alert('Success', 'Profile updated successfully!');
       navigation.goBack();
     } catch (error) {
       console.error('Error saving profile:', error);
-      const message = error.message || 'Failed to update profile. Please try again.';
-      Alert.alert('Error', message);
+      Alert.alert('Error', error.message || 'Failed to update profile. Please try again.');
     } finally {
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <ThemedView style={layoutStyles.container}>
+        <View style={[layoutStyles.header, { 
+          backgroundColor: theme.background, 
+          paddingTop: insets.top + Spacing.md,
+          justifyContent: 'space-between' 
+        }]}>
+          <Pressable onPress={() => navigation.goBack()} style={buttonStyles.icon}>
+            <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+          </Pressable>
+          <ThemedText type="h2" style={{ fontWeight: '600' }}>
+            Edit Profile
+          </ThemedText>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={layoutStyles.container}>
@@ -249,7 +177,7 @@ export default function EditProfile({ navigation }) {
           <Feather name="arrow-left" size={24} color={theme.textPrimary} />
         </Pressable>
         <ThemedText type="h2" style={{ fontWeight: '600' }}>
-          My Profile
+          Edit Profile
         </ThemedText>
         <View style={{ width: 40 }} />
       </View>
@@ -267,129 +195,193 @@ export default function EditProfile({ navigation }) {
           />
           <Pressable 
             onPress={pickProfilePicture}
-            accessibilityLabel="Change Profile Picture"
-            accessibilityRole="button"
             style={[buttonStyles.iconSmall, { 
               backgroundColor: theme.primary,
               position: 'absolute',
               bottom: Spacing.xl,
-              right: '50%',
-              marginRight: -60,
-              borderWidth: 3,
-              borderColor: '#FFF',
+              right: '35%',
             }]}
           >
-            <Feather name="edit-2" size={16} color="#FFF" />
+            <Feather name="camera" size={16} color="#FFFFFF" />
           </Pressable>
         </View>
 
-        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
-          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
-            Basic Detail
-          </ThemedText>
-
+        <View style={[spacingStyles.phLg, spacingStyles.gapLg]}>
           <InputField
-            label="Full name"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Enter your full name"
-            theme={theme}
-          />
-
-          <DatePickerField
-            label="Date of birth"
-            value={dateOfBirth}
-            theme={theme}
-          />
-
-          <GenderSelector
-            value={gender}
-            onSelect={setGender}
-            theme={theme}
-          />
-        </View>
-
-        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
-          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
-            Contact Detail
-          </ThemedText>
-
-          <InputField
-            label="Mobile number"
-            value={mobileNumber}
-            onChangeText={setMobileNumber}
-            placeholder="Enter mobile number"
-            keyboardType="phone-pad"
+            label="First Name"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="Enter first name"
             theme={theme}
           />
 
           <InputField
-            label="WhatsApp number"
-            value={whatsappNumber}
-            onChangeText={setWhatsappNumber}
-            placeholder="Enter WhatsApp number"
-            keyboardType="phone-pad"
+            label="Last Name"
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder="Enter last name"
             theme={theme}
           />
 
-          <InputField
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter email address"
-            keyboardType="email-address"
-            theme={theme}
-          />
-        </View>
-
-        <View style={[layoutStyles.sectionPadded, spacingStyles.pbXl]}>
-          <ThemedText type="h3" style={{ fontWeight: '700', marginBottom: Spacing.xs }}>
-            Personal Detail
-          </ThemedText>
-
-          <InputField
-            label="Weight (kg)"
-            value={weight}
-            onChangeText={setWeight}
-            placeholder="Enter weight"
-            keyboardType="decimal-pad"
-            theme={theme}
-          />
-
-          <InputField
-            label="Height (cm)"
-            value={height}
-            onChangeText={setHeight}
-            placeholder="Enter height"
-            keyboardType="decimal-pad"
-            theme={theme}
-          />
-        </View>
-
-        <Pressable
-          onPress={handleSave}
-          disabled={saving}
-          style={[buttonStyles.primaryLarge, spacingStyles.mxLg, spacingStyles.mtMd, { 
-            backgroundColor: saving ? theme.textSecondary : theme.primary,
-            marginBottom: Spacing['2xl'],
-            opacity: saving ? 0.7 : 1
-          }]}
-        >
-          {saving ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <ThemedText 
-              type="bodyLarge" 
-              lightColor="#FFF" 
-              darkColor="#FFF"
-              style={{ fontWeight: '600' }}
-            >
-              Save
+          <View style={inputStyles.container}>
+            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
+              Phone Number
             </ThemedText>
+            <View style={[inputStyles.input, { 
+              backgroundColor: theme.surface, 
+              borderColor: theme.border,
+              opacity: 0.7,
+            }]}>
+              <ThemedText type="body" style={{ color: theme.textSecondary }}>
+                {profile?.phone || 'Not set'}
+              </ThemedText>
+            </View>
+          </View>
+
+          <View style={inputStyles.container}>
+            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
+              WhatsApp Number
+            </ThemedText>
+            <View style={[styles.phoneInputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <ThemedText type="body" style={styles.countryCode}>+222</ThemedText>
+              <TextInput
+                value={whatsapp}
+                onChangeText={(text) => setWhatsapp(text.replace(/[^\d]/g, ''))}
+                placeholder="12345678"
+                placeholderTextColor={theme.textSecondary}
+                keyboardType="phone-pad"
+                style={[styles.phoneInput, { color: theme.textPrimary }]}
+                maxLength={10}
+              />
+            </View>
+          </View>
+
+          <View style={inputStyles.container}>
+            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
+              City
+            </ThemedText>
+            <Pressable
+              onPress={() => setShowCities(!showCities)}
+              style={[styles.selectButton, { 
+                backgroundColor: theme.surface, 
+                borderColor: theme.border 
+              }]}
+            >
+              <ThemedText type="body" style={{ color: selectedCity ? theme.textPrimary : theme.textSecondary }}>
+                {selectedCity ? selectedCity.name : 'Select your city'}
+              </ThemedText>
+              <Feather 
+                name={showCities ? 'chevron-up' : 'chevron-down'} 
+                size={20} 
+                color={theme.textSecondary} 
+              />
+            </Pressable>
+            
+            {showCities && (
+              <ScrollView 
+                style={[styles.citiesList, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                nestedScrollEnabled
+              >
+                {cities.map((city) => (
+                  <Pressable
+                    key={city.id}
+                    onPress={() => {
+                      setSelectedCity(city);
+                      setShowCities(false);
+                    }}
+                    style={[
+                      styles.cityItem,
+                      { borderBottomColor: theme.border },
+                      selectedCity?.id === city.id && { backgroundColor: theme.surfaceHover }
+                    ]}
+                  >
+                    <ThemedText type="body">{city.name}</ThemedText>
+                    {city.region && (
+                      <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                        {city.region}
+                      </ThemedText>
+                    )}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          {profile?.role && profile.role !== 'normal' && (
+            <View style={inputStyles.container}>
+              <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
+                Role
+              </ThemedText>
+              <View style={[inputStyles.input, { 
+                backgroundColor: theme.surface, 
+                borderColor: theme.border,
+              }]}>
+                <ThemedText type="body" style={{ color: theme.primary, textTransform: 'capitalize' }}>
+                  {profile.role.replace('_', ' ')}
+                </ThemedText>
+              </View>
+            </View>
           )}
-        </Pressable>
+
+          <Pressable
+            onPress={handleSave}
+            disabled={saving}
+            style={[buttonStyles.primary, { 
+              backgroundColor: theme.primary, 
+              opacity: saving ? 0.6 : 1,
+              marginTop: Spacing.xl,
+            }]}
+          >
+            {saving ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                Save Changes
+              </ThemedText>
+            )}
+          </Pressable>
+        </View>
       </KeyboardAwareScrollView>
     </ThemedView>
   );
 }
 
+const styles = {
+  phoneInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: BorderRadius.medium,
+    paddingHorizontal: Spacing.md,
+    height: 56,
+  },
+  countryCode: {
+    fontWeight: '600',
+    marginRight: Spacing.sm,
+  },
+  phoneInput: {
+    flex: 1,
+    height: 56,
+    fontSize: 16,
+  },
+  selectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    borderWidth: 1,
+    borderRadius: BorderRadius.medium,
+    paddingHorizontal: Spacing.md,
+  },
+  citiesList: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.medium,
+    marginTop: Spacing.xs,
+    maxHeight: 200,
+  },
+  cityItem: {
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+  },
+};
