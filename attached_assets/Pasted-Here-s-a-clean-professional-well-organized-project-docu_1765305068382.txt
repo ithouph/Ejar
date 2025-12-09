@@ -1,0 +1,160 @@
+Here’s a clean, professional, well-organized project document for Ejar App, consolidating everything you wrote into a single polished version — optimized for presentations, hand-offs, or GitHub README.
+
+⸻
+
+📱 Ejar App – Project Documentation
+
+1. Current Status
+
+MVP Completed – Fully functional marketplace app built with Expo / React Native and Supabase.
+
+Core Features
+	•	Phone login via OTP
+	•	User profiles with photos, age & WhatsApp
+	•	Marketplace posts with multiple images
+	•	Category filtering (property, electronics, vehicles, furniture)
+	•	Reviews & ratings
+	•	Saved/favorite posts
+	•	Wallet system with balance & transactions
+	•	Fallback mock data if Supabase is offline
+
+⸻
+
+2. Database Overview
+
+All tables created in DATABASE_SETUP_CLEAN.sql:
+
+users
+	•	phone_number (primary login)
+	•	first_name
+	•	last_name
+	•	age
+	•	profile_photo_url
+	•	whatsapp_number
+
+posts
+	•	category
+	•	price
+	•	images
+	•	specifications
+
+Other tables
+	•	reviews (ratings + comments)
+	•	saved_posts (favorites)
+	•	wallet_accounts
+	•	wallet_transactions
+	•	posts_photos
+	•	service_categories
+	•	payment_requests
+	•	support_messages
+
+⸻
+
+3. Dummy Data
+
+Use DATABASE_SEEDS.sql to quickly populate development data:
+
+Includes:
+	•	5 test users with full profiles
+	•	10 posts across all categories
+	•	Reviews, saved posts, wallet activity
+
+Test phone numbers:
+	•	+222-12345678
+	•	+222-87654321
+	•	+222-98765432
+	•	+222-56789012
+	•	+222-89876543
+
+⸻
+
+4. App Architecture
+
+Pages (Screens)
+	•	Login.js – OTP phone authentication
+	•	Discover.js – Explore posts, categories
+	•	Details.js – Post details, reviews, save/un-save
+	•	EditProfile.js – User information + WhatsApp
+	•	Account.js – Account options
+	•	Balance.js – Wallet balance & transactions
+	•	Saved.js – Saved posts list
+	•	Settings.js – App settings
+	•	Other screens: AddPost, Support, FAQ, Privacy Policy, Terms
+
+⸻
+
+5. Services Structure
+
+All logic in services/database.js:
+
+auth
+	•	Phone-based OTP login (Supabase)
+
+users
+	•	Get, update user profile
+	•	Update profile photo
+
+posts
+	•	Create, update, delete posts
+	•	Fetch by category
+	•	Fetch details + photos
+
+reviews
+	•	Add review
+	•	Fetch post reviews
+
+savedPosts
+	•	Add/remove favorites
+	•	List user’s saved posts
+
+wallet
+	•	Fetch balance
+	•	Add transactions
+
+balanceRequests
+	•	For admin approval workflow
+
+Fallback Module
+	•	mockData.js when Supabase fails or is offline
+
+⸻
+
+6. Key Feature Summary
+	•	✔️ OTP login (no email required)
+	•	✔️ Complete user profiles with photos & WhatsApp
+	•	✔️ Post creation with multiple images
+	•	✔️ Category-based filtering
+	•	✔️ Favorites / saved posts
+	•	✔️ Reviews & ratings
+	•	✔️ Wallet + balance management
+	•	✔️ Automatic fallback to mock data
+
+⸻
+
+7. UI/UX Design
+	•	Neutral, classic theme
+	•	Thin borders instead of shadows (except floating components)
+	•	Clean, minimal layout
+	•	Mobile-first responsive structure
+
+⸻
+
+8. Recent Improvements
+	•	Switched login to phone_number only
+	•	Added profile fields (first/last name, age, photo, WhatsApp)
+	•	Fixed schema mismatches (property_id → post_id)
+	•	Completed DATABASE_SEEDS.sql with realistic sample data
+	•	Removed unused/duplicate files
+	•	Updated mock data to match latest schema
+
+⸻
+
+If you’d like, I can also generate:
+
+✅ A polished README.md version
+✅ A downloadable PDF project document
+✅ An ERD database diagram
+✅ A flowchart of the app architecture
+✅ Suggestions for next steps (admin dashboard, payments, chat, etc.)
+
+Just tell me what you want!
