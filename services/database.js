@@ -1,67 +1,51 @@
 import { supabase } from '../config/supabase';
-import * as WebBrowser from 'expo-web-browser';
 import * as ImagePicker from 'expo-image-picker';
-import { makeRedirectUri } from 'expo-auth-session';
-
-WebBrowser.maybeCompleteAuthSession();
 
 /**
  * ════════════════════════════════════════════════════════════════════
  * EJAR APP - ALL DATABASE FUNCTIONS IN ONE FILE
  * ════════════════════════════════════════════════════════════════════
  * 
- * This file contains all backend functions organized by feature.
- * Easy to find what you need and make changes.
+ * 4-Tier User System with City-Based Payment Approvals
  * 
  * TABLE OF CONTENTS:
- * 1. Authentication (Google OAuth, sign in/out, sessions)
- * 2. Users & Profiles (user info, profile details)
- * 3. Properties (hotels & apartments listing)
- * 4. Favorites (save/unsave properties)
- * 5. Reviews (property ratings & comments)
- * 6. Wallet & Balance (money management)
- * 7. Balance Requests (top-up approval system)
- * 8. Social Posts (feed & sharing)
- * 9. Wedding Events (event planning)
- * 10. Utility Functions (helpers)
+ * 1. Authentication (Phone OTP)
+ * 2. Users & Profiles
+ * 3. Cities
+ * 4. Service Categories
+ * 5. Posts (Marketplace)
+ * 6. Saved Posts (Favorites)
+ * 7. Reviews
+ * 8. Wallet & Transactions
+ * 9. Notifications
+ * 10. Utility Functions
  */
 
 // ════════════════════════════════════════════════════════════════════
-// 1. AUTHENTICATION
+// 1. AUTHENTICATION (Phone OTP)
 // ════════════════════════════════════════════════════════════════════
 
 export const auth = {
-  // Sign in with Google
-  async signInWithGoogle() {
-    const redirectUrl = makeRedirectUri({ scheme: 'com.ejar.app', path: 'auth/callback' });
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: redirectUrl, skipBrowserRedirect: false },
+  // Send OTP to phone number
+  async sendOtp(phone) {
+    const { data, error } = await supabase.auth.signInWithOtp({
+      phone: phone,
     });
 
     if (error) throw error;
+    return data;
+  },
 
-    if (data?.url) {
-      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+  // Verify OTP
+  async verifyOtp(phone, token) {
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: phone,
+      token: token,
+      type: 'sms',
+    });
 
-      if (result.type === 'success') {
-        const url = new URL(result.url);
-        const accessToken = url.searchParams.get('access_token');
-        const refreshToken = url.searchParams.get('refresh_token');
-
-        if (accessToken && refreshToken) {
-          const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (sessionError) throw sessionError;
-          return { user: sessionData.user, session: sessionData.session };
-        }
-      }
-    }
-
-    throw new Error('Authentication failed');
+    if (error) throw error;
+    return { user: data.user, session: data.session };
   },
 
   // Sign out
@@ -97,11 +81,14 @@ export const auth = {
 // ════════════════════════════════════════════════════════════════════
 
 export const users = {
-  // Get user info (name, email, photo)
+  // Get user info
   async getUser(userId) {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        *,
+        cities (id, name, region)
+      `)
       .eq('id', userId)
       .maybeSingle();
 
@@ -109,70 +96,65 @@ export const users = {
     return data;
   },
 
-  // Update user info (name, photo)
-  async updateUser(userId, updates) {
+  // Get user by phone
+  async getByPhone(phone) {
     const { data, error } = await supabase
       .from('users')
-      .update({
-        full_name: updates.full_name,
-        photo_url: updates.photo_url,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get user profile (birthday, gender, mobile, weight, height)
-  async getProfile(userId) {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', userId)
+      .select(`
+        *,
+        cities (id, name, region)
+      `)
+      .eq('phone', phone)
       .maybeSingle();
 
     if (error) throw error;
     return data;
   },
 
-  // Create user profile
-  async createProfile(userId, profile) {
+  // Create new user
+  async createUser(userData) {
     const { data, error } = await supabase
-      .from('user_profiles')
+      .from('users')
       .insert({
-        user_id: userId,
-        date_of_birth: profile.date_of_birth,
-        gender: profile.gender,
-        mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
-        weight: profile.weight,
-        height: profile.height,
+        id: userData.id,
+        phone: userData.phone,
+        whatsapp_number: userData.whatsapp_number || userData.phone,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        city_id: userData.city_id,
+        profile_photo_url: userData.profile_photo_url,
+        role: 'normal',
       })
-      .select()
+      .select(`
+        *,
+        cities (id, name, region)
+      `)
       .single();
 
     if (error) throw error;
     return data;
   },
 
-  // Update user profile
-  async updateProfile(userId, profile) {
+  // Update user info
+  async updateUser(userId, updates) {
+    const updateData = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.first_name !== undefined) updateData.first_name = updates.first_name;
+    if (updates.last_name !== undefined) updateData.last_name = updates.last_name;
+    if (updates.whatsapp_number !== undefined) updateData.whatsapp_number = updates.whatsapp_number;
+    if (updates.city_id !== undefined) updateData.city_id = updates.city_id;
+    if (updates.profile_photo_url !== undefined) updateData.profile_photo_url = updates.profile_photo_url;
+
     const { data, error } = await supabase
-      .from('user_profiles')
-      .update({
-        date_of_birth: profile.date_of_birth,
-        gender: profile.gender,
-        mobile: profile.mobile,
-        whatsapp: profile.whatsapp,
-        weight: profile.weight,
-        height: profile.height,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .select()
+      .from('users')
+      .update(updateData)
+      .eq('id', userId)
+      .select(`
+        *,
+        cities (id, name, region)
+      `)
       .single();
 
     if (error) throw error;
@@ -202,579 +184,99 @@ export const users = {
 
     return publicUrl;
   },
-};
 
-// ════════════════════════════════════════════════════════════════════
-// 3. PROPERTIES (Hotels & Apartments)
-// ════════════════════════════════════════════════════════════════════
-
-export const properties = {
-  // Get all properties with optional filters
-  async getAll(filters = {}) {
-    let query = supabase
-      .from('properties')
-      .select(`
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `)
-      .order('created_at', { ascending: false });
-
-    // Apply filters
-    if (filters.type) query = query.eq('type', filters.type);
-    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
-    if (filters.minPrice) query = query.gte('price_per_night', filters.minPrice);
-    if (filters.maxPrice) query = query.lte('price_per_night', filters.maxPrice);
-    if (filters.minRating) query = query.gte('rating', filters.minRating);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get one property by ID
-  async getOne(id) {
-    const { data, error } = await supabase
-      .from('properties')
-      .select(`
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon),
-        reviews (
-          id,
-          rating,
-          title,
-          comment,
-          created_at,
-          users (full_name, photo_url)
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Search properties with optional filters
-  async search(searchTerm, filters = {}) {
-    let query = supabase
-      .from('properties')
-      .select(`
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `)
-      .or(`title.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
-
-    // Apply filters to search results
-    if (filters.type) query = query.eq('type', filters.type);
-    if (filters.location) query = query.ilike('location', `%${filters.location}%`);
-    if (filters.minPrice) query = query.gte('price_per_night', filters.minPrice);
-    if (filters.maxPrice) query = query.lte('price_per_night', filters.maxPrice);
-    if (filters.minRating) query = query.gte('rating', filters.minRating);
-
-    query = query.order('created_at', { ascending: false});
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get featured/top properties
-  async getFeatured(limit = 10) {
-    const { data, error } = await supabase
-      .from('properties')
-      .select(`
-        *,
-        property_photos (url, category, order_index),
-        amenities (name, icon)
-      `)
-      .gte('rating', 4.5)
-      .order('rating', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
+  // Get user's full name
+  getFullName(user) {
+    if (!user) return 'Anonymous User';
+    return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous User';
   },
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 4. FAVORITES (Save/Unsave Properties)
+// 3. CITIES
 // ════════════════════════════════════════════════════════════════════
 
-export const favorites = {
-  // Get all user's favorites
-  async getAll(userId) {
+export const cities = {
+  // Get all active cities
+  async getAll() {
     const { data, error } = await supabase
-      .from('favorites')
-      .select(`
-        id,
-        property_id,
-        created_at,
-        properties (*)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Add property to favorites
-  async add(userId, propertyId) {
-    const { data, error } = await supabase
-      .from('favorites')
-      .insert({ user_id: userId, property_id: propertyId })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Remove property from favorites
-  async remove(userId, propertyId) {
-    const { error } = await supabase
-      .from('favorites')
-      .delete()
-      .eq('user_id', userId)
-      .eq('property_id', propertyId);
-
-    if (error) throw error;
-    return true;
-  },
-
-  // Check if property is favorited
-  async isFavorite(userId, propertyId) {
-    const { data, error } = await supabase
-      .from('favorites')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('property_id', propertyId)
-      .maybeSingle();
-
-    if (error) return false;
-    return !!data;
-  },
-
-  // Toggle favorite (add if not exists, remove if exists)
-  async toggle(userId, propertyId) {
-    const isFav = await this.isFavorite(userId, propertyId);
-
-    if (isFav) {
-      await this.remove(userId, propertyId);
-      return { action: 'removed', isFavorite: false };
-    } else {
-      await this.add(userId, propertyId);
-      return { action: 'added', isFavorite: true };
-    }
-  },
-
-  // Get just the IDs of favorited properties
-  async getIds(userId) {
-    const { data, error } = await supabase
-      .from('favorites')
-      .select('property_id')
-      .eq('user_id', userId);
-
-    if (error) return [];
-    return (data || []).map(fav => fav.property_id);
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 5. REVIEWS (Property Ratings & Comments)
-// ════════════════════════════════════════════════════════════════════
-
-export const reviews = {
-  // Get all reviews for a property
-  async getForProperty(propertyId) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        users (full_name, photo_url)
-      `)
-      .eq('property_id', propertyId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Get all reviews by a user
-  async getByUser(userId) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        properties (title, location)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Add a new review
-  async add(userId, propertyId, review) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .insert({
-        user_id: userId,
-        property_id: propertyId,
-        rating: review.rating,
-        title: review.title,
-        comment: review.comment,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Update property's average rating
-    await this.updatePropertyRating(propertyId);
-
-    return data;
-  },
-
-  // Update existing review
-  async update(reviewId, userId, updates) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .update({
-        rating: updates.rating,
-        title: updates.title,
-        comment: updates.comment,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', reviewId)
-      .eq('user_id', userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Get property ID and update its rating
-    const { data: review } = await supabase
-      .from('reviews')
-      .select('property_id')
-      .eq('id', reviewId)
-      .single();
-
-    if (review) {
-      await this.updatePropertyRating(review.property_id);
-    }
-
-    return data;
-  },
-
-  // Delete review
-  async delete(reviewId, userId) {
-    // Get property ID before deleting
-    const { data: review } = await supabase
-      .from('reviews')
-      .select('property_id')
-      .eq('id', reviewId)
-      .eq('user_id', userId)
-      .single();
-
-    const { error } = await supabase
-      .from('reviews')
-      .delete()
-      .eq('id', reviewId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
-
-    // Update property rating
-    if (review) {
-      await this.updatePropertyRating(review.property_id);
-    }
-
-    return true;
-  },
-
-  // Update property's average rating (called automatically after review changes)
-  async updatePropertyRating(propertyId) {
-    const { data: allReviews, error: reviewsError } = await supabase
-      .from('reviews')
-      .select('rating')
-      .eq('property_id', propertyId);
-
-    if (reviewsError) return;
-
-    if (allReviews && allReviews.length > 0) {
-      const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
-
-      await supabase
-        .from('properties')
-        .update({
-          rating: avgRating.toFixed(1),
-          total_reviews: allReviews.length,
-        })
-        .eq('id', propertyId);
-    }
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 6. WALLET & BALANCE (Money Management)
-// ════════════════════════════════════════════════════════════════════
-
-export const wallet = {
-  // Get user's wallet
-  async get(userId) {
-    const { data, error } = await supabase
-      .from('wallet_accounts')
+      .from('cities')
       .select('*')
-      .eq('user_id', userId)
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Get city by ID
+  async getById(cityId) {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('id', cityId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Get city by name
+  async getByName(name) {
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .ilike('name', name)
       .maybeSingle();
 
     if (error) throw error;
-
-    // Create wallet if doesn't exist
-    if (!data) {
-      try {
-        return await this.create(userId);
-      } catch (createError) {
-        console.error('Error creating wallet:', createError);
-        return null;
-      }
-    }
-
-    return data;
-  },
-
-  // Create new wallet
-  async create(userId) {
-    const { data, error } = await supabase
-      .from('wallet_accounts')
-      .insert({
-        user_id: userId,
-        balance: 0,
-        currency: 'USD',
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get just the balance
-  async getBalance(walletId) {
-    const { data, error } = await supabase
-      .from('wallet_accounts')
-      .select('balance')
-      .eq('id', walletId)
-      .single();
-
-    if (error) throw error;
-    return parseFloat(data.balance);
-  },
-
-  // Get transaction history
-  async getTransactions(walletId, limit = 50) {
-    const { data, error } = await supabase
-      .from('wallet_transactions')
-      .select('*')
-      .eq('wallet_id', walletId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    if (error) throw error;
-    return data || [];
-  },
-
-  // Add transaction (internal - uses Supabase function for safety)
-  async addTransaction(walletId, transaction) {
-    const { data, error } = await supabase
-      .rpc('add_wallet_transaction', {
-        p_wallet_id: walletId,
-        p_type: transaction.type,
-        p_amount: transaction.amount,
-        p_description: transaction.description,
-        p_category: transaction.category,
-      });
-
-    if (error) throw error;
-
-    return {
-      transaction: { id: data.transaction_id },
-      newBalance: data.new_balance,
-    };
-  },
-
-  // Add money to wallet
-  async addBalance(walletId, amount, description = 'Added balance') {
-    return await this.addTransaction(walletId, {
-      type: 'credit',
-      amount: parseFloat(amount),
-      description,
-      category: 'deposit',
-    });
-  },
-
-  // Remove money from wallet
-  async deductBalance(walletId, amount, description = 'Deducted balance') {
-    return await this.addTransaction(walletId, {
-      type: 'debit',
-      amount: parseFloat(amount),
-      description,
-      category: 'withdrawal',
-    });
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
-// 7. BALANCE REQUESTS (Top-up Approval System)
-// ════════════════════════════════════════════════════════════════════
-
-export const balanceRequests = {
-  // Upload transaction proof image
-  async uploadImage(userId, imageUri) {
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
-
-    const fileName = `${userId}_${Date.now()}.jpg`;
-    const filePath = `transaction-proofs/${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from('balance-requests')
-      .upload(filePath, blob, {
-        contentType: 'image/jpeg',
-        upsert: false,
-      });
-
-    if (error) throw error;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('balance-requests')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
-  },
-
-  // Create new balance request
-  async create(userId, walletId, amount, imageUri) {
-    const imageUrl = await this.uploadImage(userId, imageUri);
-
-    const { data, error } = await supabase
-      .from('balance_requests')
-      .insert({
-        user_id: userId,
-        wallet_id: walletId,
-        amount: parseFloat(amount),
-        transaction_image_url: imageUrl,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Get all user's requests
-  async getAll(userId) {
-    const { data, error } = await supabase
-      .from('balance_requests')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Get pending requests
-  async getPending(userId) {
-    const { data, error } = await supabase
-      .from('balance_requests')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
-
-    if (error) return [];
-    return data || [];
-  },
-
-  // Approve request (admin function)
-  async approve(requestId, adminId, notes = '') {
-    const { data, error } = await supabase
-      .from('balance_requests')
-      .update({
-        status: 'approved',
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        admin_notes: notes,
-      })
-      .eq('id', requestId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  // Reject request (admin function)
-  async reject(requestId, adminId, notes) {
-    const { data, error } = await supabase
-      .from('balance_requests')
-      .update({
-        status: 'rejected',
-        reviewed_by: adminId,
-        reviewed_at: new Date().toISOString(),
-        admin_notes: notes,
-      })
-      .eq('id', requestId)
-      .select()
-      .single();
-
-    if (error) throw error;
     return data;
   },
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 8. SOCIAL POSTS (Feed & Sharing)
+// 4. SERVICE CATEGORIES
 // ════════════════════════════════════════════════════════════════════
 
-// Specification validation helper
-function validateAndNormalizeSpecifications(category, listingType, propertyType, specifications) {
-  const specs = { ...specifications };
+export const serviceCategories = {
+  // Get all categories
+  async getAll() {
+    const { data, error } = await supabase
+      .from('service_categories')
+      .select('*')
+      .order('name');
 
-  if (category === 'property') {
-    if (propertyType === 'land') {
-      if (!specs.land_size) {
-        throw new Error('Land properties must include land_size in specifications');
-      }
-      specs.property_type = 'land';
-      delete specs.bedrooms;
-      delete specs.bathrooms;
-      delete specs.size_sqft;
-    } else if (['house', 'apartment'].includes(propertyType)) {
-      if (listingType === 'rent') {
-        if (!specs.nearby_amenities) {
-          specs.nearby_amenities = [];
-        }
-        if (!Array.isArray(specs.nearby_amenities)) {
-          throw new Error('nearby_amenities must be an array');
-        }
-      }
-      specs.property_type = propertyType;
-    } else if (propertyType === 'villa') {
-      delete specs.nearby_amenities;
-      specs.property_type = 'villa';
-    }
-  }
+    if (error) throw error;
+    return data || [];
+  },
 
-  return specs;
-}
+  // Get category by ID
+  async getById(categoryId) {
+    const { data, error } = await supabase
+      .from('service_categories')
+      .select('*')
+      .eq('id', categoryId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Get category by type
+  async getByType(type) {
+    const { data, error } = await supabase
+      .from('service_categories')
+      .select('*')
+      .eq('type', type);
+
+    if (error) throw error;
+    return data || [];
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 5. POSTS (Marketplace)
+// ════════════════════════════════════════════════════════════════════
 
 export const posts = {
   // Get all posts with optional filters
@@ -783,17 +285,21 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (full_name, photo_url)
-      `);
+        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        cities (id, name, region),
+        service_categories (id, name, type)
+      `)
+      .eq('status', 'active')
+      .eq('paid', true);
 
     // Apply category filter
-    if (filters.category && filters.category !== 'all') {
-      if (filters.category === 'others') {
-        // "Others" includes cars and laptops
-        query = query.in('category', ['cars', 'laptops']);
-      } else {
-        query = query.eq('category', filters.category);
-      }
+    if (filters.categoryId) {
+      query = query.eq('category_id', filters.categoryId);
+    }
+
+    // Apply city filter
+    if (filters.cityId) {
+      query = query.eq('city_id', filters.cityId);
     }
 
     // Apply price range filter
@@ -804,20 +310,10 @@ export const posts = {
       query = query.lte('price', filters.maxPrice);
     }
 
-    // Apply listing type filter (for property category)
-    if (filters.listingType) {
-      query = query.eq('listing_type', filters.listingType);
-    }
-
-    // Apply property type filter (for property category)
-    if (filters.propertyType) {
-      query = query.eq('property_type', filters.propertyType);
-    }
-
-    // Apply search query (title, content, location)
+    // Apply search query (title, description)
     if (filters.search && filters.search.trim()) {
       const searchTerm = `%${filters.search.trim()}%`;
-      query = query.or(`title.ilike.${searchTerm},content.ilike.${searchTerm},location.ilike.${searchTerm}`);
+      query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
     }
 
     query = query
@@ -828,90 +324,80 @@ export const posts = {
 
     if (error) throw error;
 
-    return (data || []).map(post => ({
-      id: post.id,
-      userId: post.user_id,
-      userName: post.users?.full_name || 'Anonymous User',
-      userPhoto: post.users?.photo_url || 'https://via.placeholder.com/40',
-      image: post.images?.[0] || post.image_url,
-      images: post.images || (post.image_url ? [post.image_url] : []),
-      text: post.content || post.description,
-      title: post.title,
-      location: post.location || 'Location',
-      timeAgo: formatTimeAgo(post.created_at),
-      likes: post.likes_count || 0,
-      comments: post.comments_count || 0,
-      amenities: post.amenities || [],
-      propertyType: post.property_type,
-      price: post.price,
-      listingType: post.listing_type,
-      category: post.category,
-      specifications: post.specifications || {},
-      rating: post.rating,
-      reviewText: post.review_text,
-    }));
+    return (data || []).map(post => formatPost(post));
+  },
+
+  // Get post by ID
+  async getById(postId) {
+    const { data, error } = await supabase
+      .from('posts')
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        cities (id, name, region),
+        service_categories (id, name, type)
+      `)
+      .eq('id', postId)
+      .single();
+
+    if (error) throw error;
+    return formatPost(data);
   },
 
   // Get user's posts
   async getByUser(userId) {
     const { data, error } = await supabase
       .from('posts')
-      .select('*')
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        cities (id, name, region),
+        service_categories (id, name, type)
+      `)
       .eq('user_id', userId)
+      .neq('status', 'deleted')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(post => formatPost(post));
   },
 
   // Create new post
-  async create(userId, post) {
-    if (!post.category) {
-      throw new Error('Post category is required');
-    }
-
+  async create(userId, cityId, post) {
     if (!post.title || !post.title.trim()) {
       throw new Error('Post title is required');
     }
-
-    let listingType = post.listingType;
-    if (post.category !== 'property') {
-      listingType = null;
-    } else if (!listingType) {
-      listingType = 'rent';
-    }
-
-    const validatedSpecs = validateAndNormalizeSpecifications(
-      post.category,
-      listingType,
-      post.propertyType,
-      post.specifications || {}
-    );
 
     const { data, error } = await supabase
       .from('posts')
       .insert({
         user_id: userId,
-        title: post.title,
-        content: post.description || post.content,
-        description: post.description,
+        city_id: cityId,
+        category_id: post.category_id || null,
+        title: post.title.trim(),
+        description: post.description || '',
+        price: post.price || 0,
         images: post.images || [],
-        image_url: post.images?.[0] || post.image_url,
-        property_type: post.propertyType || null,
-        price: post.price,
-        location: post.location,
-        amenities: post.amenities || [],
-        specifications: validatedSpecs,
-        listing_type: listingType,
-        category: post.category,
-        likes_count: 0,
-        comments_count: 0,
+        paid: post.was_free_post || false,
+        was_free_post: post.was_free_post || false,
+        status: post.was_free_post ? 'active' : 'pending_payment',
       })
-      .select()
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        cities (id, name, region),
+        service_categories (id, name, type)
+      `)
       .single();
 
     if (error) throw error;
-    return data;
+
+    // Update user's post counts
+    if (post.was_free_post) {
+      await supabase.rpc('decrement_free_posts', { p_user_id: userId }).catch(() => {});
+    }
+
+    return formatPost(data);
   },
 
   // Update post
@@ -920,70 +406,37 @@ export const posts = {
       updated_at: new Date().toISOString(),
     };
 
-    if (updates.title !== undefined) {
-      if (!updates.title || !updates.title.trim()) {
-        throw new Error('Post title is required');
-      }
-      updateData.title = updates.title;
-    }
-
-    if (updates.content !== undefined) {
-      updateData.content = updates.content;
-    }
-
-    if (updates.image_url !== undefined) {
-      updateData.image_url = updates.image_url;
-    }
-
-    if (updates.images !== undefined) {
-      updateData.images = updates.images;
-    }
-
-    if (updates.price !== undefined) {
-      updateData.price = updates.price;
-    }
-
-    if (updates.location !== undefined) {
-      updateData.location = updates.location;
-    }
-
-    if (updates.amenities !== undefined) {
-      updateData.amenities = updates.amenities;
-    }
-
-    if (updates.specifications !== undefined && updates.category) {
-      let listingType = updates.listingType;
-      if (updates.category !== 'property') {
-        listingType = null;
-      }
-
-      updateData.specifications = validateAndNormalizeSpecifications(
-        updates.category,
-        listingType,
-        updates.propertyType,
-        updates.specifications
-      );
-    } else if (updates.specifications !== undefined) {
-      updateData.specifications = updates.specifications;
-    }
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.price !== undefined) updateData.price = updates.price;
+    if (updates.images !== undefined) updateData.images = updates.images;
+    if (updates.category_id !== undefined) updateData.category_id = updates.category_id;
 
     const { data, error } = await supabase
       .from('posts')
       .update(updateData)
       .eq('id', postId)
       .eq('user_id', userId)
-      .select()
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        cities (id, name, region),
+        service_categories (id, name, type)
+      `)
       .single();
 
     if (error) throw error;
-    return data;
+    return formatPost(data);
   },
 
-  // Delete post
+  // Delete post (soft delete)
   async delete(postId, userId) {
     const { error } = await supabase
       .from('posts')
-      .delete()
+      .update({
+        status: 'deleted',
+        deleted_at: new Date().toISOString(),
+      })
       .eq('id', postId)
       .eq('user_id', userId);
 
@@ -991,27 +444,48 @@ export const posts = {
     return true;
   },
 
-  // Like post
-  async addLike(postId) {
-    // Try to use RPC function first
-    const { data, error } = await supabase
-      .rpc('increment_post_likes', { post_id: postId });
+  // End post listing
+  async end(postId, userId) {
+    const { error } = await supabase
+      .from('posts')
+      .update({
+        status: 'ended',
+        ended_at: new Date().toISOString(),
+      })
+      .eq('id', postId)
+      .eq('user_id', userId);
 
-    if (error) {
-      // Fallback to manual increment
-      const { data: post } = await supabase
+    if (error) throw error;
+    return true;
+  },
+
+  // Upload post images
+  async uploadImages(userId, imageUris) {
+    const uploadedUrls = [];
+
+    for (const uri of imageUris) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const fileName = `${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+      const filePath = `post-images/${fileName}`;
+
+      const { error } = await supabase.storage
         .from('posts')
-        .select('likes_count')
-        .eq('id', postId)
-        .single();
+        .upload(filePath, blob, {
+          contentType: 'image/jpeg',
+          upsert: false,
+        });
 
-      if (post) {
-        await supabase
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage
           .from('posts')
-          .update({ likes_count: post.likes_count + 1 })
-          .eq('id', postId);
+          .getPublicUrl(filePath);
+        uploadedUrls.push(publicUrl);
       }
     }
+
+    return uploadedUrls;
   },
 
   // Pick images from device
@@ -1038,7 +512,7 @@ export const posts = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 9. SAVED POSTS (User Saved Posts)
+// 6. SAVED POSTS (Favorites)
 // ════════════════════════════════════════════════════════════════════
 
 export const savedPosts = {
@@ -1050,7 +524,9 @@ export const savedPosts = {
         *,
         posts (
           *,
-          users (full_name, photo_url)
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type)
         )
       `)
       .eq('user_id', userId)
@@ -1058,27 +534,9 @@ export const savedPosts = {
 
     if (error) throw error;
 
-    return (data || []).map(item => ({
-      id: item.posts.id,
-      userId: item.posts.user_id,
-      userName: item.posts.users?.full_name || 'Anonymous User',
-      userPhoto: item.posts.users?.photo_url || 'https://via.placeholder.com/40',
-      image: item.posts.images?.[0] || item.posts.image_url,
-      images: item.posts.images || (item.posts.image_url ? [item.posts.image_url] : []),
-      text: item.posts.content || item.posts.description,
-      title: item.posts.title,
-      location: item.posts.location || 'Location',
-      timeAgo: formatTimeAgo(item.posts.created_at),
-      likes: item.posts.likes_count || 0,
-      comments: item.posts.comments_count || 0,
-      amenities: item.posts.amenities || [],
-      propertyType: item.posts.property_type,
-      price: item.posts.price,
-      listingType: item.posts.listing_type,
-      category: item.posts.category,
-      rating: item.posts.rating,
-      reviewText: item.posts.review_text,
-    }));
+    return (data || [])
+      .filter(item => item.posts && item.posts.status === 'active')
+      .map(item => formatPost(item.posts));
   },
 
   // Get array of saved post IDs for a user
@@ -1096,12 +554,12 @@ export const savedPosts = {
   async isSaved(userId, postId) {
     const { data, error } = await supabase
       .from('saved_posts')
-      .select('id')
+      .select('user_id')
       .eq('user_id', userId)
       .eq('post_id', postId)
       .maybeSingle();
 
-    if (error) throw error;
+    if (error) return false;
     return !!data;
   },
 
@@ -1133,65 +591,245 @@ export const savedPosts = {
 };
 
 // ════════════════════════════════════════════════════════════════════
-// 9. WEDDING EVENTS (Event Planning)
+// 7. REVIEWS
 // ════════════════════════════════════════════════════════════════════
 
-export const wedding = {
-  // Get wedding event
-  async get(userId) {
+export const reviews = {
+  // Get all reviews for a post
+  async getForPost(postId) {
     const { data, error } = await supabase
-      .from('wedding_events')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
+      .from('reviews')
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url)
+      `)
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
-
-    // Create if doesn't exist
-    if (!data) {
-      return await this.create(userId);
-    }
-
-    return data;
+    return (data || []).map(review => formatReview(review));
   },
 
-  // Create wedding event
-  async create(userId) {
+  // Get all reviews by a user
+  async getByUser(userId) {
     const { data, error } = await supabase
-      .from('wedding_events')
+      .from('reviews')
+      .select(`
+        *,
+        posts (id, title, images)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Add a new review
+  async add(userId, postId, review) {
+    const { data, error } = await supabase
+      .from('reviews')
       .insert({
         user_id: userId,
-        partner1_name: 'Christine',
-        partner2_name: 'Duncan',
-        event_date: null,
-        location: null,
-        description: null,
+        post_id: postId,
+        rating: review.rating,
+        comment: review.comment,
       })
-      .select()
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url)
+      `)
       .single();
 
     if (error) throw error;
-    return data;
+    return formatReview(data);
   },
 
-  // Update wedding event
-  async update(userId, updates) {
+  // Update existing review
+  async update(reviewId, userId, updates) {
     const { data, error } = await supabase
-      .from('wedding_events')
+      .from('reviews')
       .update({
-        partner1_name: updates.partner1_name,
-        partner2_name: updates.partner2_name,
-        event_date: updates.event_date,
-        location: updates.location,
-        description: updates.description,
+        rating: updates.rating,
+        comment: updates.comment,
         updated_at: new Date().toISOString(),
       })
+      .eq('id', reviewId)
       .eq('user_id', userId)
+      .select(`
+        *,
+        users (id, first_name, last_name, profile_photo_url)
+      `)
+      .single();
+
+    if (error) throw error;
+    return formatReview(data);
+  },
+
+  // Delete review
+  async delete(reviewId, userId) {
+    const { error } = await supabase
+      .from('reviews')
+      .delete()
+      .eq('id', reviewId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return true;
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 8. WALLET & TRANSACTIONS
+// ════════════════════════════════════════════════════════════════════
+
+export const wallet = {
+  // Get user's wallet balance (from users table)
+  async getBalance(userId) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('wallet_balance_mru, free_posts_remaining')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return {
+      balance: parseFloat(data.wallet_balance_mru) || 0,
+      freePostsRemaining: data.free_posts_remaining || 0,
+    };
+  },
+
+  // Get transaction history
+  async getTransactions(userId, limit = 50) {
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .select(`
+        *,
+        cities (id, name)
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return (data || []).map(tx => formatTransaction(tx));
+  },
+
+  // Create deposit request (with screenshot)
+  async createDepositRequest(userId, cityId, amount, paymentMethod, screenshotUri) {
+    // Upload screenshot
+    let screenshotUrl = null;
+    if (screenshotUri) {
+      const response = await fetch(screenshotUri);
+      const blob = await response.blob();
+      const fileName = `${userId}_${Date.now()}.jpg`;
+      const filePath = `payment-screenshots/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('transactions')
+        .upload(filePath, blob, {
+          contentType: 'image/jpeg',
+          upsert: false,
+        });
+
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('transactions')
+          .getPublicUrl(filePath);
+        screenshotUrl = publicUrl;
+      }
+    }
+
+    // Get current balance
+    const { balance } = await this.getBalance(userId);
+
+    // Create pending transaction
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .insert({
+        user_id: userId,
+        city_id: cityId,
+        type: 'deposit',
+        amount_mru: amount,
+        balance_before_mru: balance,
+        balance_after_mru: balance,
+        payment_screenshot_url: screenshotUrl,
+        payment_method: paymentMethod,
+        status: 'pending',
+      })
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return formatTransaction(data);
+  },
+
+  // Get pending transactions for user
+  async getPendingTransactions(userId) {
+    const { data, error } = await supabase
+      .from('wallet_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map(tx => formatTransaction(tx));
+  },
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 9. NOTIFICATIONS
+// ════════════════════════════════════════════════════════════════════
+
+export const notifications = {
+  // Get user's notifications
+  async getAll(userId, limit = 50) {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Get unread count
+  async getUnreadCount(userId) {
+    const { count, error } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error) return 0;
+    return count || 0;
+  },
+
+  // Mark notification as read
+  async markAsRead(notificationId, userId) {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return true;
+  },
+
+  // Mark all as read
+  async markAllAsRead(userId) {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error) throw error;
+    return true;
   },
 };
 
@@ -1201,6 +839,7 @@ export const wedding = {
 
 // Format time to "2h ago", "5d ago", etc.
 function formatTimeAgo(dateString) {
+  if (!dateString) return '';
   const now = new Date();
   const past = new Date(dateString);
   const diffMs = now - past;
@@ -1213,6 +852,93 @@ function formatTimeAgo(dateString) {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
   return past.toLocaleDateString();
+}
+
+// Format post data for frontend
+function formatPost(post) {
+  if (!post) return null;
+  
+  return {
+    id: post.id,
+    displayId: post.display_id,
+    userId: post.user_id,
+    userName: post.users ? `${post.users.first_name || ''} ${post.users.last_name || ''}`.trim() : 'Anonymous User',
+    userPhoto: post.users?.profile_photo_url || 'https://via.placeholder.com/40',
+    userWhatsapp: post.users?.whatsapp_number,
+    title: post.title,
+    description: post.description,
+    price: post.price,
+    images: post.images || [],
+    image: post.images?.[0] || 'https://via.placeholder.com/300',
+    cityId: post.city_id,
+    cityName: post.cities?.name || 'Unknown',
+    categoryId: post.category_id,
+    categoryName: post.service_categories?.name || 'Other',
+    categoryType: post.service_categories?.type,
+    status: post.status,
+    paid: post.paid,
+    wasFreePost: post.was_free_post,
+    totalFavorites: post.total_favorites || 0,
+    timeAgo: formatTimeAgo(post.created_at),
+    createdAt: post.created_at,
+    updatedAt: post.updated_at,
+  };
+}
+
+// Format review data for frontend
+function formatReview(review) {
+  if (!review) return null;
+  
+  return {
+    id: review.id,
+    userId: review.user_id,
+    userName: review.users ? `${review.users.first_name || ''} ${review.users.last_name || ''}`.trim() : 'Anonymous User',
+    userPhoto: review.users?.profile_photo_url || 'https://via.placeholder.com/40',
+    postId: review.post_id,
+    rating: review.rating,
+    comment: review.comment,
+    timeAgo: formatTimeAgo(review.created_at),
+    createdAt: review.created_at,
+  };
+}
+
+// Format transaction data for frontend
+function formatTransaction(tx) {
+  if (!tx) return null;
+  
+  const typeLabels = {
+    'deposit': 'Deposit',
+    'post_payment': 'Post Payment',
+    'approval_reward': 'Approval Reward',
+    'ex_member_subscription': 'Subscription',
+    'report_penalty': 'Penalty',
+    'refund': 'Refund',
+  };
+
+  const statusLabels = {
+    'pending': 'Pending',
+    'approved': 'Approved',
+    'rejected': 'Rejected',
+    'assigned_to_leader': 'Under Review',
+  };
+
+  return {
+    id: tx.id,
+    userId: tx.user_id,
+    type: tx.type,
+    typeLabel: typeLabels[tx.type] || tx.type,
+    amount: parseFloat(tx.amount_mru) || 0,
+    balanceBefore: parseFloat(tx.balance_before_mru) || 0,
+    balanceAfter: parseFloat(tx.balance_after_mru) || 0,
+    status: tx.status,
+    statusLabel: statusLabels[tx.status] || tx.status,
+    paymentMethod: tx.payment_method,
+    screenshotUrl: tx.payment_screenshot_url,
+    rejectionReason: tx.rejection_reason,
+    timeAgo: formatTimeAgo(tx.created_at),
+    createdAt: tx.created_at,
+    approvedAt: tx.approved_at,
+  };
 }
 
 // Pick single image from device
@@ -1238,139 +964,19 @@ export async function pickImage() {
 }
 
 // ════════════════════════════════════════════════════════════════════
-// 11. POST REVIEWS (Reviews for Marketplace Posts)
-// ════════════════════════════════════════════════════════════════════
-
-export const postReviews = {
-  // Get all reviews across all posts
-  async getAll() {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        users (full_name, photo_url, email),
-        posts (title, category, image)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching all post reviews:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Get all reviews for a post
-  async getForPost(postId) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        users (full_name, photo_url, email)
-      `)
-      .eq('post_id', postId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching post reviews:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Get all reviews by a user
-  async getByUser(userId) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        posts (title, category)
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching user reviews:', error);
-      return [];
-    }
-    return data || [];
-  },
-
-  // Add a new review to a post
-  async add(userId, postId, review) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .insert({
-        user_id: userId,
-        post_id: postId,
-        rating: review.rating,
-        comment: review.comment,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error adding post review:', error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  // Update existing review
-  async update(reviewId, userId, updates) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .update({
-        rating: updates.rating,
-        comment: updates.comment,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', reviewId)
-      .eq('user_id', userId)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating post review:', error);
-      throw error;
-    }
-
-    return data;
-  },
-
-  // Delete review
-  async delete(reviewId, userId) {
-    const { error } = await supabase
-      .from('reviews')
-      .delete()
-      .eq('id', reviewId)
-      .eq('user_id', userId);
-
-    if (error) {
-      console.error('Error deleting post review:', error);
-      throw error;
-    }
-
-    return true;
-  },
-};
-
-// ════════════════════════════════════════════════════════════════════
 // EXPORT ALL (for backward compatibility)
 // ════════════════════════════════════════════════════════════════════
 
 export const db = {
   auth,
   users,
-  properties,
-  favorites,
+  cities,
+  serviceCategories,
+  posts,
+  savedPosts,
   reviews,
   wallet,
-  balanceRequests,
-  posts,
-  wedding,
-  postReviews,
+  notifications,
 };
 
 export default db;
