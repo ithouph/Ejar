@@ -8,30 +8,22 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { wallet as walletApi, balanceRequests as balanceRequestsApi } from '../services/database';
+import { wallet as walletApi } from '../services/database';
+
+const PAYMENT_METHODS = [
+  { id: 'bankily', name: 'Bankily', icon: 'smartphone' },
+  { id: 'sedad', name: 'Sedad', icon: 'credit-card' },
+  { id: 'masrvi', name: 'Masrvi', icon: 'dollar-sign' },
+];
 
 export default function AddBalance({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [amount, setAmount] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState(null);
   const [transactionImage, setTransactionImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [wallet, setWallet] = useState(null);
-
-  React.useEffect(() => {
-    loadWallet();
-  }, [user]);
-
-  const loadWallet = async () => {
-    if (!user) return;
-    try {
-      const walletData = await walletApi.get(user.id);
-      setWallet(walletData);
-    } catch (error) {
-      console.error('Error loading wallet:', error);
-    }
-  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -61,49 +53,72 @@ export default function AddBalance({ navigation }) {
       return;
     }
 
-    if (!transactionImage) {
-      Alert.alert('Transaction Proof Required', 'Please upload a screenshot of your bank transfer');
+    if (!selectedMethod) {
+      Alert.alert('Payment Method Required', 'Please select a payment method');
       return;
     }
 
-    if (!wallet) {
-      Alert.alert('Error', 'Wallet not found');
+    if (!transactionImage) {
+      Alert.alert('Proof Required', 'Please upload a screenshot of your payment');
+      return;
+    }
+
+    if (!profile?.city_id) {
+      Alert.alert('Error', 'City not set. Please update your profile.');
       return;
     }
 
     try {
       setSubmitting(true);
       
-      await balanceRequestsApi.create(
+      await walletApi.createDepositRequest(
         user.id,
-        wallet.id,
+        profile.city_id,
         amountValue,
+        selectedMethod,
         transactionImage
       );
       
       Alert.alert(
         'Request Submitted!', 
-        `Your balance top-up request for $${amountValue.toFixed(2)} has been submitted for review. You'll receive the balance once approved (usually within 24 hours).`,
+        `Your deposit request for ${amountValue.toFixed(0)} MRU has been submitted. A member in your city will review and approve it soon.`,
         [{ 
           text: 'OK',
           onPress: () => navigation.goBack()
         }]
       );
     } catch (error) {
-      console.error('Error submitting balance request:', error);
+      console.error('Error submitting deposit request:', error);
       Alert.alert('Error', 'Failed to submit request. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (!user) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
+          <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
+            <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+          </Pressable>
+          <ThemedText type="bodyLarge">Add Balance</ThemedText>
+          <View style={styles.headerButton} />
+        </View>
+        <View style={styles.emptyState}>
+          <Feather name="log-in" size={48} color={theme.textSecondary} />
+          <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+            Please log in to add balance
+          </ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.headerButton}
-        >
+        <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
           <Feather name="arrow-left" size={24} color={theme.textPrimary} />
         </Pressable>
         <ThemedText type="bodyLarge">Add Balance</ThemedText>
@@ -126,60 +141,85 @@ export default function AddBalance({ navigation }) {
           </View>
           
           <View style={styles.stepContainer}>
-            <View style={styles.stepNumber}>
-              <ThemedText type="caption" style={{ color: theme.background }}>1</ThemedText>
+            <View style={[styles.stepNumber, { backgroundColor: theme.primary }]}>
+              <ThemedText type="caption" style={{ color: '#FFFFFF' }}>1</ThemedText>
             </View>
             <ThemedText type="body" style={{ color: theme.textSecondary, flex: 1 }}>
-              Transfer money to our account using Bankily, Sedad, or Masrvi
+              Transfer money using Bankily, Sedad, or Masrvi
             </ThemedText>
           </View>
 
           <View style={styles.stepContainer}>
-            <View style={styles.stepNumber}>
-              <ThemedText type="caption" style={{ color: theme.background }}>2</ThemedText>
+            <View style={[styles.stepNumber, { backgroundColor: theme.primary }]}>
+              <ThemedText type="caption" style={{ color: '#FFFFFF' }}>2</ThemedText>
             </View>
             <ThemedText type="body" style={{ color: theme.textSecondary, flex: 1 }}>
-              Take a screenshot of the successful transaction
+              Screenshot the successful transaction
             </ThemedText>
           </View>
 
           <View style={styles.stepContainer}>
-            <View style={styles.stepNumber}>
-              <ThemedText type="caption" style={{ color: theme.background }}>3</ThemedText>
+            <View style={[styles.stepNumber, { backgroundColor: theme.primary }]}>
+              <ThemedText type="caption" style={{ color: '#FFFFFF' }}>3</ThemedText>
             </View>
             <ThemedText type="body" style={{ color: theme.textSecondary, flex: 1 }}>
-              Enter the amount and upload the screenshot below
-            </ThemedText>
-          </View>
-
-          <View style={styles.stepContainer}>
-            <View style={styles.stepNumber}>
-              <ThemedText type="caption" style={{ color: theme.background }}>4</ThemedText>
-            </View>
-            <ThemedText type="body" style={{ color: theme.textSecondary, flex: 1 }}>
-              Submit for approval - balance will be added within 24 hours
+              Submit for approval by a city member
             </ThemedText>
           </View>
         </View>
 
         <View style={[styles.formCard, { backgroundColor: theme.surface }]}>
           <ThemedText type="bodyLarge" style={styles.label}>
-            Amount
+            Amount (MRU)
           </ThemedText>
           <View style={[styles.inputContainer, { borderColor: theme.border }]}>
-            <ThemedText type="h2" style={{ color: theme.textSecondary }}>$</ThemedText>
             <TextInput
               style={[styles.input, { color: theme.textPrimary }]}
               value={amount}
               onChangeText={setAmount}
-              placeholder="0.00"
+              placeholder="0"
               placeholderTextColor={theme.textSecondary}
-              keyboardType="decimal-pad"
+              keyboardType="number-pad"
             />
+            <ThemedText type="body" style={{ color: theme.textSecondary }}>MRU</ThemedText>
           </View>
 
           <ThemedText type="bodyLarge" style={[styles.label, { marginTop: Spacing.lg }]}>
-            Transaction Proof
+            Payment Method
+          </ThemedText>
+          <View style={styles.methodsContainer}>
+            {PAYMENT_METHODS.map((method) => (
+              <Pressable
+                key={method.id}
+                onPress={() => setSelectedMethod(method.id)}
+                style={[
+                  styles.methodButton,
+                  { 
+                    backgroundColor: selectedMethod === method.id ? theme.primary + '20' : theme.background,
+                    borderColor: selectedMethod === method.id ? theme.primary : theme.border,
+                  }
+                ]}
+              >
+                <Feather 
+                  name={method.icon} 
+                  size={20} 
+                  color={selectedMethod === method.id ? theme.primary : theme.textSecondary} 
+                />
+                <ThemedText 
+                  type="body" 
+                  style={{ 
+                    color: selectedMethod === method.id ? theme.primary : theme.textPrimary,
+                    fontWeight: selectedMethod === method.id ? '600' : '400'
+                  }}
+                >
+                  {method.name}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
+
+          <ThemedText type="bodyLarge" style={[styles.label, { marginTop: Spacing.lg }]}>
+            Transaction Screenshot
           </ThemedText>
           
           <Pressable
@@ -187,7 +227,7 @@ export default function AddBalance({ navigation }) {
             style={[
               styles.imagePicker,
               { 
-                backgroundColor: transactionImage ? theme.background : theme.border + '30',
+                backgroundColor: transactionImage ? theme.background : theme.border + '20',
                 borderColor: theme.border,
               }
             ]}
@@ -196,8 +236,8 @@ export default function AddBalance({ navigation }) {
               <View style={styles.imagePreview}>
                 <Image source={{ uri: transactionImage }} style={styles.image} />
                 <View style={[styles.changeButton, { backgroundColor: theme.primary }]}>
-                  <Feather name="edit-2" size={16} color={theme.background} />
-                  <ThemedText type="caption" style={{ color: theme.background, marginLeft: Spacing.xs }}>
+                  <Feather name="edit-2" size={14} color="#FFFFFF" />
+                  <ThemedText type="caption" style={{ color: '#FFFFFF', marginLeft: Spacing.xs }}>
                     Change
                   </ThemedText>
                 </View>
@@ -207,9 +247,6 @@ export default function AddBalance({ navigation }) {
                 <Feather name="upload" size={32} color={theme.textSecondary} />
                 <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.sm }}>
                   Upload Screenshot
-                </ThemedText>
-                <ThemedText type="caption" style={{ color: theme.textSecondary, marginTop: Spacing.xs }}>
-                  From Bankily, Sedad, or Masrvi
                 </ThemedText>
               </View>
             )}
@@ -221,15 +258,21 @@ export default function AddBalance({ navigation }) {
           disabled={submitting}
           style={[
             styles.submitButton,
-            { backgroundColor: theme.primary }
+            { 
+              backgroundColor: theme.primary,
+              opacity: submitting ? 0.6 : 1
+            }
           ]}
         >
           {submitting ? (
-            <ActivityIndicator color={theme.background} />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <ThemedText type="bodyLarge" style={{ color: theme.background }}>
-              Submit Request
-            </ThemedText>
+            <>
+              <Feather name="check" size={20} color="#FFFFFF" />
+              <ThemedText type="bodyLarge" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                Submit Request
+              </ThemedText>
+            </>
           )}
         </Pressable>
       </ScrollView>
@@ -260,7 +303,7 @@ const styles = StyleSheet.create({
   },
   instructionsCard: {
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.large,
     gap: Spacing.md,
   },
   instructionHeader: {
@@ -274,72 +317,94 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: Spacing.md,
   },
   stepNumber: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(22, 90, 74, 1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   formCard: {
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.large,
+    gap: Spacing.sm,
   },
   label: {
     fontWeight: '600',
-    marginBottom: Spacing.sm,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.medium,
     paddingHorizontal: Spacing.md,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   input: {
     flex: 1,
+    height: 56,
     fontSize: 24,
     fontWeight: '600',
+  },
+  methodsContainer: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  methodButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
     paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.medium,
+    borderWidth: 1,
   },
   imagePicker: {
-    borderRadius: BorderRadius.md,
-    borderWidth: 2,
+    height: 180,
+    borderRadius: BorderRadius.medium,
+    borderWidth: 1,
     borderStyle: 'dashed',
     overflow: 'hidden',
   },
-  uploadPlaceholder: {
-    padding: Spacing.xl * 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   imagePreview: {
+    flex: 1,
     position: 'relative',
   },
   image: {
     width: '100%',
-    height: 240,
+    height: '100%',
     resizeMode: 'cover',
   },
   changeButton: {
     position: 'absolute',
-    bottom: Spacing.md,
-    right: Spacing.md,
+    bottom: Spacing.sm,
+    right: Spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.small,
+  },
+  uploadPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButton: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Spacing.md,
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    height: 56,
+    borderRadius: BorderRadius.medium,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
