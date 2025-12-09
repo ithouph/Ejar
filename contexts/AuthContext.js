@@ -101,16 +101,21 @@ export function AuthProvider({ children }) {
         throw new Error('No authenticated user');
       }
 
-      const newProfile = await usersApi.createUser({
+      const createData = {
         id: user.id,
         phone: user.phone,
         whatsapp_number: userData.whatsapp_number || user.phone,
         first_name: userData.first_name,
         last_name: userData.last_name,
         city_id: userData.city_id,
-        profile_photo_url: userData.profile_photo_url,
-      });
+      };
 
+      // Only include profile_photo_url if provided
+      if (userData.profile_photo_url) {
+        createData.profile_photo_url = userData.profile_photo_url;
+      }
+
+      const newProfile = await usersApi.createUser(createData);
       setProfile(newProfile);
       return newProfile;
     } catch (error) {

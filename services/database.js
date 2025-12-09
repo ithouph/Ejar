@@ -111,20 +111,26 @@ export const users = {
     return data;
   },
 
-  // Create new user
+  // Create new user (uses upsert to handle existing users)
   async createUser(userData) {
+    const insertData = {
+      id: userData.id,
+      phone: userData.phone,
+      whatsapp_number: userData.whatsapp_number || userData.phone,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      city_id: userData.city_id,
+      role: 'normal',
+    };
+    
+    // Only include profile_photo_url if it's a valid string
+    if (userData.profile_photo_url && typeof userData.profile_photo_url === 'string') {
+      insertData.profile_photo_url = userData.profile_photo_url;
+    }
+
     const { data, error } = await supabase
       .from('users')
-      .insert({
-        id: userData.id,
-        phone: userData.phone,
-        whatsapp_number: userData.whatsapp_number || userData.phone,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        city_id: userData.city_id,
-        profile_photo_url: userData.profile_photo_url,
-        role: 'normal',
-      })
+      .upsert(insertData, { onConflict: 'id' })
       .select(`
         *,
         cities (id, name, region)
