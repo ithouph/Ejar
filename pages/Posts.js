@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, Pressable, Image, FlatList, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, ScrollView, View, Pressable, Image, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
@@ -34,33 +34,28 @@ function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onTogg
     <Pressable onPress={onPress} style={[styles.compactPostCard, { backgroundColor: theme.surface }]}>
       {post.image ? (
         <Image source={{ uri: post.image }} style={styles.compactPostImage} />
-      ) : null}
-      <View style={styles.compactPostContent}>
-        <View style={styles.compactPostHeader}>
-          <Image source={{ uri: post.userPhoto }} style={styles.compactUserPhoto} />
-          <View style={{ flex: 1 }}>
-            <ThemedText type="bodySmall" style={styles.compactUserName} numberOfLines={1}>
-              {post.userName}
-            </ThemedText>
-            <ThemedText type="caption" style={{ color: theme.textSecondary }} numberOfLines={1}>
-              {post.timeAgo}
-            </ThemedText>
-          </View>
+      ) : (
+        <View style={[styles.compactPostImage, { backgroundColor: theme.surfaceHover, alignItems: 'center', justifyContent: 'center' }]}>
+          <Feather name="image" size={24} color={theme.textSecondary} />
         </View>
+      )}
+      <View style={styles.compactPostContent}>
         <ThemedText type="bodySmall" style={styles.compactPostText} numberOfLines={2}>
-          {post.text}
+          {post.title}
         </ThemedText>
+        <View style={styles.compactPostMeta}>
+          <ThemedText type="caption" style={{ color: theme.textSecondary }} numberOfLines={1}>
+            {post.cityName}
+          </ThemedText>
+          <ThemedText type="caption" style={{ color: theme.primary, fontWeight: '600' }}>
+            {post.price > 0 ? `${post.price} MRU` : 'Free'}
+          </ThemedText>
+        </View>
         <View style={styles.compactPostActions}>
           <View style={styles.compactActionGroup}>
             <Feather name="heart" size={14} color={theme.textSecondary} />
             <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-              {post.likes}
-            </ThemedText>
-          </View>
-          <View style={styles.compactActionGroup}>
-            <Feather name="message-circle" size={14} color={theme.textSecondary} />
-            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-              {post.comments}
+              {post.totalFavorites || 0}
             </ThemedText>
           </View>
           <Pressable onPress={onToggleSave}>
@@ -70,13 +65,13 @@ function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onTogg
               color={isSaved ? theme.primary : theme.textSecondary}
             />
           </Pressable>
+          {isOwnPost && (
+            <Pressable onPress={handleDelete}>
+              <Feather name="trash-2" size={14} color={theme.error || '#EF4444'} />
+            </Pressable>
+          )}
         </View>
       </View>
-      {isOwnPost ? (
-        <Pressable style={styles.compactDeleteButton} onPress={handleDelete}>
-          <Feather name="trash-2" size={14} color={theme.error || '#EF4444'} />
-        </Pressable>
-      ) : null}
     </Pressable>
   );
 }
@@ -108,7 +103,7 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave,
             {post.userName}
           </ThemedText>
           <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-            {post.location} • {post.timeAgo}
+            {post.cityName} • {post.timeAgo}
           </ThemedText>
         </View>
         {isOwnPost ? (
@@ -127,30 +122,40 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave,
       ) : null}
 
       <View style={styles.postContent}>
-        <ThemedText type="bodyLarge" style={styles.postText}>
-          {post.text}
+        <ThemedText type="bodyLarge" style={styles.postTitle}>
+          {post.title}
         </ThemedText>
+        {post.description ? (
+          <ThemedText type="body" style={[styles.postDescription, { color: theme.textSecondary }]} numberOfLines={2}>
+            {post.description}
+          </ThemedText>
+        ) : null}
+        <View style={styles.postPriceRow}>
+          <ThemedText type="h3" style={{ color: theme.primary }}>
+            {post.price > 0 ? `${post.price} MRU` : 'Free'}
+          </ThemedText>
+          {post.categoryName && (
+            <View style={[styles.categoryBadge, { backgroundColor: theme.primary + '15' }]}>
+              <ThemedText type="caption" style={{ color: theme.primary }}>
+                {post.categoryName}
+              </ThemedText>
+            </View>
+          )}
+        </View>
       </View>
 
       <View style={styles.postActions}>
         <Pressable style={styles.actionButton}>
           <Feather name="heart" size={20} color={theme.textSecondary} />
           <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-            {post.likes}
-          </ThemedText>
-        </Pressable>
-        <Pressable style={styles.actionButton}>
-          <Feather name="message-circle" size={20} color={theme.textSecondary} />
-          <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-            {post.comments}
+            {post.totalFavorites || 0}
           </ThemedText>
         </Pressable>
         <Pressable style={styles.actionButton} onPress={onToggleSave}>
           <Feather 
-            name={isSaved ? "bookmark" : "bookmark"} 
+            name="bookmark" 
             size={20} 
             color={isSaved ? theme.primary : theme.textSecondary}
-            fill={isSaved ? theme.primary : 'transparent'}
           />
         </Pressable>
         <Pressable style={styles.actionButton}>
@@ -165,13 +170,13 @@ function EmptyState({ theme, onCreatePost }) {
   return (
     <View style={styles.emptyContainer}>
       <View style={[styles.emptyIconContainer, { backgroundColor: theme.primary + '15' }]}>
-        <Feather name="edit-3" size={64} color={theme.primary} />
+        <Feather name="package" size={64} color={theme.primary} />
       </View>
       <ThemedText type="h2" style={styles.emptyTitle}>
         No Posts Yet
       </ThemedText>
       <ThemedText type="bodyLarge" style={[styles.emptyDescription, { color: theme.textSecondary }]}>
-        Share your travel experiences, photos, and stories with the community
+        Create your first listing to start selling on the marketplace
       </ThemedText>
       <Pressable 
         onPress={onCreatePost}
@@ -188,7 +193,7 @@ function EmptyState({ theme, onCreatePost }) {
 
 export default function Posts({ navigation }) {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const insets = useScreenInsets();
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -197,22 +202,28 @@ export default function Posts({ navigation }) {
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
-    React.useCallback(() => {
-      loadPosts();
+    useCallback(() => {
       if (user) {
+        loadUserPosts();
         loadSavedPosts();
+      } else {
+        setLoading(false);
       }
     }, [user])
   );
 
-  async function loadPosts() {
+  async function loadUserPosts() {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const fetchedPosts = await postsApi.getAll();
+      const fetchedPosts = await postsApi.getByUser(user.id);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error loading posts:', error);
-      Alert.alert('Error', 'Unable to load posts. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -222,9 +233,8 @@ export default function Posts({ navigation }) {
     if (!user) return;
 
     try {
-      const saved = await savedPostsApi.getAll(user.id);
-      const savedIds = new Set(saved.map(post => post.id));
-      setSavedPosts(savedIds);
+      const savedIds = await savedPostsApi.getIds(user.id);
+      setSavedPosts(new Set(savedIds));
     } catch (error) {
       console.error('Error loading saved posts:', error);
     }
@@ -232,13 +242,13 @@ export default function Posts({ navigation }) {
 
   async function handleRefresh() {
     setRefreshing(true);
-    await loadPosts();
+    await loadUserPosts();
     setRefreshing(false);
   }
 
   async function handleDeletePost(postId) {
     try {
-      await postsApi.delete(postId, user?.id || 'guest');
+      await postsApi.delete(postId, user?.id);
       setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
       Alert.alert('Success', 'Post deleted successfully');
     } catch (error) {
@@ -267,21 +277,10 @@ export default function Posts({ navigation }) {
       });
 
       await savedPostsApi.toggle(user.id, postId);
-
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (error) {
       console.error('Error toggling save:', error);
-      
-      setSavedPosts(prev => {
-        const newSaved = new Set(prev);
-        if (savedPosts.has(postId)) {
-          newSaved.delete(postId);
-        } else {
-          newSaved.add(postId);
-        }
-        return newSaved;
-      });
-
+      loadSavedPosts();
       Alert.alert('Error', 'Failed to save post. Please try again.');
     }
   }
@@ -295,15 +294,27 @@ export default function Posts({ navigation }) {
     navigation.navigate('AddPost');
   };
 
-  const handleCreateFirstPost = () => {
-    navigation.navigate('AddPost');
-  };
+  if (!user) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={[styles.navbarContainer, { paddingTop: insets.top }]}>
+          <PageHeader title="My Posts" theme={theme} />
+        </View>
+        <View style={styles.emptyContainer}>
+          <Feather name="log-in" size={48} color={theme.textSecondary} />
+          <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.md }}>
+            Please log in to view your posts
+          </ThemedText>
+        </View>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.navbarContainer, { paddingTop: insets.top }]}>
         <PageHeader
-          title="Posts"
+          title="My Posts"
           theme={theme}
           onAction={handleMenuPress}
           actionIcon="plus-circle"
@@ -312,17 +323,19 @@ export default function Posts({ navigation }) {
         />
       </View>
 
-      {posts.length === 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.primary} />
+        </View>
+      ) : posts.length === 0 ? (
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            {
-              paddingBottom: insets.bottom + Spacing.xl,
-            },
+            { paddingBottom: insets.bottom + Spacing.xl },
           ]}
           showsVerticalScrollIndicator={false}
         >
-          <EmptyState theme={theme} onCreatePost={handleCreateFirstPost} />
+          <EmptyState theme={theme} onCreatePost={handleMenuPress} />
         </ScrollView>
       ) : (
         <FlatList
@@ -331,11 +344,9 @@ export default function Posts({ navigation }) {
           key={viewMode}
           contentContainerStyle={[
             viewMode === 'compact' ? styles.gridContent : styles.listContent,
-            {
-              paddingBottom: insets.bottom + Spacing.xl,
-            },
+            { paddingBottom: insets.bottom + Spacing.xl },
           ]}
-          columnWrapperStyle={viewMode === 'compact' ? styles.row : null}
+          columnWrapperStyle={viewMode === 'compact' ? styles.row : undefined}
           renderItem={({ item }) => {
             if (viewMode === 'compact') {
               return (
@@ -395,6 +406,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: Spacing.md,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   postCard: {
     marginHorizontal: Spacing.lg,
     borderRadius: BorderRadius.medium,
@@ -429,9 +445,24 @@ const styles = StyleSheet.create({
   },
   postContent: {
     padding: Spacing.md,
+    gap: Spacing.xs,
   },
-  postText: {
-    lineHeight: 22,
+  postTitle: {
+    fontWeight: '600',
+  },
+  postDescription: {
+    lineHeight: 20,
+  },
+  postPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.xs,
+  },
+  categoryBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.small,
   },
   postActions: {
     flexDirection: 'row',
@@ -450,7 +481,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xxl * 2,
   },
   emptyIconContainer: {
     width: 140,
@@ -488,49 +518,29 @@ const styles = StyleSheet.create({
   },
   compactPostImage: {
     width: '100%',
-    height: 120,
+    height: 100,
   },
   compactPostContent: {
     padding: Spacing.sm,
     gap: Spacing.xs,
   },
-  compactPostHeader: {
+  compactPostText: {
+    fontWeight: '500',
+  },
+  compactPostMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
-    marginBottom: Spacing.xs,
-  },
-  compactUserPhoto: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-  },
-  compactUserName: {
-    fontWeight: '600',
-  },
-  compactPostText: {
-    lineHeight: 18,
-    marginBottom: Spacing.xs,
+    justifyContent: 'space-between',
   },
   compactPostActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
+    gap: Spacing.md,
+    marginTop: Spacing.xs,
   },
   compactActionGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  compactDeleteButton: {
-    position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.xs,
   },
 });
