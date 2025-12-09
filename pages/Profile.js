@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, ScrollView, View, Pressable, Image, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
@@ -7,59 +7,83 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { users as usersApi, wallet as walletApi } from '../services/database';
+import { wallet as walletApi } from '../services/database';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function Profile({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
-  const { user } = useAuth();
-  const [userProfile, setUserProfile] = useState(null);
-  const [walletBalance, setWalletBalance] = useState(0);
+  const { user, profile, signOut } = useAuth();
+  const [walletData, setWalletData] = useState({ balance: 0, freePostsRemaining: 0 });
   const [loadingBalance, setLoadingBalance] = useState(true);
 
-  useEffect(() => {
-    loadUserProfile();
-    loadWalletBalance();
-  }, [user]);
-
-  const loadUserProfile = async () => {
-    if (!user) {
-      setUserProfile(null);
-      return;
-    }
-
-    try {
-      const profile = await usersApi.getUser(user.id);
-      setUserProfile(profile);
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-      setUserProfile(null);
-    }
-  };
+  useFocusEffect(
+    useCallback(() => {
+      loadWalletBalance();
+    }, [user])
+  );
 
   const loadWalletBalance = async () => {
     if (!user) {
-      setWalletBalance(0);
+      setWalletData({ balance: 0, freePostsRemaining: 0 });
       setLoadingBalance(false);
       return;
     }
 
     try {
       setLoadingBalance(true);
-      const walletData = await walletApi.get(user.id);
-      
-      if (walletData) {
-        const balance = parseFloat(walletData.balance) || 0;
-        setWalletBalance(balance);
-      } else {
-        setWalletBalance(0);
-      }
+      const data = await walletApi.getBalance(user.id);
+      setWalletData(data);
     } catch (error) {
       console.error('Error loading wallet balance:', error);
-      setWalletBalance(0);
+      setWalletData({ balance: 0, freePostsRemaining: 0 });
     } finally {
       setLoadingBalance(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  const getUserName = () => {
+    if (profile) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User';
+    }
+    return 'User';
+  };
+
+  const getUserCity = () => {
+    if (profile?.cities?.name) {
+      return profile.cities.name;
+    }
+    return 'No city set';
+  };
+
+  const getRoleBadge = () => {
+    if (!profile?.role) return null;
+    
+    const roleLabels = {
+      'normal': null,
+      'member': { label: 'Member', color: '#22c55e' },
+      'ex_member': { label: 'Ex-Member', color: '#f59e0b' },
+      'leader': { label: 'Leader', color: '#8b5cf6' },
+    };
+
+    const badge = roleLabels[profile.role];
+    if (!badge) return null;
+
+    return (
+      <View style={[styles.roleBadge, { backgroundColor: badge.color }]}>
+        <ThemedText type="caption" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+          {badge.label}
+        </ThemedText>
+      </View>
+    );
   };
 
   return (
@@ -83,17 +107,25 @@ export default function Profile({ navigation }) {
         >
           <Image
             source={{ 
-              uri: userProfile?.photo_url || user?.user_metadata?.avatar_url || 'https://via.placeholder.com/100'
+              uri: profile?.profile_photo_url || 'https://via.placeholder.com/100'
             }}
             style={styles.profilePhoto}
           />
           <View style={styles.profileInfo}>
-            <ThemedText type="bodyLarge" style={styles.profileName}>
-              {userProfile?.full_name || user?.user_metadata?.full_name || user?.email || 'Guest User'}
-            </ThemedText>
+            <View style={styles.nameRow}>
+              <ThemedText type="bodyLarge" style={styles.profileName}>
+                {getUserName()}
+              </ThemedText>
+              {getRoleBadge()}
+            </View>
             <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-              {user?.email || 'guest@ejar.com'}
+              {getUserCity()}
             </ThemedText>
+            {profile?.whatsapp_number && (
+              <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+                WhatsApp: {profile.whatsapp_number}
+              </ThemedText>
+            )}
           </View>
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />
         </Pressable>
@@ -110,7 +142,7 @@ export default function Profile({ navigation }) {
                 darkColor="#FFF"
                 style={styles.balanceLabel}
               >
-                Total Balance
+                Wallet Balance
               </ThemedText>
               {loadingBalance ? (
                 <ActivityIndicator size="small" color="#FFF" style={{ marginVertical: 8 }} />
@@ -121,17 +153,37 @@ export default function Profile({ navigation }) {
                   darkColor="#FFF"
                   style={styles.balanceAmount}
                 >
-                  ${walletBalance.toFixed(2)}
+                  {walletData.balance.toFixed(0)} MRU
                 </ThemedText>
               )}
             </View>
-            <View style={styles.balanceIcon}>
-              <Feather name="dollar-sign" size={32} color="#FFF" />
+            <View style={styles.balanceRight}>
+              <View style={styles.freePostsBadge}>
+                <ThemedText type="caption" style={{ color: '#FFFFFF' }}>
+                  {walletData.freePostsRemaining} free posts
+                </ThemedText>
+              </View>
+              <Feather name="credit-card" size={32} color="#FFF" />
             </View>
           </View>
         </Pressable>
 
         <View style={styles.gridContainer}>
+          <Pressable
+            style={[styles.gridCard, { backgroundColor: theme.surface }]}
+            onPress={() => navigation.navigate('Account')}
+          >
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
+              <Feather name="user" size={24} color={theme.textPrimary} />
+            </View>
+            <ThemedText type="bodyLarge" style={styles.gridTitle}>
+              Account
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Manage account
+            </ThemedText>
+          </Pressable>
+
           <Pressable
             style={[styles.gridCard, { backgroundColor: theme.surface }]}
             onPress={() => navigation.navigate('Review')}
@@ -194,16 +246,16 @@ export default function Profile({ navigation }) {
 
           <Pressable
             style={[styles.gridCard, { backgroundColor: theme.surface }]}
-            onPress={() => navigation.navigate('Balance')}
+            onPress={handleSignOut}
           >
-            <View style={[styles.gridIconContainer, { backgroundColor: theme.background }]}>
-              <Feather name="dollar-sign" size={24} color={theme.textPrimary} />
+            <View style={[styles.gridIconContainer, { backgroundColor: theme.error + '20' }]}>
+              <Feather name="log-out" size={24} color={theme.error} />
             </View>
-            <ThemedText type="bodyLarge" style={styles.gridTitle}>
-              Wallet
+            <ThemedText type="bodyLarge" style={[styles.gridTitle, { color: theme.error }]}>
+              Sign Out
             </ThemedText>
             <ThemedText type="caption" style={{ color: theme.textSecondary }}>
-              Manage your balance
+              Logout from app
             </ThemedText>
           </Pressable>
         </View>
@@ -238,9 +290,19 @@ const styles = StyleSheet.create({
   profileInfo: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
   profileName: {
     fontWeight: '600',
-    marginBottom: Spacing.xs,
+  },
+  roleBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.small,
   },
   gridContainer: {
     flexDirection: 'row',
@@ -275,17 +337,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   balanceLabel: {
-    marginBottom: Spacing.sm,
+    opacity: 0.9,
+    marginBottom: Spacing.xs,
   },
   balanceAmount: {
     fontWeight: '700',
   },
-  balanceIcon: {
-    width: 64,
-    height: 64,
+  balanceRight: {
+    alignItems: 'flex-end',
+    gap: Spacing.sm,
+  },
+  freePostsBadge: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.small,
   },
 });
