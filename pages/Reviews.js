@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, BorderRadius } from '../theme/global';
-import { postReviews as postReviewsApi } from '../services/database';
+import { reviews as postReviewsApi } from '../services';
 
 function ReviewCard({ review, theme }) {
   const renderStars = (rating) => {

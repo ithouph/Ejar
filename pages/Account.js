@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { wallet as walletApi, users as usersApi } from '../services/database';
+import { wallet as walletApi, users as usersApi } from '../services';
 
 function ServiceCard({ icon, title, onPress, theme }) {
   return (

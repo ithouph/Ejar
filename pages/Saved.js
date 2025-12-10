@@ -10,7 +10,7 @@ import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Spacing, BorderRadius } from '../theme/global';
-import { favorites as favoritesApi } from '../services/database';
+import { savedPosts as favoritesApi } from '../services';
 
 function CompactCard({ item, onPress, onFavoritePress, isFavorite, theme }) {
   return (

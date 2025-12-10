@@ -17,7 +17,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi } from '../services/database';
+import { posts as postsApi } from '../services';
 
 const LISTING_TYPES = [
   { id: 'rent', label: 'Rent' },

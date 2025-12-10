@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { postReviews as postReviewsApi } from '../services/database';
+import { reviews as postReviewsApi } from '../services';
 
 export default function PostDetail({ route, navigation }) {
   const { post } = route.params;

@@ -68,13 +68,15 @@ The application is built using Expo React Native for the frontend and Supabase (
   - City-based approval by members
   - Transaction types: deposit, withdrawal, post_payment, approval_reward, refund
 
-- **Backend Services:** All backend interactions are consolidated in `services/database.js`:
-  - `auth`: OTP authentication (sendOTP, verifyOTP, completeProfile)
-  - `users`: Profile management
-  - `cities`: City data
-  - `wallet`: Balance and transactions
-  - `posts`: Marketplace listings
-  - `savedPosts`: User favorites
+- **Backend Services:** All backend interactions are in separate service files under `services/`:
+  - `auth.js`: OTP authentication (sendOTP, verifyOTP)
+  - `users.js`: Profile management, user CRUD
+  - `cities.js`: City data
+  - `categories.js`: Service categories
+  - `posts.js`: Marketplace listings CRUD
+  - `savedPosts.js`: User favorites/bookmarks
+  - `reviews.js`: Post reviews
+  - `wallet.js`: Balance and transactions
 
 - **Styling System:** Centralized in `theme/` folder:
   - `colors.js`: Theme colors with primary rgba(22, 90, 74, 1)
@@ -104,6 +106,17 @@ Key tables (see DATABASE_SETUP.sql for complete schema):
 ## File Structure
 
 ```
+/services            - Backend services (modular)
+  index.js           - Exports all services
+  auth.js            - Phone OTP authentication
+  users.js           - User profile CRUD
+  cities.js          - City data
+  categories.js      - Service categories
+  posts.js           - Marketplace listings
+  savedPosts.js      - Favorites/bookmarks
+  reviews.js         - Post reviews
+  wallet.js          - Balance & transactions
+
 /pages
   Login.js           - Phone OTP login
   CompleteProfile.js - New user onboarding
@@ -113,9 +126,8 @@ Key tables (see DATABASE_SETUP.sql for complete schema):
   AddBalance.js      - Deposit request form
   Posts.js           - User's posts
   AddPost.js         - Create new post
-
-/services
-  database.js        - All Supabase operations
+  Discover.js        - Browse listings
+  Saved.js           - Saved posts
 
 /contexts
   AuthContext.js     - Authentication state
