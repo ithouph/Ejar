@@ -2,11 +2,13 @@
 
 ## Authentication Flow
 
-**Authentication Required**: Google OAuth (SSO)
+**Authentication Required**: Phone OTP
 - **Welcome Screen**: Full-screen with scattered Notion-inspired icons, centered "Get started" button
-- **Login/Signup Screen**: Google Sign-In button prominent, "I have an account" secondary option
-- **Transition**: Smooth slide/fade animation (300ms) from welcome to login using React Native Reanimated
-- **Post-Auth**: Redirect to personalized home page with couple/event details
+- **Login Screen**: Phone number input with +222 country code, "Send Verification Code" button
+- **OTP Screen**: 6-digit code input, resend option, back button
+- **Complete Profile**: First name, last name, city selection, WhatsApp number
+- **Transition**: Smooth slide/fade animation (300ms) using React Native Reanimated
+- **Post-Auth**: Redirect to personalized home page with marketplace listings
 
 ## Navigation Architecture
 
@@ -85,7 +87,7 @@
 ### Settings Page
 **Header**: "Settings" title, standard navigation
 **Sections** (Grouped list):
-- Profile card: Photo (64px circle), name, email from Google, chevron right
+- Profile card: Photo (64px circle), name, phone number, chevron right
 - My Reviews: Icon + text, chevron right
 - Notification Preferences: Toggle switches
 - Help & Support: Icon + text, chevron right
