@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { wallet as walletApi } from '../services/database';
+import { wallet as walletApi } from '../services';
 
 const PAYMENT_METHODS = [
   { id: 'bankily', name: 'Bankily', icon: 'smartphone' },

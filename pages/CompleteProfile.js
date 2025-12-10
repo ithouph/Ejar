@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
-import { cities as citiesApi } from '../services/database';
+import { cities as citiesApi } from '../services';
 
 export default function CompleteProfile({ navigation }) {
   const { theme } = useTheme();

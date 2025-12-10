@@ -7,7 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { wallet as walletApi } from '../services/database';
+import { wallet as walletApi } from '../services';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function Profile({ navigation }) {

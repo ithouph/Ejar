@@ -8,7 +8,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { reviews as reviewsApi } from '../services/database';
+import { reviews as reviewsApi } from '../services';
 
 function ReviewItem({ review }) {
   const { theme } = useTheme();

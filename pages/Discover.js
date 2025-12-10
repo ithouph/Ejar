@@ -11,7 +11,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
-import { posts as postsApi, savedPosts as savedPostsApi } from '../services/database';
+import { posts as postsApi, savedPosts as savedPostsApi } from '../services';
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },

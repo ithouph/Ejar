@@ -8,7 +8,7 @@ import { PageHeader } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi, savedPosts as savedPostsApi } from '../services/database';
+import { posts as postsApi, savedPosts as savedPostsApi } from '../services';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 

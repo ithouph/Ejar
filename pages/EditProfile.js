@@ -9,7 +9,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles, BorderRadius } from '../theme';
 import { useAuth } from '../contexts/AuthContext';
-import { users as usersApi, cities as citiesApi } from '../services/database';
+import { users as usersApi, cities as citiesApi } from '../services';
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme, editable = true }) {
   return (
