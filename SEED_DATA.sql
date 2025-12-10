@@ -2,144 +2,178 @@
 -- EJAR APP - DUMMY DATA SEED SCRIPT
 -- ═══════════════════════════════════════════════════════════════════
 -- Run this in Supabase Dashboard: SQL Editor → New query → Paste & Run
+-- Requires: DATABASE_SETUP.sql to be run first
 -- ═══════════════════════════════════════════════════════════════════
 
--- 1. ADD MORE PROPERTIES (10 new properties)
-INSERT INTO properties (title, description, type, location, price_per_night, bedrooms, bathrooms, max_guests, rating, total_reviews)
-VALUES 
-  ('Beachfront Villa Paradise', 'Stunning oceanfront villa with private pool, direct beach access, and breathtaking sunset views. Perfect for families and groups.', 'Apartment', 'Bali, Indonesia', 350, 4, 3, 8, 4.9, 127),
-  ('Downtown Luxury Apartment', 'Modern high-rise apartment in the heart of the city. Walking distance to shopping, dining, and entertainment.', 'Apartment', 'Dubai, UAE', 280, 2, 2, 4, 4.7, 89),
-  ('Mountain Retreat Chalet', 'Cozy alpine chalet with fireplace, hot tub, and panoramic mountain views. Ideal for ski season.', 'Hotel', 'Aspen, Colorado', 420, 3, 2, 6, 4.8, 64),
-  ('Historic City Center Hotel', 'Boutique hotel in a restored 19th-century building. Elegant rooms with modern amenities.', 'Hotel', 'Paris, France', 195, 1, 1, 2, 4.6, 203),
-  ('Tropical Island Resort', 'All-inclusive resort with private beach, water sports, spa, and multiple dining options.', 'Hotel', 'Maldives', 680, NULL, NULL, 2, 5.0, 412),
-  ('Urban Loft Studio', 'Trendy studio loft in converted warehouse. Exposed brick, high ceilings, industrial design.', 'Apartment', 'New York, USA', 160, 1, 1, 2, 4.4, 56),
-  ('Santorini Cliffside Suite', 'Iconic white-washed suite carved into volcanic cliffs with stunning caldera views.', 'Hotel', 'Santorini, Greece', 520, 1, 1, 2, 4.9, 285),
-  ('Safari Lodge & Spa', 'Luxury tented lodge in the heart of the savanna. Wildlife viewing and guided safaris.', 'Hotel', 'Serengeti, Tanzania', 890, 1, 1, 2, 5.0, 156),
-  ('Lakeside Cabin Retreat', 'Peaceful cabin surrounded by pine trees with private dock. Perfect for fishing and kayaking.', 'Apartment', 'Lake Tahoe, USA', 240, 2, 1, 4, 4.5, 78),
-  ('Tokyo Capsule Hotel', 'Modern capsule hotel in Shibuya. High-tech pods with privacy curtains.', 'Hotel', 'Tokyo, Japan', 45, NULL, NULL, 1, 4.2, 534)
-ON CONFLICT (id) DO NOTHING;
+-- 1. INSERT MAURITANIAN CITIES
+INSERT INTO cities (name, region, is_active) VALUES
+('Nouakchott', 'Nouakchott', true),
+('Nouadhibou', 'Dakhlet Nouadhibou', true),
+('Kaédi', 'Gorgol', true),
+('Zouérat', 'Tiris Zemmour', true),
+('Rosso', 'Trarza', true),
+('Atar', 'Adrar', true),
+('Kiffa', 'Assaba', true),
+('Néma', 'Hodh Ech Chargui', true),
+('Aleg', 'Brakna', true),
+('Sélibaby', 'Guidimaka', true),
+('Aioun el Atrouss', 'Hodh El Gharbi', true),
+('Tidjikja', 'Tagant', true),
+('Akjoujt', 'Inchiri', true)
+ON CONFLICT (name) DO NOTHING;
 
--- Get the IDs of newly inserted properties for amenities
--- Note: You'll need to replace these UUIDs with actual IDs from your database
+-- 2. INSERT SERVICE CATEGORIES
+INSERT INTO service_categories (name, type, description, metadata) VALUES
+('Property', 'marketplace', 'Houses, apartments, land for rent or sale', '{"icon": "home", "color": "#165A4A"}'),
+('Phones', 'marketplace', 'Mobile phones and accessories', '{"icon": "smartphone", "color": "#3B82F6"}'),
+('Laptops', 'marketplace', 'Laptops and computers', '{"icon": "monitor", "color": "#8B5CF6"}'),
+('Electronics', 'marketplace', 'TVs, appliances, gadgets', '{"icon": "zap", "color": "#F59E0B"}'),
+('Cars', 'marketplace', 'Vehicles for rent or sale', '{"icon": "truck", "color": "#EF4444"}')
+ON CONFLICT DO NOTHING;
 
--- 2. ADD AMENITIES (for existing properties)
--- First, let's add amenities for the test properties that already exist
+-- 3. INSERT TEST USERS (for development only)
+-- Note: These use placeholder UUIDs. In production, users are created via OTP auth.
 
--- For Test Hotel - Ejar Connection Test (you'll need to replace the UUID)
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Test Hotel - Ejar Connection Test'
-UNION ALL
-SELECT id, 'Pool', 'droplet' FROM properties WHERE title = 'Test Hotel - Ejar Connection Test'
-UNION ALL
-SELECT id, 'Parking', 'car' FROM properties WHERE title = 'Test Hotel - Ejar Connection Test'
-UNION ALL
-SELECT id, 'Air Conditioning', 'wind' FROM properties WHERE title = 'Test Hotel - Ejar Connection Test';
+-- First get a city ID for test users
+DO $$
+DECLARE
+    nouakchott_id UUID;
+    nouadhibou_id UUID;
+    test_user1_id UUID;
+    test_user2_id UUID;
+    test_member_id UUID;
+    property_cat_id UUID;
+    phones_cat_id UUID;
+    cars_cat_id UUID;
+BEGIN
+    -- Get city IDs
+    SELECT id INTO nouakchott_id FROM cities WHERE name = 'Nouakchott';
+    SELECT id INTO nouadhibou_id FROM cities WHERE name = 'Nouadhibou';
+    
+    -- Get category IDs
+    SELECT id INTO property_cat_id FROM service_categories WHERE name = 'Property';
+    SELECT id INTO phones_cat_id FROM service_categories WHERE name = 'Phones';
+    SELECT id INTO cars_cat_id FROM service_categories WHERE name = 'Cars';
 
--- For Luxury Beach Resort
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Luxury Beach Resort'
-UNION ALL
-SELECT id, 'Pool', 'droplet' FROM properties WHERE title = 'Luxury Beach Resort'
-UNION ALL
-SELECT id, 'Spa', 'heart' FROM properties WHERE title = 'Luxury Beach Resort'
-UNION ALL
-SELECT id, 'Restaurant', 'coffee' FROM properties WHERE title = 'Luxury Beach Resort'
-UNION ALL
-SELECT id, 'Beach Access', 'sun' FROM properties WHERE title = 'Luxury Beach Resort';
+    -- Insert test users
+    INSERT INTO users (phone, whatsapp_number, first_name, last_name, city_id, role, wallet_balance_mru, free_posts_remaining)
+    VALUES 
+        ('+22212345678', '+22212345678', 'Ahmed', 'Mohamed', nouakchott_id, 'normal', 5000.00, 5),
+        ('+22223456789', '+22223456789', 'Fatima', 'Mint Ali', nouakchott_id, 'normal', 2500.00, 3),
+        ('+22234567890', '+22234567890', 'Omar', 'Ould Cheikh', nouadhibou_id, 'member', 10000.00, 5)
+    ON CONFLICT (phone) DO NOTHING
+    RETURNING id INTO test_user1_id;
 
--- For newly added Beachfront Villa Paradise
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Beachfront Villa Paradise'
-UNION ALL
-SELECT id, 'Pool', 'droplet' FROM properties WHERE title = 'Beachfront Villa Paradise'
-UNION ALL
-SELECT id, 'Kitchen', 'coffee' FROM properties WHERE title = 'Beachfront Villa Paradise'
-UNION ALL
-SELECT id, 'Parking', 'car' FROM properties WHERE title = 'Beachfront Villa Paradise'
-UNION ALL
-SELECT id, 'Air Conditioning', 'wind' FROM properties WHERE title = 'Beachfront Villa Paradise';
+    -- Get user IDs for posts
+    SELECT id INTO test_user1_id FROM users WHERE phone = '+22212345678';
+    SELECT id INTO test_user2_id FROM users WHERE phone = '+22223456789';
+    SELECT id INTO test_member_id FROM users WHERE phone = '+22234567890';
 
--- For Downtown Luxury Apartment
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Downtown Luxury Apartment'
-UNION ALL
-SELECT id, 'Gym', 'activity' FROM properties WHERE title = 'Downtown Luxury Apartment'
-UNION ALL
-SELECT id, 'Parking', 'car' FROM properties WHERE title = 'Downtown Luxury Apartment'
-UNION ALL
-SELECT id, 'Air Conditioning', 'wind' FROM properties WHERE title = 'Downtown Luxury Apartment';
+    -- 4. INSERT SAMPLE POSTS
+    IF test_user1_id IS NOT NULL AND property_cat_id IS NOT NULL THEN
+        INSERT INTO posts (user_id, city_id, category_id, title, description, price, images, status, paid, was_free_post)
+        VALUES 
+            -- Properties
+            (test_user1_id, nouakchott_id, property_cat_id, 
+             'Modern 3BR Apartment in Tevragh Zeina', 
+             'Spacious apartment with AC, parking, and 24/7 security. Close to shops and restaurants.',
+             150000, 
+             ARRAY['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'],
+             'active', true, true),
+            
+            (test_user1_id, nouakchott_id, property_cat_id, 
+             'Villa with Garden in Ksar', 
+             'Beautiful villa with 4 bedrooms, large garden, and modern kitchen. Perfect for families.',
+             350000, 
+             ARRAY['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400'],
+             'active', true, false),
 
--- For Mountain Retreat Chalet
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Mountain Retreat Chalet'
-UNION ALL
-SELECT id, 'Fireplace', 'zap' FROM properties WHERE title = 'Mountain Retreat Chalet'
-UNION ALL
-SELECT id, 'Hot Tub', 'droplet' FROM properties WHERE title = 'Mountain Retreat Chalet'
-UNION ALL
-SELECT id, 'Kitchen', 'coffee' FROM properties WHERE title = 'Mountain Retreat Chalet';
+            -- Phones
+            (test_user2_id, nouakchott_id, phones_cat_id, 
+             'iPhone 14 Pro Max - Like New', 
+             '256GB, Deep Purple. Includes charger and original box. Battery health 98%.',
+             85000, 
+             ARRAY['https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400'],
+             'active', true, true),
 
--- For Santorini Cliffside Suite
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Santorini Cliffside Suite'
-UNION ALL
-SELECT id, 'Pool', 'droplet' FROM properties WHERE title = 'Santorini Cliffside Suite'
-UNION ALL
-SELECT id, 'Breakfast', 'coffee' FROM properties WHERE title = 'Santorini Cliffside Suite'
-UNION ALL
-SELECT id, 'Air Conditioning', 'wind' FROM properties WHERE title = 'Santorini Cliffside Suite';
+            (test_user2_id, nouakchott_id, phones_cat_id, 
+             'Samsung Galaxy S23 Ultra', 
+             '512GB, Phantom Black. Perfect condition, used for 3 months only.',
+             75000, 
+             ARRAY['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'],
+             'active', true, true),
 
--- For Tropical Island Resort
-INSERT INTO amenities (property_id, name, icon)
-SELECT id, 'Wi-Fi', 'wifi' FROM properties WHERE title = 'Tropical Island Resort'
-UNION ALL
-SELECT id, 'Pool', 'droplet' FROM properties WHERE title = 'Tropical Island Resort'
-UNION ALL
-SELECT id, 'Spa', 'heart' FROM properties WHERE title = 'Tropical Island Resort'
-UNION ALL
-SELECT id, 'Restaurant', 'coffee' FROM properties WHERE title = 'Tropical Island Resort'
-UNION ALL
-SELECT id, 'Beach Access', 'sun' FROM properties WHERE title = 'Tropical Island Resort';
+            -- Cars
+            (test_member_id, nouadhibou_id, cars_cat_id, 
+             'Toyota Land Cruiser 2020', 
+             'V8 engine, full options, leather seats. Well maintained with service history.',
+             2500000, 
+             ARRAY['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'],
+             'active', true, false),
+
+            (test_member_id, nouadhibou_id, cars_cat_id, 
+             'Hilux Double Cabin 2022', 
+             'Diesel, 4x4, low mileage. Perfect for desert trips.',
+             1800000, 
+             ARRAY['https://images.unsplash.com/photo-1559416523-140ddc3d238c?w=400'],
+             'active', true, true)
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    -- 5. INSERT SAMPLE REVIEWS
+    IF test_user1_id IS NOT NULL AND test_user2_id IS NOT NULL THEN
+        INSERT INTO reviews (user_id, post_id, rating, comment)
+        SELECT 
+            test_user2_id,
+            p.id,
+            4,
+            'Great property, exactly as described. Owner was very helpful.'
+        FROM posts p 
+        WHERE p.user_id = test_user1_id 
+        LIMIT 1
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+END $$;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- VERIFICATION QUERIES
 -- ═══════════════════════════════════════════════════════════════════
 
--- Check how many properties exist
-SELECT COUNT(*) as total_properties FROM properties;
+-- Check cities
+SELECT name, region FROM cities ORDER BY name;
 
--- Check how many amenities exist
-SELECT COUNT(*) as total_amenities FROM amenities;
+-- Check categories
+SELECT name, type FROM service_categories;
 
--- Show all properties with their amenity count
+-- Check users
+SELECT first_name, last_name, phone, role, wallet_balance_mru 
+FROM users ORDER BY created_at;
+
+-- Check posts with category and city
 SELECT 
-  p.title,
-  p.type,
-  p.location,
-  p.price_per_night,
-  p.rating,
-  COUNT(a.id) as amenity_count
-FROM properties p
-LEFT JOIN amenities a ON p.id = a.property_id
-GROUP BY p.id, p.title, p.type, p.location, p.price_per_night, p.rating
+    p.title,
+    p.price,
+    c.name as city,
+    sc.name as category,
+    u.first_name || ' ' || u.last_name as seller
+FROM posts p
+JOIN cities c ON p.city_id = c.id
+LEFT JOIN service_categories sc ON p.category_id = sc.id
+JOIN users u ON p.user_id = u.id
 ORDER BY p.created_at DESC;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- NOTES
 -- ═══════════════════════════════════════════════════════════════════
 -- 
--- User-Specific Data (requires authentication):
--- - reviews: Users must be logged in to create reviews
--- - favorites: Users must be logged in to save favorites
--- - wallet: Created automatically when user signs up
--- - wallet_transactions: Created when user adds/uses balance
--- - posts: Users must be logged in to create posts
--- - user_profiles: Created automatically after Google OAuth
--- - wedding_events: Users can create after logging in
+-- Test Phone Numbers:
+-- +22212345678 - Normal user (Ahmed)
+-- +22223456789 - Normal user (Fatima)
+-- +22234567890 - Member user (Omar)
 --
--- After running this script:
--- 1. You'll have 12 properties total (2 existing + 10 new)
--- 2. Each property will have 4-5 amenities
--- 3. Log in with Google OAuth to add reviews, favorites, etc.
+-- For testing without Supabase Phone Auth:
+-- The app has a console OTP fallback mode for development.
+-- Enter any phone number and check the console for the OTP code.
 --
 -- ═══════════════════════════════════════════════════════════════════
