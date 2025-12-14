@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Discover from '../pages/Discover';
 import Details from '../pages/Details';
+import PostDetail from '../pages/PostDetail';
 import Poster from '../pages/Poster';
 import Feedback from '../pages/Feedback';
 
@@ -16,6 +17,7 @@ export default function DiscoverNavigator() {
     >
       <Stack.Screen name="DiscoverHome" component={Discover} />
       <Stack.Screen name="Details" component={Details} />
+      <Stack.Screen name="PostDetail" component={PostDetail} />
       <Stack.Screen name="Poster" component={Poster} />
       <Stack.Screen name="Feedback" component={Feedback} />
     </Stack.Navigator>
