@@ -275,9 +275,14 @@ export default function AddPost({ navigation }) {
 
   async function handlePickImages() {
     try {
-      const selectedImages = await postsApi.pickImages(5);
+      const remainingSlots = 5 - images.length;
+      if (remainingSlots <= 0) {
+        Alert.alert('Limit Reached', 'You can add up to 5 images per post.');
+        return;
+      }
+      const selectedImages = await postsApi.pickImages(remainingSlots);
       if (selectedImages.length > 0) {
-        setImages(selectedImages);
+        setImages(prev => [...prev, ...selectedImages].slice(0, 5));
       }
     } catch (error) {
       console.error('Error picking image:', error);
