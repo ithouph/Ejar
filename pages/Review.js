@@ -32,6 +32,7 @@ function ReviewItem({ review }) {
 }
 
 export default function Review() {
+  const { theme } = useTheme();
   const insets = useScreenInsets();
   const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
@@ -61,7 +62,6 @@ export default function Review() {
   };
 
   const renderEmptyState = () => {
-    const { theme } = useTheme();
     return (
       <View style={styles.emptyContainer}>
         <Feather name="star" size={64} color={theme.textSecondary} />
@@ -76,7 +76,6 @@ export default function Review() {
   };
 
   if (loading) {
-    const { theme } = useTheme();
     return (
       <ThemedView style={styles.container}>
         <View style={[styles.loadingContainer, { paddingTop: insets.top + Spacing.xl }]}>
