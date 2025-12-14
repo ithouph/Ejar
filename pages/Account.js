@@ -32,6 +32,7 @@ export default function Account({ navigation }) {
   const [walletBalance, setWalletBalance] = useState(0);
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
+  const [freePostsRemaining, setFreePostsRemaining] = useState(5);
 
   useEffect(() => {
     loadWalletBalance();
@@ -47,6 +48,9 @@ export default function Account({ navigation }) {
     try {
       const profile = await usersApi.getUser(user.id);
       setUserProfile(profile);
+      if (profile?.freePostsRemaining !== undefined) {
+        setFreePostsRemaining(profile.freePostsRemaining);
+      }
     } catch (error) {
       console.error('Error loading user profile:', error);
       setUserProfile(null);
@@ -129,38 +133,62 @@ export default function Account({ navigation }) {
           <Feather name="chevron-right" size={20} color={theme.textSecondary} />
         </Pressable>
 
-        <Pressable
-          onPress={() => navigation.navigate('Balance')}
-          style={[styles.balanceCard, { backgroundColor: theme.primary }]}
-        >
-          <View style={styles.balanceContent}>
-            <View>
-              <ThemedText
-                type="caption"
-                lightColor="#FFF"
-                darkColor="#FFF"
-                style={styles.balanceLabel}
-              >
-                Total Balance
-              </ThemedText>
-              {loadingBalance ? (
-                <ActivityIndicator size="small" color="#FFF" style={{ marginVertical: 8 }} />
-              ) : (
+        <View style={styles.statsRow}>
+          <Pressable
+            onPress={() => navigation.navigate('Balance')}
+            style={[styles.statCard, { backgroundColor: theme.primary }]}
+          >
+            <View style={styles.statContent}>
+              <View>
                 <ThemedText
-                  type="h1"
+                  type="caption"
                   lightColor="#FFF"
                   darkColor="#FFF"
-                  style={styles.balanceAmount}
+                  style={styles.balanceLabel}
                 >
-                  ${walletBalance.toFixed(2)}
+                  Total Balance
                 </ThemedText>
-              )}
+                {loadingBalance ? (
+                  <ActivityIndicator size="small" color="#FFF" style={{ marginVertical: 8 }} />
+                ) : (
+                  <ThemedText
+                    type="h2"
+                    lightColor="#FFF"
+                    darkColor="#FFF"
+                    style={styles.statAmount}
+                  >
+                    {walletBalance.toFixed(0)} MRU
+                  </ThemedText>
+                )}
+              </View>
+              <View style={styles.statIcon}>
+                <Feather name="credit-card" size={24} color="#FFF" />
+              </View>
             </View>
-            <View style={styles.balanceIcon}>
-              <Feather name="dollar-sign" size={32} color="#FFF" />
+          </Pressable>
+
+          <View style={[styles.statCard, { backgroundColor: theme.surface }]}>
+            <View style={styles.statContent}>
+              <View>
+                <ThemedText
+                  type="caption"
+                  style={[styles.balanceLabel, { color: theme.textSecondary }]}
+                >
+                  Free Posts
+                </ThemedText>
+                <ThemedText
+                  type="h2"
+                  style={styles.statAmount}
+                >
+                  {freePostsRemaining}
+                </ThemedText>
+              </View>
+              <View style={[styles.statIcon, { backgroundColor: theme.primary + '20' }]}>
+                <Feather name="file-plus" size={24} color={theme.primary} />
+              </View>
             </View>
           </View>
-        </Pressable>
+        </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -461,16 +489,30 @@ const styles = StyleSheet.create({
   gridTitle: {
     fontWeight: '600',
   },
-  statsSection: {
+  statsRow: {
     flexDirection: 'row',
     gap: Spacing.md,
   },
   statCard: {
     flex: 1,
-    alignItems: 'center',
     padding: Spacing.lg,
-    borderRadius: BorderRadius.medium,
-    gap: Spacing.sm,
+    borderRadius: BorderRadius.large,
+  },
+  statContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statAmount: {
+    fontWeight: '700',
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statNumber: {
     fontWeight: '700',
