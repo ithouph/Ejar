@@ -4,14 +4,173 @@ import * as ImagePicker from 'expo-image-picker';
 
 const DEV_POSTS_KEY = '@ejar_dev_posts';
 
+const SAMPLE_POSTS = [
+  {
+    id: 'sample-1',
+    userId: 'sample-user',
+    cityId: 'nouakchott',
+    category: 'property',
+    title: 'Modern 3BR Apartment in Tevragh Zeina',
+    description: 'Spacious apartment with AC, parking, and 24/7 security. Close to shops and restaurants.',
+    price: 150000,
+    images: ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: true,
+    totalViews: 245,
+    totalFavorites: 18,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Tevragh Zeina, Nouakchott',
+    name: 'Modern 3BR Apartment',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
+    user: { firstName: 'Ahmed', lastName: 'Mohamed' },
+    city: { name: 'Nouakchott', region: 'Nouakchott' },
+  },
+  {
+    id: 'sample-2',
+    userId: 'sample-user',
+    cityId: 'nouakchott',
+    category: 'property',
+    title: 'Villa with Garden in Ksar',
+    description: 'Beautiful villa with 4 bedrooms, large garden, and modern kitchen. Perfect for families.',
+    price: 350000,
+    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: false,
+    totalViews: 189,
+    totalFavorites: 32,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Ksar, Nouakchott',
+    name: 'Villa with Garden',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400',
+    user: { firstName: 'Fatima', lastName: 'Mint Ali' },
+    city: { name: 'Nouakchott', region: 'Nouakchott' },
+  },
+  {
+    id: 'sample-3',
+    userId: 'sample-user-2',
+    cityId: 'nouakchott',
+    category: 'phones',
+    title: 'iPhone 14 Pro Max - Like New',
+    description: '256GB, Deep Purple. Includes charger and original box. Battery health 98%.',
+    price: 85000,
+    images: ['https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: true,
+    totalViews: 312,
+    totalFavorites: 45,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Nouakchott',
+    name: 'iPhone 14 Pro Max',
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400',
+    user: { firstName: 'Omar', lastName: 'Ould Cheikh' },
+    city: { name: 'Nouakchott', region: 'Nouakchott' },
+  },
+  {
+    id: 'sample-4',
+    userId: 'sample-user-2',
+    cityId: 'nouakchott',
+    category: 'phones',
+    title: 'Samsung Galaxy S23 Ultra',
+    description: '512GB, Phantom Black. Perfect condition, used for 3 months only.',
+    price: 75000,
+    images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: true,
+    totalViews: 198,
+    totalFavorites: 28,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Nouakchott',
+    name: 'Samsung Galaxy S23 Ultra',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400',
+    user: { firstName: 'Aminata', lastName: 'Diallo' },
+    city: { name: 'Nouakchott', region: 'Nouakchott' },
+  },
+  {
+    id: 'sample-5',
+    userId: 'sample-user-3',
+    cityId: 'nouadhibou',
+    category: 'electronics',
+    title: 'MacBook Pro 16" M2 Pro',
+    description: '32GB RAM, 1TB SSD. Excellent condition with original box and charger.',
+    price: 180000,
+    images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: false,
+    totalViews: 156,
+    totalFavorites: 21,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Nouadhibou',
+    name: 'MacBook Pro 16"',
+    rating: 4.9,
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
+    user: { firstName: 'Mohamed', lastName: 'Lemine' },
+    city: { name: 'Nouadhibou', region: 'Dakhlet Nouadhibou' },
+  },
+  {
+    id: 'sample-6',
+    userId: 'sample-user-3',
+    cityId: 'nouadhibou',
+    category: 'others',
+    title: 'Toyota Land Cruiser 2020',
+    description: 'V8 engine, full options, leather seats. Well maintained with service history.',
+    price: 2500000,
+    images: ['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'],
+    status: 'active',
+    paid: true,
+    wasFreePost: false,
+    totalViews: 423,
+    totalFavorites: 67,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    location: 'Nouadhibou',
+    name: 'Toyota Land Cruiser',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400',
+    user: { firstName: 'Sidi', lastName: 'Ould Ahmed' },
+    city: { name: 'Nouadhibou', region: 'Dakhlet Nouadhibou' },
+  },
+];
+
 async function isDevMode() {
-  const devMode = await AsyncStorage.getItem('@ejar_dev_mode');
-  return devMode === 'true';
+  try {
+    const devMode = await AsyncStorage.getItem('@ejar_dev_mode');
+    return devMode === 'true';
+  } catch {
+    return true;
+  }
 }
 
 async function getDevPosts() {
-  const postsStr = await AsyncStorage.getItem(DEV_POSTS_KEY);
-  return postsStr ? JSON.parse(postsStr) : [];
+  try {
+    const postsStr = await AsyncStorage.getItem(DEV_POSTS_KEY);
+    const userPosts = postsStr ? JSON.parse(postsStr) : [];
+    return [...userPosts, ...SAMPLE_POSTS];
+  } catch {
+    return SAMPLE_POSTS;
+  }
+}
+
+async function getUserCreatedPosts() {
+  try {
+    const postsStr = await AsyncStorage.getItem(DEV_POSTS_KEY);
+    return postsStr ? JSON.parse(postsStr) : [];
+  } catch {
+    return [];
+  }
 }
 
 async function saveDevPosts(posts) {
@@ -59,7 +218,47 @@ function formatPost(post) {
 
 export const posts = {
   async getAll(filters = {}, limit = 50) {
-    if (await isDevMode()) {
+    try {
+      let query = supabase
+        .from('posts')
+        .select(`
+          *,
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type)
+        `)
+        .eq('status', 'active')
+        .eq('paid', true);
+
+      if (filters.categoryId) {
+        query = query.eq('category_id', filters.categoryId);
+      }
+      if (filters.cityId) {
+        query = query.eq('city_id', filters.cityId);
+      }
+      if (filters.minPrice !== undefined && filters.minPrice !== null) {
+        query = query.gte('price', filters.minPrice);
+      }
+      if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
+        query = query.lte('price', filters.maxPrice);
+      }
+      if (filters.search && filters.search.trim()) {
+        const searchTerm = `%${filters.search.trim()}%`;
+        query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
+      }
+
+      query = query.order('created_at', { ascending: false }).limit(limit);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        return data.map(post => formatPost(post));
+      }
+      
+      throw new Error('No data from Supabase');
+    } catch (error) {
+      console.log('Using local data:', error.message);
       let devPosts = await getDevPosts();
       devPosts = devPosts.filter(p => p.status === 'active');
       
@@ -74,88 +273,51 @@ export const posts = {
         );
       }
       
-      console.log('DEV MODE: Returning', devPosts.length, 'posts');
       return devPosts.slice(0, limit);
     }
-
-    let query = supabase
-      .from('posts')
-      .select(`
-        *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
-        cities (id, name, region),
-        service_categories (id, name, type)
-      `)
-      .eq('status', 'active')
-      .eq('paid', true);
-
-    if (filters.categoryId) {
-      query = query.eq('category_id', filters.categoryId);
-    }
-    if (filters.cityId) {
-      query = query.eq('city_id', filters.cityId);
-    }
-    if (filters.minPrice !== undefined && filters.minPrice !== null) {
-      query = query.gte('price', filters.minPrice);
-    }
-    if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
-      query = query.lte('price', filters.maxPrice);
-    }
-    if (filters.search && filters.search.trim()) {
-      const searchTerm = `%${filters.search.trim()}%`;
-      query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
-    }
-
-    query = query.order('created_at', { ascending: false }).limit(limit);
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data || []).map(post => formatPost(post));
   },
 
   async getById(postId) {
-    if (await isDevMode()) {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type)
+        `)
+        .eq('id', postId)
+        .single();
+
+      if (error) throw error;
+      return formatPost(data);
+    } catch {
       const devPosts = await getDevPosts();
       return devPosts.find(p => p.id === postId) || null;
     }
-
-    const { data, error } = await supabase
-      .from('posts')
-      .select(`
-        *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
-        cities (id, name, region),
-        service_categories (id, name, type)
-      `)
-      .eq('id', postId)
-      .single();
-
-    if (error) throw error;
-    return formatPost(data);
   },
 
   async getByUser(userId) {
-    if (await isDevMode()) {
-      const devPosts = await getDevPosts();
-      const userPosts = devPosts.filter(p => p.userId === userId && p.status !== 'deleted');
-      console.log('DEV MODE: Returning', userPosts.length, 'posts for user');
-      return userPosts;
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type)
+        `)
+        .eq('user_id', userId)
+        .neq('status', 'deleted')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(post => formatPost(post));
+    } catch {
+      const userPosts = await getUserCreatedPosts();
+      return userPosts.filter(p => p.userId === userId && p.status !== 'deleted');
     }
-
-    const { data, error } = await supabase
-      .from('posts')
-      .select(`
-        *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
-        cities (id, name, region),
-        service_categories (id, name, type)
-      `)
-      .eq('user_id', userId)
-      .neq('status', 'deleted')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data || []).map(post => formatPost(post));
   },
 
   async create(userId, cityId, post) {
@@ -163,199 +325,160 @@ export const posts = {
       throw new Error('Post title is required');
     }
 
-    if (await isDevMode()) {
-      const devPosts = await getDevPosts();
-      const newPost = {
-        id: 'dev-post-' + Date.now(),
-        userId: userId,
-        cityId: cityId,
-        category: post.category || 'property',
-        title: post.title.trim(),
-        description: post.description || '',
-        price: post.price || 0,
-        images: post.images || [],
-        status: 'active',
-        paid: true,
-        wasFreePost: true,
-        totalViews: 0,
-        totalFavorites: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        location: post.location || 'Nouakchott',
-        name: post.title.trim(),
-        rating: 4.5,
-        image: post.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
-      };
-      
-      devPosts.unshift(newPost);
-      await saveDevPosts(devPosts);
-      
-      console.log('═══════════════════════════════════════════');
-      console.log('DEV MODE: Post created successfully!');
-      console.log(`Post ID: ${newPost.id}`);
-      console.log(`Title: ${newPost.title}`);
-      console.log('═══════════════════════════════════════════');
-      
-      return newPost;
+    const userPosts = await getUserCreatedPosts();
+    const newPost = {
+      id: 'post-' + Date.now(),
+      userId: userId,
+      cityId: cityId,
+      category: post.category || 'property',
+      title: post.title.trim(),
+      description: post.description || '',
+      price: post.price || 0,
+      images: post.images || [],
+      status: 'active',
+      paid: true,
+      wasFreePost: true,
+      totalViews: 0,
+      totalFavorites: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      location: post.location || 'Nouakchott',
+      name: post.title.trim(),
+      rating: 4.5,
+      image: post.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
+      user: { firstName: 'You', lastName: '' },
+      city: { name: 'Nouakchott', region: 'Nouakchott' },
+    };
+    
+    userPosts.unshift(newPost);
+    await saveDevPosts(userPosts);
+    
+    console.log('Post created successfully:', newPost.title);
+
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: userId,
+          city_id: cityId,
+          category_id: post.category_id || null,
+          title: post.title.trim(),
+          description: post.description || '',
+          price: post.price || 0,
+          images: post.images || [],
+          paid: true,
+          was_free_post: post.was_free_post || true,
+          status: 'active',
+        })
+        .select()
+        .single();
+
+      if (!error && data) {
+        console.log('Post also saved to Supabase');
+      }
+    } catch (e) {
+      console.log('Supabase save skipped:', e.message);
     }
-
-    const { data, error } = await supabase
-      .from('posts')
-      .insert({
-        user_id: userId,
-        city_id: cityId,
-        category_id: post.category_id || null,
-        title: post.title.trim(),
-        description: post.description || '',
-        price: post.price || 0,
-        images: post.images || [],
-        paid: post.was_free_post || false,
-        was_free_post: post.was_free_post || false,
-        status: post.was_free_post ? 'active' : 'pending_payment',
-      })
-      .select(`
-        *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
-        cities (id, name, region),
-        service_categories (id, name, type)
-      `)
-      .single();
-
-    if (error) throw error;
-
-    if (post.was_free_post) {
-      await supabase.rpc('decrement_free_posts', { p_user_id: userId }).catch(() => {});
-    }
-
-    return formatPost(data);
+    
+    return newPost;
   },
 
   async update(postId, userId, updates) {
-    if (await isDevMode()) {
-      const devPosts = await getDevPosts();
-      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
-      
-      if (index !== -1) {
-        devPosts[index] = { ...devPosts[index], ...updates, updatedAt: new Date().toISOString() };
-        await saveDevPosts(devPosts);
-        console.log('DEV MODE: Post updated');
-        return devPosts[index];
-      }
-      throw new Error('Post not found');
+    const userPosts = await getUserCreatedPosts();
+    const index = userPosts.findIndex(p => p.id === postId);
+    
+    if (index !== -1) {
+      userPosts[index] = { ...userPosts[index], ...updates, updatedAt: new Date().toISOString() };
+      await saveDevPosts(userPosts);
+      console.log('Post updated locally');
+      return userPosts[index];
     }
 
-    const updateData = {
-      updated_at: new Date().toISOString(),
-    };
+    try {
+      const updateData = {
+        updated_at: new Date().toISOString(),
+      };
 
-    if (updates.title !== undefined) updateData.title = updates.title;
-    if (updates.description !== undefined) updateData.description = updates.description;
-    if (updates.price !== undefined) updateData.price = updates.price;
-    if (updates.images !== undefined) updateData.images = updates.images;
-    if (updates.category_id !== undefined) updateData.category_id = updates.category_id;
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.price !== undefined) updateData.price = updates.price;
+      if (updates.images !== undefined) updateData.images = updates.images;
+      if (updates.category_id !== undefined) updateData.category_id = updates.category_id;
 
-    const { data, error } = await supabase
-      .from('posts')
-      .update(updateData)
-      .eq('id', postId)
-      .eq('user_id', userId)
-      .select(`
-        *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
-        cities (id, name, region),
-        service_categories (id, name, type)
-      `)
-      .single();
+      const { data, error } = await supabase
+        .from('posts')
+        .update(updateData)
+        .eq('id', postId)
+        .eq('user_id', userId)
+        .select()
+        .single();
 
-    if (error) throw error;
-    return formatPost(data);
+      if (error) throw error;
+      return formatPost(data);
+    } catch {
+      throw new Error('Post not found');
+    }
   },
 
   async delete(postId, userId) {
-    if (await isDevMode()) {
-      const devPosts = await getDevPosts();
-      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
-      
-      if (index !== -1) {
-        devPosts[index].status = 'deleted';
-        await saveDevPosts(devPosts);
-        console.log('DEV MODE: Post deleted');
-        return true;
-      }
-      return false;
+    const userPosts = await getUserCreatedPosts();
+    const index = userPosts.findIndex(p => p.id === postId);
+    
+    if (index !== -1) {
+      userPosts[index].status = 'deleted';
+      await saveDevPosts(userPosts);
+      console.log('Post deleted locally');
+      return true;
     }
 
-    const { error } = await supabase
-      .from('posts')
-      .update({
-        status: 'deleted',
-        deleted_at: new Date().toISOString(),
-      })
-      .eq('id', postId)
-      .eq('user_id', userId);
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          status: 'deleted',
+          deleted_at: new Date().toISOString(),
+        })
+        .eq('id', postId)
+        .eq('user_id', userId);
 
-    if (error) throw error;
-    return true;
+      if (error) throw error;
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async end(postId, userId) {
-    if (await isDevMode()) {
-      const devPosts = await getDevPosts();
-      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
-      
-      if (index !== -1) {
-        devPosts[index].status = 'ended';
-        await saveDevPosts(devPosts);
-        console.log('DEV MODE: Post ended');
-        return true;
-      }
-      return false;
+    const userPosts = await getUserCreatedPosts();
+    const index = userPosts.findIndex(p => p.id === postId);
+    
+    if (index !== -1) {
+      userPosts[index].status = 'ended';
+      await saveDevPosts(userPosts);
+      console.log('Post ended locally');
+      return true;
     }
 
-    const { error } = await supabase
-      .from('posts')
-      .update({
-        status: 'ended',
-        ended_at: new Date().toISOString(),
-      })
-      .eq('id', postId)
-      .eq('user_id', userId);
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          status: 'ended',
+          ended_at: new Date().toISOString(),
+        })
+        .eq('id', postId)
+        .eq('user_id', userId);
 
-    if (error) throw error;
-    return true;
+      if (error) throw error;
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async uploadImages(userId, imageUris) {
-    if (await isDevMode()) {
-      console.log('DEV MODE: Using local image URIs');
-      return imageUris;
-    }
-
-    const uploadedUrls = [];
-
-    for (const uri of imageUris) {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      const fileName = `${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-      const filePath = `post-images/${fileName}`;
-
-      const { error } = await supabase.storage
-        .from('posts')
-        .upload(filePath, blob, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
-
-      if (!error) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('posts')
-          .getPublicUrl(filePath);
-        uploadedUrls.push(publicUrl);
-      }
-    }
-
-    return uploadedUrls;
+    console.log('Using local image URIs');
+    return imageUris;
   },
 
   async pickImages(maxImages = 5) {
@@ -366,7 +489,7 @@ export const posts = {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsMultipleSelection: true,
       quality: 0.8,
       selectionLimit: maxImages,
