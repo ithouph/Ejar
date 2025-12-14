@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Pressable, Image, TextInput, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Pressable, Image, TextInput, ScrollView, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
@@ -7,32 +7,9 @@ import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, inputStyles, buttonStyles, layoutStyles, spacingStyles, BorderRadius } from '../theme';
+import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
 import { users as usersApi, cities as citiesApi } from '../services';
-
-function InputField({ label, value, onChangeText, placeholder, keyboardType, theme, editable = true }) {
-  return (
-    <View style={inputStyles.container}>
-      <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-        {label}
-      </ThemedText>
-      <TextInput
-        style={[inputStyles.input, { 
-          backgroundColor: theme.surface, 
-          color: editable ? theme.textPrimary : theme.textSecondary,
-          borderColor: theme.border 
-        }]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.textSecondary}
-        keyboardType={keyboardType || 'default'}
-        editable={editable}
-      />
-    </View>
-  );
-}
 
 export default function EditProfile({ navigation }) {
   const { theme } = useTheme();
@@ -143,23 +120,28 @@ export default function EditProfile({ navigation }) {
     }
   };
 
+  const getRoleBadgeColor = (role) => {
+    const colors = {
+      'member': '#22c55e',
+      'ex_member': '#f59e0b',
+      'leader': '#8b5cf6',
+    };
+    return colors[role] || theme.primary;
+  };
+
   if (loading) {
     return (
-      <ThemedView style={layoutStyles.container}>
-        <View style={[layoutStyles.header, { 
-          backgroundColor: theme.background, 
-          paddingTop: insets.top + Spacing.md,
-          justifyContent: 'space-between' 
-        }]}>
-          <Pressable onPress={() => navigation.goBack()} style={buttonStyles.icon}>
-            <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+      <ThemedView style={styles.container}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.md, borderBottomColor: theme.border }]}>
+          <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
+            <Feather name="x" size={24} color={theme.textPrimary} />
           </Pressable>
-          <ThemedText type="h2" style={{ fontWeight: '600' }}>
+          <ThemedText type="h3" style={styles.headerTitle}>
             Edit Profile
           </ThemedText>
-          <View style={{ width: 40 }} />
+          <View style={styles.headerButton} />
         </View>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </ThemedView>
@@ -167,221 +149,359 @@ export default function EditProfile({ navigation }) {
   }
 
   return (
-    <ThemedView style={layoutStyles.container}>
-      <View style={[layoutStyles.header, { 
-        backgroundColor: theme.background, 
-        paddingTop: insets.top + Spacing.md,
-        justifyContent: 'space-between' 
-      }]}>
-        <Pressable onPress={() => navigation.goBack()} style={buttonStyles.icon}>
-          <Feather name="arrow-left" size={24} color={theme.textPrimary} />
+    <ThemedView style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md, borderBottomColor: theme.border }]}>
+        <Pressable onPress={() => navigation.goBack()} style={styles.headerButton}>
+          <Feather name="x" size={24} color={theme.textPrimary} />
         </Pressable>
-        <ThemedText type="h2" style={{ fontWeight: '600' }}>
+        <ThemedText type="h3" style={styles.headerTitle}>
           Edit Profile
         </ThemedText>
-        <View style={{ width: 40 }} />
+        <Pressable 
+          onPress={handleSave} 
+          disabled={saving}
+          style={styles.headerButton}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color={theme.primary} />
+          ) : (
+            <ThemedText type="body" style={{ color: theme.primary, fontWeight: '600' }}>
+              Save
+            </ThemedText>
+          )}
+        </Pressable>
       </View>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={[spacingStyles.pbXl, { paddingBottom: insets.bottom + Spacing.xl }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={[layoutStyles.columnCenter, spacingStyles.pyXl]}>
-          <Image
-            source={{ 
-              uri: profilePicture || 'https://via.placeholder.com/100'
-            }}
-            style={{ width: 100, height: 100, borderRadius: 50 }}
-          />
-          <Pressable 
-            onPress={pickProfilePicture}
-            style={[buttonStyles.iconSmall, { 
-              backgroundColor: theme.primary,
-              position: 'absolute',
-              bottom: Spacing.xl,
-              right: '35%',
-            }]}
-          >
-            <Feather name="camera" size={16} color="#FFFFFF" />
+        <View style={styles.photoSection}>
+          <View style={styles.photoWrapper}>
+            <Image
+              source={{ uri: profilePicture || 'https://via.placeholder.com/120' }}
+              style={styles.profilePhoto}
+            />
+            <Pressable 
+              onPress={pickProfilePicture}
+              style={[styles.cameraButton, { backgroundColor: theme.primary }]}
+            >
+              <Feather name="camera" size={18} color="#FFFFFF" />
+            </Pressable>
+          </View>
+          <Pressable onPress={pickProfilePicture}>
+            <ThemedText type="body" style={{ color: theme.primary, fontWeight: '500' }}>
+              Change Photo
+            </ThemedText>
           </Pressable>
         </View>
 
-        <View style={[spacingStyles.phLg, spacingStyles.gapLg]}>
-          <InputField
-            label="First Name"
-            value={firstName}
-            onChangeText={setFirstName}
-            placeholder="Enter first name"
-            theme={theme}
-          />
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <ThemedText type="caption" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+            PERSONAL INFORMATION
+          </ThemedText>
 
-          <InputField
-            label="Last Name"
-            value={lastName}
-            onChangeText={setLastName}
-            placeholder="Enter last name"
-            theme={theme}
-          />
+          <View style={styles.inputGroup}>
+            <View style={[styles.inputRow, { borderBottomColor: theme.border }]}>
+              <ThemedText type="body" style={styles.inputLabel}>First Name</ThemedText>
+              <TextInput
+                style={[styles.inputValue, { color: theme.textPrimary }]}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Enter first name"
+                placeholderTextColor={theme.textSecondary}
+              />
+            </View>
 
-          <View style={inputStyles.container}>
-            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-              Phone Number
-            </ThemedText>
-            <View style={[inputStyles.input, { 
-              backgroundColor: theme.surface, 
-              borderColor: theme.border,
-              opacity: 0.7,
-            }]}>
+            <View style={[styles.inputRow, { borderBottomColor: theme.border }]}>
+              <ThemedText type="body" style={styles.inputLabel}>Last Name</ThemedText>
+              <TextInput
+                style={[styles.inputValue, { color: theme.textPrimary }]}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Enter last name"
+                placeholderTextColor={theme.textSecondary}
+              />
+            </View>
+
+            <View style={styles.inputRow}>
+              <ThemedText type="body" style={styles.inputLabel}>Phone</ThemedText>
               <ThemedText type="body" style={{ color: theme.textSecondary }}>
                 {profile?.phone || 'Not set'}
               </ThemedText>
             </View>
           </View>
+        </View>
 
-          <View style={inputStyles.container}>
-            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-              WhatsApp Number
-            </ThemedText>
-            <View style={[styles.phoneInputRow, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <ThemedText type="body" style={styles.countryCode}>+222</ThemedText>
-              <TextInput
-                value={whatsapp}
-                onChangeText={(text) => setWhatsapp(text.replace(/[^\d]/g, ''))}
-                placeholder="12345678"
-                placeholderTextColor={theme.textSecondary}
-                keyboardType="phone-pad"
-                style={[styles.phoneInput, { color: theme.textPrimary }]}
-                maxLength={10}
-              />
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <ThemedText type="caption" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+            CONTACT
+          </ThemedText>
+
+          <View style={styles.inputGroup}>
+            <View style={styles.inputRow}>
+              <ThemedText type="body" style={styles.inputLabel}>WhatsApp</ThemedText>
+              <View style={styles.phoneInputWrapper}>
+                <ThemedText type="body" style={{ color: theme.textSecondary }}>+222</ThemedText>
+                <TextInput
+                  style={[styles.phoneInput, { color: theme.textPrimary }]}
+                  value={whatsapp}
+                  onChangeText={(text) => setWhatsapp(text.replace(/[^\d]/g, ''))}
+                  placeholder="12345678"
+                  placeholderTextColor={theme.textSecondary}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                />
+              </View>
             </View>
           </View>
+        </View>
 
-          <View style={inputStyles.container}>
-            <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-              City
-            </ThemedText>
-            <Pressable
+        <View style={[styles.section, { backgroundColor: theme.surface }]}>
+          <ThemedText type="caption" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+            LOCATION
+          </ThemedText>
+
+          <View style={styles.inputGroup}>
+            <Pressable 
               onPress={() => setShowCities(!showCities)}
-              style={[styles.selectButton, { 
-                backgroundColor: theme.surface, 
-                borderColor: theme.border 
-              }]}
+              style={[styles.inputRow, showCities ? null : null]}
             >
-              <ThemedText type="body" style={{ color: selectedCity ? theme.textPrimary : theme.textSecondary }}>
-                {selectedCity ? selectedCity.name : 'Select your city'}
-              </ThemedText>
-              <Feather 
-                name={showCities ? 'chevron-up' : 'chevron-down'} 
-                size={20} 
-                color={theme.textSecondary} 
-              />
+              <ThemedText type="body" style={styles.inputLabel}>City</ThemedText>
+              <View style={styles.selectWrapper}>
+                <ThemedText type="body" style={{ color: selectedCity ? theme.textPrimary : theme.textSecondary }}>
+                  {selectedCity ? selectedCity.name : 'Select city'}
+                </ThemedText>
+                <Feather 
+                  name={showCities ? 'chevron-up' : 'chevron-down'} 
+                  size={18} 
+                  color={theme.textSecondary} 
+                />
+              </View>
             </Pressable>
-            
-            {showCities && (
-              <ScrollView 
-                style={[styles.citiesList, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                nestedScrollEnabled
-              >
-                {cities.map((city) => (
-                  <Pressable
-                    key={city.id}
-                    onPress={() => {
-                      setSelectedCity(city);
-                      setShowCities(false);
-                    }}
-                    style={[
-                      styles.cityItem,
-                      { borderBottomColor: theme.border },
-                      selectedCity?.id === city.id && { backgroundColor: theme.surfaceHover }
-                    ]}
-                  >
-                    <ThemedText type="body">{city.name}</ThemedText>
+          </View>
+        </View>
+
+        {showCities && (
+          <View style={[styles.citiesDropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <ScrollView style={styles.citiesScroll} nestedScrollEnabled>
+              {cities.map((city) => (
+                <Pressable
+                  key={city.id}
+                  onPress={() => {
+                    setSelectedCity(city);
+                    setShowCities(false);
+                  }}
+                  style={[
+                    styles.cityItem,
+                    { borderBottomColor: theme.border },
+                    selectedCity?.id === city.id && { backgroundColor: theme.primary + '15' }
+                  ]}
+                >
+                  <View style={styles.cityInfo}>
+                    <ThemedText type="body" style={{ fontWeight: selectedCity?.id === city.id ? '600' : '400' }}>
+                      {city.name}
+                    </ThemedText>
                     {city.region && (
                       <ThemedText type="caption" style={{ color: theme.textSecondary }}>
                         {city.region}
                       </ThemedText>
                     )}
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
+                  </View>
+                  {selectedCity?.id === city.id && (
+                    <Feather name="check" size={18} color={theme.primary} />
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
+        )}
 
-          {profile?.role && profile.role !== 'normal' && (
-            <View style={inputStyles.container}>
-              <ThemedText type="bodySmall" style={[inputStyles.label, { color: theme.textSecondary }]}>
-                Role
-              </ThemedText>
-              <View style={[inputStyles.input, { 
-                backgroundColor: theme.surface, 
-                borderColor: theme.border,
-              }]}>
-                <ThemedText type="body" style={{ color: theme.primary, textTransform: 'capitalize' }}>
-                  {profile.role.replace('_', ' ')}
-                </ThemedText>
+        {profile?.role && profile.role !== 'normal' && (
+          <View style={[styles.section, { backgroundColor: theme.surface }]}>
+            <ThemedText type="caption" style={[styles.sectionLabel, { color: theme.textSecondary }]}>
+              ACCOUNT STATUS
+            </ThemedText>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputRow}>
+                <ThemedText type="body" style={styles.inputLabel}>Role</ThemedText>
+                <View style={[styles.roleBadge, { backgroundColor: getRoleBadgeColor(profile.role) + '20' }]}>
+                  <View style={[styles.roleDot, { backgroundColor: getRoleBadgeColor(profile.role) }]} />
+                  <ThemedText type="bodySmall" style={{ color: getRoleBadgeColor(profile.role), fontWeight: '600', textTransform: 'capitalize' }}>
+                    {profile.role.replace('_', ' ')}
+                  </ThemedText>
+                </View>
               </View>
             </View>
-          )}
+          </View>
+        )}
 
-          <Pressable
-            onPress={handleSave}
-            disabled={saving}
-            style={[buttonStyles.primary, { 
-              backgroundColor: theme.primary, 
-              opacity: saving ? 0.6 : 1,
-              marginTop: Spacing.xl,
-            }]}
-          >
-            {saving ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+        <Pressable
+          onPress={handleSave}
+          disabled={saving}
+          style={[styles.saveButton, { backgroundColor: theme.primary, opacity: saving ? 0.6 : 1 }]}
+        >
+          {saving ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <>
+              <Feather name="check" size={20} color="#FFFFFF" />
+              <ThemedText type="bodyLarge" style={{ color: '#FFFFFF', fontWeight: '600' }}>
                 Save Changes
               </ThemedText>
-            )}
-          </Pressable>
-        </View>
+            </>
+          )}
+        </Pressable>
       </KeyboardAwareScrollView>
     </ThemedView>
   );
 }
 
-const styles = {
-  phoneInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: BorderRadius.medium,
-    paddingHorizontal: Spacing.md,
-    height: 56,
-  },
-  countryCode: {
-    fontWeight: '600',
-    marginRight: Spacing.sm,
-  },
-  phoneInput: {
+const styles = StyleSheet.create({
+  container: {
     flex: 1,
-    height: 56,
-    fontSize: 16,
   },
-  selectButton: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 56,
-    borderWidth: 1,
-    borderRadius: BorderRadius.medium,
     paddingHorizontal: Spacing.md,
-  },
-  citiesList: {
-    borderWidth: 1,
-    borderRadius: BorderRadius.medium,
-    marginTop: Spacing.xs,
-    maxHeight: 200,
-  },
-  cityItem: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
     borderBottomWidth: 1,
   },
-};
+  headerButton: {
+    width: 60,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    paddingTop: Spacing.xl,
+    gap: Spacing.lg,
+  },
+  photoSection: {
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  photoWrapper: {
+    position: 'relative',
+  },
+  profilePhoto: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  section: {
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.large,
+    overflow: 'hidden',
+  },
+  sectionLabel: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  inputGroup: {
+    paddingHorizontal: Spacing.lg,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 0.5,
+    minHeight: 52,
+  },
+  inputLabel: {
+    flex: 0.4,
+    fontWeight: '500',
+  },
+  inputValue: {
+    flex: 0.6,
+    textAlign: 'right',
+    fontSize: 16,
+  },
+  phoneInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  phoneInput: {
+    fontSize: 16,
+    minWidth: 100,
+    textAlign: 'right',
+  },
+  selectWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  citiesDropdown: {
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.medium,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  citiesScroll: {
+    maxHeight: 250,
+  },
+  cityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 0.5,
+  },
+  cityInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  roleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.small,
+    gap: Spacing.xs,
+  },
+  roleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.medium,
+    marginTop: Spacing.md,
+  },
+});
