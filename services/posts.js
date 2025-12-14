@@ -1,5 +1,22 @@
 import { supabase } from '../config/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+
+const DEV_POSTS_KEY = '@ejar_dev_posts';
+
+async function isDevMode() {
+  const devMode = await AsyncStorage.getItem('@ejar_dev_mode');
+  return devMode === 'true';
+}
+
+async function getDevPosts() {
+  const postsStr = await AsyncStorage.getItem(DEV_POSTS_KEY);
+  return postsStr ? JSON.parse(postsStr) : [];
+}
+
+async function saveDevPosts(posts) {
+  await AsyncStorage.setItem(DEV_POSTS_KEY, JSON.stringify(posts));
+}
 
 function formatPost(post) {
   if (!post) return null;
@@ -42,6 +59,25 @@ function formatPost(post) {
 
 export const posts = {
   async getAll(filters = {}, limit = 50) {
+    if (await isDevMode()) {
+      let devPosts = await getDevPosts();
+      devPosts = devPosts.filter(p => p.status === 'active');
+      
+      if (filters.category && filters.category !== 'all') {
+        devPosts = devPosts.filter(p => p.category === filters.category);
+      }
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        devPosts = devPosts.filter(p => 
+          p.title.toLowerCase().includes(search) || 
+          p.description.toLowerCase().includes(search)
+        );
+      }
+      
+      console.log('DEV MODE: Returning', devPosts.length, 'posts');
+      return devPosts.slice(0, limit);
+    }
+
     let query = supabase
       .from('posts')
       .select(`
@@ -56,26 +92,21 @@ export const posts = {
     if (filters.categoryId) {
       query = query.eq('category_id', filters.categoryId);
     }
-
     if (filters.cityId) {
       query = query.eq('city_id', filters.cityId);
     }
-
     if (filters.minPrice !== undefined && filters.minPrice !== null) {
       query = query.gte('price', filters.minPrice);
     }
     if (filters.maxPrice !== undefined && filters.maxPrice !== null) {
       query = query.lte('price', filters.maxPrice);
     }
-
     if (filters.search && filters.search.trim()) {
       const searchTerm = `%${filters.search.trim()}%`;
       query = query.or(`title.ilike.${searchTerm},description.ilike.${searchTerm}`);
     }
 
-    query = query
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    query = query.order('created_at', { ascending: false }).limit(limit);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -83,6 +114,11 @@ export const posts = {
   },
 
   async getById(postId) {
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      return devPosts.find(p => p.id === postId) || null;
+    }
+
     const { data, error } = await supabase
       .from('posts')
       .select(`
@@ -99,6 +135,13 @@ export const posts = {
   },
 
   async getByUser(userId) {
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      const userPosts = devPosts.filter(p => p.userId === userId && p.status !== 'deleted');
+      console.log('DEV MODE: Returning', userPosts.length, 'posts for user');
+      return userPosts;
+    }
+
     const { data, error } = await supabase
       .from('posts')
       .select(`
@@ -118,6 +161,42 @@ export const posts = {
   async create(userId, cityId, post) {
     if (!post.title || !post.title.trim()) {
       throw new Error('Post title is required');
+    }
+
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      const newPost = {
+        id: 'dev-post-' + Date.now(),
+        userId: userId,
+        cityId: cityId,
+        category: post.category || 'property',
+        title: post.title.trim(),
+        description: post.description || '',
+        price: post.price || 0,
+        images: post.images || [],
+        status: 'active',
+        paid: true,
+        wasFreePost: true,
+        totalViews: 0,
+        totalFavorites: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: post.location || 'Nouakchott',
+        name: post.title.trim(),
+        rating: 4.5,
+        image: post.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
+      };
+      
+      devPosts.unshift(newPost);
+      await saveDevPosts(devPosts);
+      
+      console.log('═══════════════════════════════════════════');
+      console.log('DEV MODE: Post created successfully!');
+      console.log(`Post ID: ${newPost.id}`);
+      console.log(`Title: ${newPost.title}`);
+      console.log('═══════════════════════════════════════════');
+      
+      return newPost;
     }
 
     const { data, error } = await supabase
@@ -152,6 +231,19 @@ export const posts = {
   },
 
   async update(postId, userId, updates) {
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
+      
+      if (index !== -1) {
+        devPosts[index] = { ...devPosts[index], ...updates, updatedAt: new Date().toISOString() };
+        await saveDevPosts(devPosts);
+        console.log('DEV MODE: Post updated');
+        return devPosts[index];
+      }
+      throw new Error('Post not found');
+    }
+
     const updateData = {
       updated_at: new Date().toISOString(),
     };
@@ -180,6 +272,19 @@ export const posts = {
   },
 
   async delete(postId, userId) {
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
+      
+      if (index !== -1) {
+        devPosts[index].status = 'deleted';
+        await saveDevPosts(devPosts);
+        console.log('DEV MODE: Post deleted');
+        return true;
+      }
+      return false;
+    }
+
     const { error } = await supabase
       .from('posts')
       .update({
@@ -194,6 +299,19 @@ export const posts = {
   },
 
   async end(postId, userId) {
+    if (await isDevMode()) {
+      const devPosts = await getDevPosts();
+      const index = devPosts.findIndex(p => p.id === postId && p.userId === userId);
+      
+      if (index !== -1) {
+        devPosts[index].status = 'ended';
+        await saveDevPosts(devPosts);
+        console.log('DEV MODE: Post ended');
+        return true;
+      }
+      return false;
+    }
+
     const { error } = await supabase
       .from('posts')
       .update({
@@ -208,6 +326,11 @@ export const posts = {
   },
 
   async uploadImages(userId, imageUris) {
+    if (await isDevMode()) {
+      console.log('DEV MODE: Using local image URIs');
+      return imageUris;
+    }
+
     const uploadedUrls = [];
 
     for (const uri of imageUris) {
