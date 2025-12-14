@@ -9,22 +9,6 @@ import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
 import { wallet as walletApi, users as usersApi } from '../services';
 
-function ServiceCard({ icon, title, onPress, theme }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.serviceCard, { backgroundColor: theme.surface }]}
-    >
-      <View style={[styles.serviceIconContainer, { backgroundColor: theme.primary + '10' }]}>
-        <Feather name={icon} size={28} color={theme.primary} />
-      </View>
-      <ThemedText type="bodySmall" style={styles.serviceTitle}>
-        {title}
-      </ThemedText>
-    </Pressable>
-  );
-}
-
 export default function Account({ navigation }) {
   const { theme } = useTheme();
   const insets = useScreenInsets();
@@ -81,12 +65,6 @@ export default function Account({ navigation }) {
       setLoadingBalance(false);
     }
   };
-
-  const services = [
-    { icon: 'scissors', title: 'Hairdresser' },
-    { icon: 'wind', title: 'Cleaning' },
-    { icon: 'droplet', title: 'Painting' },
-  ];
 
   return (
     <ThemedView style={styles.container}>
@@ -188,34 +166,6 @@ export default function Account({ navigation }) {
               </View>
             </View>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <ThemedText type="h2">Services Categories</ThemedText>
-            <Pressable style={styles.viewAllButton}>
-              <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
-                View all
-              </ThemedText>
-              <Feather name="chevron-right" size={16} color={theme.textSecondary} />
-            </Pressable>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.servicesScroll}
-          >
-            {services.map((service, index) => (
-              <ServiceCard
-                key={index}
-                icon={service.icon}
-                title={service.title}
-                theme={theme}
-                onPress={() => {}}
-              />
-            ))}
-          </ScrollView>
         </View>
 
         <View style={styles.section}>
