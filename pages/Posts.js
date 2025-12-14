@@ -8,7 +8,7 @@ import { PageHeader } from '../components/Navbar';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi, savedPosts as savedPostsApi } from '../services';
+import { posts as postsApi, savedPosts as savedPostsApi, wallet as walletApi } from '../services';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -200,17 +200,29 @@ export default function Posts({ navigation }) {
   const [savedPosts, setSavedPosts] = useState(new Set());
   const [viewMode, setViewMode] = useState('normal');
   const [loading, setLoading] = useState(true);
+  const [freePostsRemaining, setFreePostsRemaining] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       if (user) {
         loadUserPosts();
         loadSavedPosts();
+        loadWalletData();
       } else {
         setLoading(false);
       }
     }, [user])
   );
+
+  async function loadWalletData() {
+    if (!user) return;
+    try {
+      const data = await walletApi.getBalance(user.id);
+      setFreePostsRemaining(data.freePostsRemaining || 0);
+    } catch (error) {
+      console.error('Error loading wallet data:', error);
+    }
+  }
 
   async function loadUserPosts() {
     if (!user) {
@@ -323,6 +335,31 @@ export default function Posts({ navigation }) {
         />
       </View>
 
+      <View style={styles.statsContainer}>
+        <View style={[styles.statCard, { backgroundColor: theme.primary + '15' }]}>
+          <Feather name="file-text" size={20} color={theme.primary} />
+          <View>
+            <ThemedText type="h3" style={{ color: theme.primary }}>
+              {posts.length}
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Total Posts
+            </ThemedText>
+          </View>
+        </View>
+        <View style={[styles.statCard, { backgroundColor: theme.success ? theme.success + '15' : '#22c55e15' }]}>
+          <Feather name="gift" size={20} color={theme.success || '#22c55e'} />
+          <View>
+            <ThemedText type="h3" style={{ color: theme.success || '#22c55e' }}>
+              {freePostsRemaining}
+            </ThemedText>
+            <ThemedText type="caption" style={{ color: theme.textSecondary }}>
+              Free Posts Left
+            </ThemedText>
+          </View>
+        </View>
+      </View>
+
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.primary} />
@@ -389,6 +426,20 @@ const styles = StyleSheet.create({
   },
   navbarContainer: {
     zIndex: 10,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
+  },
+  statCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.medium,
+    gap: Spacing.sm,
   },
   scrollContent: {
     flexGrow: 1,
