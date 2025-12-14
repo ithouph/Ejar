@@ -19,6 +19,11 @@ const springConfig = {
   stiffness: 150,
 };
 
+function formatPrice(price) {
+  if (!price && price !== 0) return '';
+  return new Intl.NumberFormat('en-US').format(price) + ' MRU';
+}
+
 export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
@@ -35,6 +40,10 @@ export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
     scale.value = withSpring(1, springConfig);
   };
 
+  const imageUri = item.image || item.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400';
+  const title = item.name || item.title || 'Untitled';
+  const location = item.location || item.city?.name || 'Nouakchott';
+
   return (
     <AnimatedPressable
       onPress={onPress}
@@ -42,7 +51,7 @@ export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
       onPressOut={handlePressOut}
       style={[styles.card, animatedStyle, Shadows.medium]}
     >
-      <Image source={{ uri: item.image }} style={styles.image} />
+      <Image source={{ uri: imageUri }} style={styles.image} />
       <View style={styles.gradient}>
         <Pressable
           onPress={() => onFavoritePress(item.id)}
@@ -57,19 +66,25 @@ export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
         </Pressable>
         <View style={styles.content}>
           <ThemedText type="bodyLarge" style={styles.name} lightColor="#FFF" darkColor="#FFF">
-            {item.name}
+            {title}
           </ThemedText>
           <View style={styles.locationRow}>
             <Feather name="map-pin" size={14} color="#FFF" />
             <ThemedText type="bodySmall" style={styles.location} lightColor="#FFF" darkColor="#FFF">
-              {item.location}
+              {location}
             </ThemedText>
           </View>
-          <View style={styles.ratingRow}>
-            <Feather name="star" size={14} color="#FBBF24" />
-            <ThemedText type="bodySmall" style={styles.rating} lightColor="#FFF" darkColor="#FFF">
-              {item.rating}
+          <View style={styles.priceRow}>
+            <ThemedText type="h3" style={styles.price} lightColor="#FFF" darkColor="#FFF">
+              {formatPrice(item.price)}
             </ThemedText>
+            {item.category ? (
+              <View style={styles.categoryBadge}>
+                <ThemedText type="bodySmall" style={styles.categoryText}>
+                  {item.category}
+                </ThemedText>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>
@@ -131,5 +146,24 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontWeight: '600',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Spacing.xs,
+  },
+  price: {
+    fontWeight: '700',
+  },
+  categoryBadge: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs / 2,
+    borderRadius: BorderRadius.small,
+  },
+  categoryText: {
+    color: '#FFF',
+    textTransform: 'capitalize',
   },
 });
