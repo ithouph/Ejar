@@ -3,8 +3,7 @@ import { supabase } from '../config/supabase';
 export const amenities = {
   async getAll() {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured. Please check your Supabase settings.');
     }
 
     const { data, error } = await supabase
@@ -13,14 +12,17 @@ export const amenities = {
       .eq('is_active', true)
       .order('sort_order');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch amenities:', error.message);
+      throw new Error('Failed to load amenities.');
+    }
+    
     return data || [];
   },
 
   async getByCategory(category) {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -30,7 +32,11 @@ export const amenities = {
       .eq('is_active', true)
       .order('sort_order');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch amenities by category:', error.message);
+      throw new Error('Failed to load amenities.');
+    }
+    
     return data || [];
   },
 
@@ -44,7 +50,7 @@ export const amenities = {
 
   async create(amenity) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -60,13 +66,17 @@ export const amenities = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create amenity:', error.message);
+      throw new Error('Failed to create amenity.');
+    }
+    
     return data;
   },
 
   async update(id, updates) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const updateData = {};
@@ -84,13 +94,17 @@ export const amenities = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to update amenity:', error.message);
+      throw new Error('Failed to update amenity.');
+    }
+    
     return data;
   },
 
   async delete(id) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { error } = await supabase
@@ -98,14 +112,17 @@ export const amenities = {
       .update({ is_active: false })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to delete amenity:', error.message);
+      throw new Error('Failed to delete amenity.');
+    }
+    
     return true;
   },
 
   async savePostAmenities(postId, amenityIds) {
     if (!supabase) {
-      console.warn('Supabase not configured, skipping post amenities save');
-      return [];
+      throw new Error('Database not configured.');
     }
 
     if (!amenityIds || amenityIds.length === 0) return [];
@@ -120,14 +137,17 @@ export const amenities = {
       .insert(records)
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to save post amenities:', error.message);
+      throw new Error('Failed to save amenities.');
+    }
+    
     return data || [];
   },
 
   async getPostAmenities(postId) {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -135,14 +155,17 @@ export const amenities = {
       .select('*, amenity:amenities(*)')
       .eq('post_id', postId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch post amenities:', error.message);
+      throw new Error('Failed to load amenities.');
+    }
+    
     return data || [];
   },
 
   async deletePostAmenities(postId) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return true;
+      throw new Error('Database not configured.');
     }
 
     const { error } = await supabase
@@ -150,7 +173,11 @@ export const amenities = {
       .delete()
       .eq('post_id', postId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to delete post amenities:', error.message);
+      throw new Error('Failed to delete amenities.');
+    }
+    
     return true;
   },
 };
