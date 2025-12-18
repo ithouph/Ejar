@@ -440,15 +440,164 @@ INSERT INTO cities (name, region, is_active) VALUES
 ('Adel Bagrou', 'Hodh Ech Chargui', true);
 
 -- ============================================
--- SEED DATA - Service Categories
+-- 12. LISTING TYPES TABLE
 -- ============================================
-INSERT INTO service_categories (name, type, description) VALUES
-('Property', 'property', 'Real estate listings including houses, apartments, and land'),
-('Phones', 'electronics', 'Mobile phones and accessories'),
-('Electronics', 'electronics', 'Electronic devices and gadgets'),
-('Cars', 'vehicles', 'Automobiles and vehicles'),
-('Furniture', 'home', 'Home furniture and decor'),
-('Others', 'other', 'Miscellaneous items');
+CREATE TABLE listing_types (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    icon TEXT,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_listing_types_slug ON listing_types(slug);
+CREATE INDEX idx_listing_types_active ON listing_types(is_active);
+
+-- ============================================
+-- 13. PROPERTY TYPES TABLE
+-- ============================================
+CREATE TABLE property_types (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    icon TEXT,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_property_types_slug ON property_types(slug);
+CREATE INDEX idx_property_types_active ON property_types(is_active);
+
+-- ============================================
+-- 14. AMENITIES TABLE
+-- ============================================
+CREATE TABLE amenities (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    icon TEXT,
+    category TEXT NOT NULL CHECK (category IN ('indoor', 'nearby')),
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_amenities_slug ON amenities(slug);
+CREATE INDEX idx_amenities_category ON amenities(category);
+CREATE INDEX idx_amenities_active ON amenities(is_active);
+
+-- ============================================
+-- 15. CATEGORY FIELDS TABLE (Dynamic Form Fields)
+-- ============================================
+CREATE TABLE category_fields (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_id UUID NOT NULL REFERENCES service_categories(id) ON DELETE CASCADE,
+    field_key TEXT NOT NULL,
+    field_label TEXT NOT NULL,
+    field_type TEXT NOT NULL CHECK (field_type IN ('text', 'number', 'select', 'multiselect', 'checkbox', 'textarea')),
+    options JSONB,
+    placeholder TEXT,
+    is_required BOOLEAN DEFAULT false,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_category_fields_category ON category_fields(category_id);
+CREATE INDEX idx_category_fields_active ON category_fields(is_active);
+
+-- ============================================
+-- 16. POST AMENITIES TABLE (Junction Table)
+-- ============================================
+CREATE TABLE post_amenities (
+    post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    amenity_id UUID NOT NULL REFERENCES amenities(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    PRIMARY KEY (post_id, amenity_id)
+);
+
+CREATE INDEX idx_post_amenities_post ON post_amenities(post_id);
+CREATE INDEX idx_post_amenities_amenity ON post_amenities(amenity_id);
+
+-- Enable RLS on new tables
+ALTER TABLE listing_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE property_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE amenities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE category_fields ENABLE ROW LEVEL SECURITY;
+ALTER TABLE post_amenities ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies: Everyone can read
+CREATE POLICY listing_types_select_all ON listing_types FOR SELECT USING (is_active = true);
+CREATE POLICY property_types_select_all ON property_types FOR SELECT USING (is_active = true);
+CREATE POLICY amenities_select_all ON amenities FOR SELECT USING (is_active = true);
+CREATE POLICY category_fields_select_all ON category_fields FOR SELECT USING (is_active = true);
+CREATE POLICY post_amenities_select_all ON post_amenities FOR SELECT USING (true);
+CREATE POLICY post_amenities_insert_own ON post_amenities FOR INSERT WITH CHECK (true);
+CREATE POLICY post_amenities_delete_own ON post_amenities FOR DELETE USING (true);
+
+-- ============================================
+-- SEED DATA - Service Categories (with icons)
+-- ============================================
+INSERT INTO service_categories (name, type, description, metadata) VALUES
+('Property', 'property', 'Real estate listings including houses, apartments, and land', '{"icon": "home", "sort_order": 1}'),
+('Phones', 'electronics', 'Mobile phones and accessories', '{"icon": "smartphone", "sort_order": 2}'),
+('Laptops', 'electronics', 'Laptops and computers', '{"icon": "monitor", "sort_order": 3}'),
+('Electronics', 'electronics', 'Electronic devices and gadgets', '{"icon": "zap", "sort_order": 4}'),
+('Cars', 'vehicles', 'Automobiles and vehicles', '{"icon": "truck", "sort_order": 5}'),
+('Furniture', 'home', 'Home furniture and decor', '{"icon": "box", "sort_order": 6}'),
+('Others', 'other', 'Miscellaneous items', '{"icon": "package", "sort_order": 7}');
+
+-- ============================================
+-- SEED DATA - Listing Types
+-- ============================================
+INSERT INTO listing_types (name, slug, icon, sort_order) VALUES
+('For Rent', 'rent', 'key', 1),
+('For Sale', 'sale', 'tag', 2),
+('Short-term Rental', 'short_term', 'calendar', 3),
+('Daily Rental', 'daily', 'clock', 4);
+
+-- ============================================
+-- SEED DATA - Property Types
+-- ============================================
+INSERT INTO property_types (name, slug, icon, sort_order) VALUES
+('Apartment', 'apartment', 'home', 1),
+('House', 'house', 'home', 2),
+('Villa', 'villa', 'home', 3),
+('Land', 'land', 'map', 4),
+('Shop', 'shop', 'shopping-bag', 5),
+('Office', 'office', 'briefcase', 6),
+('Warehouse', 'warehouse', 'package', 7);
+
+-- ============================================
+-- SEED DATA - Amenities (Indoor)
+-- ============================================
+INSERT INTO amenities (name, slug, icon, category, sort_order) VALUES
+('Wi-Fi', 'wifi', 'wifi', 'indoor', 1),
+('Air Conditioning', 'ac', 'wind', 'indoor', 2),
+('Parking', 'parking', 'truck', 'indoor', 3),
+('Kitchen', 'kitchen', 'coffee', 'indoor', 4),
+('Water', 'water', 'droplet', 'indoor', 5),
+('Electricity', 'electricity', 'zap', 'indoor', 6),
+('Furnished', 'furnished', 'box', 'indoor', 7),
+('Security', 'security', 'shield', 'indoor', 8),
+('Generator', 'generator', 'battery', 'indoor', 9),
+('Balcony', 'balcony', 'maximize', 'indoor', 10);
+
+-- ============================================
+-- SEED DATA - Amenities (Nearby)
+-- ============================================
+INSERT INTO amenities (name, slug, icon, category, sort_order) VALUES
+('Mosque', 'mosque', 'map-pin', 'nearby', 1),
+('School', 'school', 'book', 'nearby', 2),
+('Hospital', 'hospital', 'plus-circle', 'nearby', 3),
+('Market', 'market', 'shopping-cart', 'nearby', 4),
+('Gym', 'gym', 'activity', 'nearby', 5),
+('Laundry', 'laundry', 'refresh-cw', 'nearby', 6),
+('Restaurant', 'restaurant', 'coffee', 'nearby', 7),
+('Bank', 'bank', 'credit-card', 'nearby', 8);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES

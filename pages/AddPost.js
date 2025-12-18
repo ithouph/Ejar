@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -17,73 +17,51 @@ import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
-import { posts as postsApi } from '../services';
+import { 
+  posts as postsApi, 
+  categories as categoriesApi,
+  listingTypes as listingTypesApi,
+  propertyTypes as propertyTypesApi,
+  amenities as amenitiesApi,
+  cities as citiesApi
+} from '../services';
 
-const LISTING_TYPES = [
-  { id: 'rent', label: 'Rent' },
-  { id: 'sell', label: 'Sell' },
+const FALLBACK_LISTING_TYPES = [
+  { id: 'rent', name: 'For Rent', slug: 'rent', icon: 'key' },
+  { id: 'sale', name: 'For Sale', slug: 'sale', icon: 'tag' },
 ];
 
-const CATEGORIES = [
-  { id: 'phones', label: 'Phones', icon: 'smartphone' },
-  { id: 'laptops', label: 'Laptops', icon: 'monitor' },
-  { id: 'electronics', label: 'Electronics', icon: 'zap' },
-  { id: 'cars', label: 'Cars', icon: 'truck' },
-  { id: 'property', label: 'Property', icon: 'home' },
+const FALLBACK_CATEGORIES = [
+  { id: 'phones', name: 'Phones', type: 'electronics', metadata: { icon: 'smartphone', sort_order: 1 } },
+  { id: 'laptops', name: 'Laptops', type: 'electronics', metadata: { icon: 'monitor', sort_order: 2 } },
+  { id: 'electronics', name: 'Electronics', type: 'electronics', metadata: { icon: 'zap', sort_order: 3 } },
+  { id: 'cars', name: 'Cars', type: 'vehicles', metadata: { icon: 'truck', sort_order: 4 } },
+  { id: 'property', name: 'Property', type: 'property', metadata: { icon: 'home', sort_order: 5 } },
 ];
 
-const PROPERTY_TYPES = [
-  { id: 'apartment', label: 'Apartment' },
-  { id: 'house', label: 'House' },
-  { id: 'villa', label: 'Villa' },
-  { id: 'land', label: 'Land' },
+const FALLBACK_PROPERTY_TYPES = [
+  { id: 'apartment', name: 'Apartment', slug: 'apartment', icon: 'home' },
+  { id: 'house', name: 'House', slug: 'house', icon: 'home' },
+  { id: 'villa', name: 'Villa', slug: 'villa', icon: 'home' },
+  { id: 'land', name: 'Land', slug: 'land', icon: 'map' },
 ];
 
-const AMENITIES = [
-  { id: 'wifi', label: 'Wi-Fi', icon: 'wifi' },
-  { id: 'parking', label: 'Parking', icon: 'truck' },
-  { id: 'ac', label: 'Air Conditioning', icon: 'wind' },
-  { id: 'kitchen', label: 'Kitchen', icon: 'coffee' },
+const FALLBACK_AMENITIES = [
+  { id: 'wifi', name: 'Wi-Fi', slug: 'wifi', icon: 'wifi', category: 'indoor' },
+  { id: 'parking', name: 'Parking', slug: 'parking', icon: 'truck', category: 'indoor' },
+  { id: 'ac', name: 'Air Conditioning', slug: 'ac', icon: 'wind', category: 'indoor' },
+  { id: 'kitchen', name: 'Kitchen', slug: 'kitchen', icon: 'coffee', category: 'indoor' },
 ];
 
-const NEARBY_AMENITIES = [
-  { id: 'mosque', label: 'Mosque', icon: 'map-pin' },
-  { id: 'laundry', label: 'Laundry', icon: 'refresh-cw' },
-  { id: 'gym', label: 'Gym', icon: 'activity' },
+const FALLBACK_NEARBY_AMENITIES = [
+  { id: 'mosque', name: 'Mosque', slug: 'mosque', icon: 'map-pin', category: 'nearby' },
+  { id: 'laundry', name: 'Laundry', slug: 'laundry', icon: 'refresh-cw', category: 'nearby' },
+  { id: 'gym', name: 'Gym', slug: 'gym', icon: 'activity', category: 'nearby' },
 ];
 
 const CONDITION_OPTIONS = ['Excellent', 'Good', 'Fair', 'Poor'];
 const FUEL_TYPES = ['Petrol', 'Diesel', 'Electric', 'Hybrid'];
 const GEAR_TYPES = ['Automatic', 'Manual'];
-
-const LOCATIONS = [
-  'Adel Bagrou',
-  'Akjoujt',
-  'Aleg',
-  'Atar',
-  'Ayoun el Atrous (Aiún el Atrus)',
-  'Bassikounou',
-  'Bir Moghrein',
-  'Bogué',
-  'Bou Mdeid',
-  'Boutilimit',
-  'Chinguetti',
-  'Fdérik',
-  'Guerou',
-  'Kaédi',
-  'Kiffa',
-  'M\'bout',
-  'Néma',
-  'Nouadhibou (Port-Étienne)',
-  'Nouakchott (Capital city)',
-  'Ouadane',
-  'Oualata',
-  'Rosso',
-  'Sélibaby',
-  'Tidjikdja',
-  'Timbédra',
-  'Zouerat',
-];
 
 function InputField({ label, value, onChangeText, placeholder, keyboardType, theme }) {
   return (
@@ -129,7 +107,7 @@ function SelectButton({ label, selected, onPress, theme }) {
   );
 }
 
-function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
+function LocationAutocomplete({ label, value, onChangeText, onSelect, cities, theme }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredLocations, setFilteredLocations] = useState([]);
 
@@ -137,8 +115,8 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
     onChangeText(text);
     
     if (text.trim().length > 0) {
-      const filtered = LOCATIONS.filter(location =>
-        location.toLowerCase().includes(text.toLowerCase())
+      const filtered = cities.filter(city =>
+        city.name.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredLocations(filtered);
       setShowDropdown(true);
@@ -148,8 +126,8 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
     }
   };
 
-  const handleSelect = (location) => {
-    onSelect(location);
+  const handleSelect = (city) => {
+    onSelect(city);
     setShowDropdown(false);
     setFilteredLocations([]);
   };
@@ -180,14 +158,14 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, theme }) {
             nestedScrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           >
-            {filteredLocations.map((location, index) => (
+            {filteredLocations.map((city, index) => (
               <Pressable
-                key={index}
-                onPress={() => handleSelect(location)}
+                key={city.id || index}
+                onPress={() => handleSelect(city)}
                 style={[styles.dropdownItem, { borderBottomColor: theme.border }]}
               >
                 <ThemedText type="body" style={{ color: theme.textPrimary }}>
-                  {location}
+                  {city.name}
                 </ThemedText>
               </Pressable>
             ))}
@@ -211,7 +189,7 @@ function AmenityChip({ amenity, selected, onPress, theme }) {
       ]}
     >
       <Feather 
-        name={amenity.icon} 
+        name={amenity.icon || 'check'} 
         size={16} 
         color={selected ? theme.primary : theme.textSecondary} 
       />
@@ -219,9 +197,20 @@ function AmenityChip({ amenity, selected, onPress, theme }) {
         type="bodySmall" 
         style={{ color: selected ? theme.primary : theme.textSecondary }}
       >
-        {amenity.label}
+        {amenity.name}
       </ThemedText>
     </Pressable>
+  );
+}
+
+function LoadingScreen({ theme }) {
+  return (
+    <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+      <ActivityIndicator size="large" color={theme.primary} />
+      <ThemedText type="body" style={{ marginTop: Spacing.md, color: theme.textSecondary }}>
+        Loading form data...
+      </ThemedText>
+    </View>
   );
 }
 
@@ -230,12 +219,22 @@ export default function AddPost({ navigation }) {
   const { user } = useAuth();
   const insets = useScreenInsets();
   
-  const [listingType, setListingType] = useState('rent');
-  const [category, setCategory] = useState('phones');
+  const [dataLoading, setDataLoading] = useState(true);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [listingTypeOptions, setListingTypeOptions] = useState([]);
+  const [propertyTypeOptions, setPropertyTypeOptions] = useState([]);
+  const [indoorAmenities, setIndoorAmenities] = useState([]);
+  const [nearbyAmenities, setNearbyAmenities] = useState([]);
+  const [cities, setCities] = useState([]);
+
+  const [listingType, setListingType] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
+  const [selectedCity, setSelectedCity] = useState(null);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -260,7 +259,7 @@ export default function AddPost({ navigation }) {
   const [bedrooms, setBedrooms] = useState('');
   const [bathrooms, setBathrooms] = useState('');
   const [sizeSqft, setSizeSqft] = useState('');
-  const [propertyType, setPropertyType] = useState('apartment');
+  const [propertyType, setPropertyType] = useState('');
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [selectedNearbyAmenities, setSelectedNearbyAmenities] = useState([]);
   const [landSize, setLandSize] = useState('');
@@ -272,6 +271,93 @@ export default function AddPost({ navigation }) {
   const [ownershipType, setOwnershipType] = useState('');
   const [propertyAge, setPropertyAge] = useState('');
   const [paymentOptions, setPaymentOptions] = useState('');
+
+  useEffect(() => {
+    loadFormData();
+  }, []);
+
+  useEffect(() => {
+    setSelectedAmenities([]);
+    setSelectedNearbyAmenities([]);
+  }, [usingFallbackData]);
+
+  async function loadFormData() {
+    try {
+      setDataLoading(true);
+      
+      const [
+        categoriesData,
+        listingTypesData,
+        propertyTypesData,
+        amenitiesData,
+        citiesData
+      ] = await Promise.all([
+        categoriesApi.getAll().catch(() => null),
+        listingTypesApi.getAll().catch(() => null),
+        propertyTypesApi.getAll().catch(() => null),
+        amenitiesApi.getAll().catch(() => null),
+        citiesApi.getAll().catch(() => null)
+      ]);
+
+      const hasDbCategories = categoriesData && categoriesData.length > 0;
+      const hasDbListingTypes = listingTypesData && listingTypesData.length > 0;
+      const hasDbPropertyTypes = propertyTypesData && propertyTypesData.length > 0;
+      const hasDbAmenities = amenitiesData && amenitiesData.length > 0;
+      
+      const isFallback = !hasDbCategories || !hasDbListingTypes || !hasDbPropertyTypes || !hasDbAmenities;
+      setUsingFallbackData(isFallback);
+
+      const cats = hasDbCategories
+        ? categoriesData.sort((a, b) => (a.metadata?.sort_order || 99) - (b.metadata?.sort_order || 99))
+        : FALLBACK_CATEGORIES;
+      setCategories(cats);
+      if (cats.length > 0) {
+        setSelectedCategory(cats[0]);
+      }
+
+      const listTypes = hasDbListingTypes ? listingTypesData : FALLBACK_LISTING_TYPES;
+      setListingTypeOptions(listTypes);
+      if (listTypes.length > 0) {
+        setListingType(listTypes[0].slug);
+      }
+
+      const propTypes = hasDbPropertyTypes ? propertyTypesData : FALLBACK_PROPERTY_TYPES;
+      setPropertyTypeOptions(propTypes);
+      if (propTypes.length > 0) {
+        setPropertyType(propTypes[0].slug);
+      }
+
+      if (hasDbAmenities) {
+        setIndoorAmenities(amenitiesData.filter(a => a.category === 'indoor'));
+        setNearbyAmenities(amenitiesData.filter(a => a.category === 'nearby'));
+      } else {
+        setIndoorAmenities(FALLBACK_AMENITIES);
+        setNearbyAmenities(FALLBACK_NEARBY_AMENITIES);
+      }
+
+      setCities(citiesData || []);
+
+    } catch (error) {
+      console.error('Error loading form data:', error);
+      setUsingFallbackData(true);
+      setCategories(FALLBACK_CATEGORIES);
+      setSelectedCategory(FALLBACK_CATEGORIES[0]);
+      setListingTypeOptions(FALLBACK_LISTING_TYPES);
+      setListingType(FALLBACK_LISTING_TYPES[0].slug);
+      setPropertyTypeOptions(FALLBACK_PROPERTY_TYPES);
+      setPropertyType(FALLBACK_PROPERTY_TYPES[0].slug);
+      setIndoorAmenities(FALLBACK_AMENITIES);
+      setNearbyAmenities(FALLBACK_NEARBY_AMENITIES);
+    } finally {
+      setDataLoading(false);
+    }
+  }
+
+  function isUuid(str) {
+    if (!str || typeof str !== 'string') return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
 
   async function handlePickImages() {
     try {
@@ -298,94 +384,130 @@ export default function AddPost({ navigation }) {
     }
   }
 
-  function toggleAmenity(amenityId) {
+  function getAmenityKey(amenity) {
+    if (!usingFallbackData && isUuid(amenity.id)) {
+      return amenity.id;
+    }
+    return amenity.slug || amenity.name?.toLowerCase().replace(/\s+/g, '-') || amenity.id;
+  }
+
+  function toggleAmenity(amenity) {
+    const key = getAmenityKey(amenity);
     setSelectedAmenities(prev => 
-      prev.includes(amenityId)
-        ? prev.filter(id => id !== amenityId)
-        : [...prev, amenityId]
+      prev.includes(key)
+        ? prev.filter(id => id !== key)
+        : [...prev, key]
     );
   }
 
-  function toggleNearbyAmenity(amenityId) {
+  function toggleNearbyAmenity(amenity) {
+    const key = getAmenityKey(amenity);
     setSelectedNearbyAmenities(prev => 
-      prev.includes(amenityId)
-        ? prev.filter(id => id !== amenityId)
-        : [...prev, amenityId]
+      prev.includes(key)
+        ? prev.filter(id => id !== key)
+        : [...prev, key]
     );
+  }
+
+  function getCategorySlug() {
+    if (!selectedCategory) return '';
+    return selectedCategory.slug || selectedCategory.name?.toLowerCase().replace(/\s+/g, '-') || '';
+  }
+
+  function getCategoryType() {
+    if (!selectedCategory) return '';
+    return selectedCategory.type || selectedCategory.name?.toLowerCase() || '';
   }
 
   function getCategorySpecifications() {
-    switch (category) {
-      case 'phones':
-        return {
-          battery_health: batteryHealth,
-          storage,
-          condition,
-          model,
-          color,
-        };
-      case 'laptops':
-        return {
-          processor,
-          ram,
-          storage,
-          condition,
-          model,
-        };
-      case 'electronics':
-        return {
-          brand,
-          condition,
-          warranty,
-        };
-      case 'cars':
-        return {
-          make,
-          model,
-          year,
-          mileage,
-          gear_type: gearType,
-          fuel_type: fuelType,
-          condition,
-        };
-      case 'property':
-        const commonSpecs = {
-          property_type: propertyType,
-          amenities: selectedAmenities,
-        };
-
-        if (propertyType === 'land') {
-          commonSpecs.land_size = landSize;
-        } else {
-          commonSpecs.bedrooms = bedrooms;
-          commonSpecs.bathrooms = bathrooms;
-          commonSpecs.size_sqft = sizeSqft;
-        }
-        
-        if (listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment')) {
-          commonSpecs.nearby_amenities = selectedNearbyAmenities;
-        }
-        
-        if (listingType === 'rent') {
-          return {
-            ...commonSpecs,
-            monthly_rent: monthlyRent,
-            deposit,
-            min_contract_duration: minContract,
-            furnished,
-          };
-        } else {
-          return {
-            ...commonSpecs,
-            sale_price: salePrice,
-            ownership_type: ownershipType,
-            property_age: propertyAge,
-            payment_options: paymentOptions,
-          };
-        }
-      default:
-        return {};
+    const catType = getCategoryType();
+    const catSlug = getCategorySlug();
+    
+    if (catType === 'electronics' && catSlug.includes('phone')) {
+      return {
+        battery_health: batteryHealth,
+        storage,
+        condition,
+        model,
+        color,
+      };
     }
+    
+    if (catType === 'electronics' && catSlug.includes('laptop')) {
+      return {
+        processor,
+        ram,
+        storage,
+        condition,
+        model,
+      };
+    }
+    
+    if (catType === 'electronics') {
+      return {
+        brand,
+        condition,
+        warranty,
+      };
+    }
+    
+    if (catType === 'vehicles') {
+      return {
+        make,
+        model,
+        year,
+        mileage,
+        gear_type: gearType,
+        fuel_type: fuelType,
+        condition,
+      };
+    }
+    
+    if (catType === 'property') {
+      const getAmenityNames = (ids, amenitiesList) => {
+        return ids.map(id => {
+          const amenity = amenitiesList.find(a => getAmenityKey(a) === id);
+          return amenity?.name || id;
+        }).filter(Boolean);
+      };
+
+      const commonSpecs = {
+        property_type: propertyType,
+        amenities: getAmenityNames(selectedAmenities, indoorAmenities),
+      };
+
+      if (propertyType === 'land') {
+        commonSpecs.land_size = landSize;
+      } else {
+        commonSpecs.bedrooms = bedrooms;
+        commonSpecs.bathrooms = bathrooms;
+        commonSpecs.size_sqft = sizeSqft;
+      }
+      
+      if (listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment')) {
+        commonSpecs.nearby_amenities = getAmenityNames(selectedNearbyAmenities, nearbyAmenities);
+      }
+      
+      if (listingType === 'rent') {
+        return {
+          ...commonSpecs,
+          monthly_rent: monthlyRent,
+          deposit,
+          min_contract_duration: minContract,
+          furnished,
+        };
+      } else {
+        return {
+          ...commonSpecs,
+          sale_price: salePrice,
+          ownership_type: ownershipType,
+          property_age: propertyAge,
+          payment_options: paymentOptions,
+        };
+      }
+    }
+    
+    return {};
   }
 
   async function handleSubmit() {
@@ -399,7 +521,7 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (!location.trim()) {
+    if (!location.trim() && !selectedCity) {
       Alert.alert('Error', 'Please enter a location');
       return;
     }
@@ -412,20 +534,36 @@ export default function AddPost({ navigation }) {
     try {
       setLoading(true);
 
+      const categoryId = isUuid(selectedCategory?.id) ? selectedCategory.id : null;
+      const categorySlug = getCategorySlug();
+
       const postData = {
         title: title.trim(),
         description: description.trim(),
         price: price ? parseFloat(price) : null,
-        location: location.trim(),
+        location: selectedCity?.name || location.trim(),
+        cityId: selectedCity?.id || null,
         images,
         listingType,
-        category,
+        categoryId,
+        category: categorySlug,
         specifications: getCategorySpecifications(),
         userName: user?.user_metadata?.full_name || user?.email || 'Anonymous User',
         userPhoto: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/40',
       };
 
-      await postsApi.create(user?.id || 'guest', postData);
+      const newPost = await postsApi.create(user?.id || 'guest', postData);
+
+      if (selectedAmenities.length > 0 && newPost?.id && !usingFallbackData) {
+        const validAmenityIds = selectedAmenities.filter(id => isUuid(id));
+        if (validAmenityIds.length > 0) {
+          try {
+            await amenitiesApi.savePostAmenities(newPost.id, validAmenityIds);
+          } catch (amenityError) {
+            console.error('Error saving amenities:', amenityError);
+          }
+        }
+      }
 
       Alert.alert(
         'Success',
@@ -445,236 +583,279 @@ export default function AddPost({ navigation }) {
     }
   }
 
+  function getCategoryIcon(cat) {
+    if (cat.metadata?.icon) return cat.metadata.icon;
+    const name = cat.name?.toLowerCase() || '';
+    if (name.includes('phone')) return 'smartphone';
+    if (name.includes('laptop')) return 'monitor';
+    if (name.includes('electronic')) return 'zap';
+    if (name.includes('car') || name.includes('vehicle')) return 'truck';
+    if (name.includes('property')) return 'home';
+    if (name.includes('furniture')) return 'box';
+    return 'package';
+  }
+
+  function isPropertyCategory() {
+    if (!selectedCategory) return false;
+    return selectedCategory.type === 'property' || selectedCategory.name?.toLowerCase() === 'property';
+  }
+
+  function isCarsCategory() {
+    if (!selectedCategory) return false;
+    return selectedCategory.type === 'vehicles' || selectedCategory.name?.toLowerCase()?.includes('car');
+  }
+
+  function isPhonesCategory() {
+    if (!selectedCategory) return false;
+    return selectedCategory.name?.toLowerCase()?.includes('phone');
+  }
+
+  function isLaptopsCategory() {
+    if (!selectedCategory) return false;
+    return selectedCategory.name?.toLowerCase()?.includes('laptop');
+  }
+
+  function isElectronicsCategory() {
+    if (!selectedCategory) return false;
+    return selectedCategory.type === 'electronics' && !isPhonesCategory() && !isLaptopsCategory();
+  }
+
   function renderCategoryFields() {
-    const { theme } = useTheme();
-
-    switch (category) {
-      case 'phones':
-        return (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Phone Details
-              </ThemedText>
-              <InputField label="Model" value={model} onChangeText={setModel} placeholder="e.g., iPhone 14 Pro" theme={theme} />
-              <InputField label="Battery Health" value={batteryHealth} onChangeText={setBatteryHealth} placeholder="e.g., 95%" theme={theme} />
-              <InputField label="Storage" value={storage} onChangeText={setStorage} placeholder="e.g., 256GB" theme={theme} />
-              <InputField label="Color" value={color} onChangeText={setColor} placeholder="e.g., Black" theme={theme} />
-              
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Condition
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map(opt => (
-                  <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
-                ))}
-              </View>
-            </View>
-          </>
-        );
-
-      case 'laptops':
-        return (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Laptop Details
-              </ThemedText>
-              <InputField label="Model" value={model} onChangeText={setModel} placeholder="e.g., MacBook Pro 16" theme={theme} />
-              <InputField label="Processor" value={processor} onChangeText={setProcessor} placeholder="e.g., M2 Pro" theme={theme} />
-              <InputField label="RAM" value={ram} onChangeText={setRam} placeholder="e.g., 16GB" theme={theme} />
-              <InputField label="Storage" value={storage} onChangeText={setStorage} placeholder="e.g., 512GB SSD" theme={theme} />
-              
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Condition
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map(opt => (
-                  <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
-                ))}
-              </View>
-            </View>
-          </>
-        );
-
-      case 'electronics':
-        return (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Electronics Details
-              </ThemedText>
-              <InputField label="Brand" value={brand} onChangeText={setBrand} placeholder="e.g., Sony" theme={theme} />
-              <InputField label="Warranty" value={warranty} onChangeText={setWarranty} placeholder="e.g., 1 year" theme={theme} />
-              
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Condition
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map(opt => (
-                  <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
-                ))}
-              </View>
-            </View>
-          </>
-        );
-
-      case 'cars':
-        return (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Car Details
-              </ThemedText>
-              <InputField label="Make / Model" value={make} onChangeText={setMake} placeholder="e.g., Toyota Camry" theme={theme} />
-              <InputField label="Model Details" value={model} onChangeText={setModel} placeholder="e.g., 2.5L SE" theme={theme} />
-              <InputField label="Year" value={year} onChangeText={setYear} placeholder="e.g., 2022" keyboardType="numeric" theme={theme} />
-              <InputField label="Mileage" value={mileage} onChangeText={setMileage} placeholder="e.g., 25,000 km" theme={theme} />
-              
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Fuel Type
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {FUEL_TYPES.map(fuel => (
-                  <SelectButton key={fuel} label={fuel} selected={fuelType === fuel} onPress={() => setFuelType(fuel)} theme={theme} />
-                ))}
-              </View>
-
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Gear Type
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {GEAR_TYPES.map(gear => (
-                  <SelectButton key={gear} label={gear} selected={gearType === gear} onPress={() => setGearType(gear)} theme={theme} />
-                ))}
-              </View>
-
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Condition
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {CONDITION_OPTIONS.map(opt => (
-                  <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
-                ))}
-              </View>
-            </View>
-          </>
-        );
-
-      case 'property':
-        return (
-          <>
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Listing Type
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {LISTING_TYPES.map(type => (
-                  <SelectButton 
-                    key={type.id} 
-                    label={type.label} 
-                    selected={listingType === type.id} 
-                    onPress={() => setListingType(type.id)} 
-                    theme={theme} 
-                  />
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <ThemedText type="bodyLarge" style={styles.sectionTitle}>
-                Property Details
-              </ThemedText>
-              
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Property Type
-              </ThemedText>
-              <View style={styles.optionsRow}>
-                {PROPERTY_TYPES.map(type => (
-                  <SelectButton key={type.id} label={type.label} selected={propertyType === type.id} onPress={() => setPropertyType(type.id)} theme={theme} />
-                ))}
-              </View>
-
-              {propertyType === 'land' ? (
-                <InputField label="Land Size (sq m)" value={landSize} onChangeText={setLandSize} placeholder="e.g., 500" keyboardType="numeric" theme={theme} />
-              ) : (
-                <>
-                  <InputField label="Bedrooms" value={bedrooms} onChangeText={setBedrooms} placeholder="e.g., 3" keyboardType="numeric" theme={theme} />
-                  <InputField label="Bathrooms" value={bathrooms} onChangeText={setBathrooms} placeholder="e.g., 2" keyboardType="numeric" theme={theme} />
-                  <InputField label="Size (sq ft)" value={sizeSqft} onChangeText={setSizeSqft} placeholder="e.g., 1500" keyboardType="numeric" theme={theme} />
-                </>
-              )}
-
-              <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                Amenities
-              </ThemedText>
-              <View style={styles.amenitiesGrid}>
-                {AMENITIES.map(amenity => (
-                  <AmenityChip
-                    key={amenity.id}
-                    amenity={amenity}
-                    selected={selectedAmenities.includes(amenity.id)}
-                    onPress={() => toggleAmenity(amenity.id)}
-                    theme={theme}
-                  />
-                ))}
-              </View>
-
-              {listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment') && (
-                <>
-                  <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.md }]}>
-                    Nearby
-                  </ThemedText>
-                  <View style={styles.amenitiesGrid}>
-                    {NEARBY_AMENITIES.map(amenity => (
-                      <AmenityChip
-                        key={amenity.id}
-                        amenity={amenity}
-                        selected={selectedNearbyAmenities.includes(amenity.id)}
-                        onPress={() => toggleNearbyAmenity(amenity.id)}
-                        theme={theme}
-                      />
-                    ))}
-                  </View>
-                </>
-              )}
-
-              {listingType === 'rent' ? (
-                <>
-                  <ThemedText type="h3" style={styles.subsectionTitle}>
-                    Rental Details
-                  </ThemedText>
-                  <InputField label="Monthly Rent" value={monthlyRent} onChangeText={setMonthlyRent} placeholder="e.g., 2500" keyboardType="numeric" theme={theme} />
-                  <InputField label="Deposit Amount" value={deposit} onChangeText={setDeposit} placeholder="e.g., 5000" keyboardType="numeric" theme={theme} />
-                  <InputField label="Min Contract Duration" value={minContract} onChangeText={setMinContract} placeholder="e.g., 12 months" theme={theme} />
-                  
-                  <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
-                    Furnished
-                  </ThemedText>
-                  <View style={styles.optionsRow}>
-                    <SelectButton label="Yes" selected={furnished === 'Yes'} onPress={() => setFurnished('Yes')} theme={theme} />
-                    <SelectButton label="No" selected={furnished === 'No'} onPress={() => setFurnished('No')} theme={theme} />
-                    <SelectButton label="Partially" selected={furnished === 'Partially'} onPress={() => setFurnished('Partially')} theme={theme} />
-                  </View>
-                </>
-              ) : (
-                <>
-                  <ThemedText type="h3" style={styles.subsectionTitle}>
-                    Sale Details
-                  </ThemedText>
-                  <InputField label="Sale Price" value={salePrice} onChangeText={setSalePrice} placeholder="e.g., 500000" keyboardType="numeric" theme={theme} />
-                  <InputField label="Ownership Type" value={ownershipType} onChangeText={setOwnershipType} placeholder="e.g., Freehold" theme={theme} />
-                  <InputField label="Property Age" value={propertyAge} onChangeText={setPropertyAge} placeholder="e.g., 5 years" theme={theme} />
-                  <InputField label="Payment Options" value={paymentOptions} onChangeText={setPaymentOptions} placeholder="e.g., Cash, Installments" theme={theme} />
-                </>
-              )}
-            </View>
-          </>
-        );
-
-      default:
-        return null;
+    if (isPhonesCategory()) {
+      return (
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Phone Details
+          </ThemedText>
+          <InputField label="Model" value={model} onChangeText={setModel} placeholder="e.g., iPhone 14 Pro" theme={theme} />
+          <InputField label="Battery Health" value={batteryHealth} onChangeText={setBatteryHealth} placeholder="e.g., 95%" theme={theme} />
+          <InputField label="Storage" value={storage} onChangeText={setStorage} placeholder="e.g., 256GB" theme={theme} />
+          <InputField label="Color" value={color} onChangeText={setColor} placeholder="e.g., Black" theme={theme} />
+          
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Condition
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {CONDITION_OPTIONS.map(opt => (
+              <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
+            ))}
+          </View>
+        </View>
+      );
     }
+
+    if (isLaptopsCategory()) {
+      return (
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Laptop Details
+          </ThemedText>
+          <InputField label="Model" value={model} onChangeText={setModel} placeholder="e.g., MacBook Pro 16" theme={theme} />
+          <InputField label="Processor" value={processor} onChangeText={setProcessor} placeholder="e.g., M2 Pro" theme={theme} />
+          <InputField label="RAM" value={ram} onChangeText={setRam} placeholder="e.g., 16GB" theme={theme} />
+          <InputField label="Storage" value={storage} onChangeText={setStorage} placeholder="e.g., 512GB SSD" theme={theme} />
+          
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Condition
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {CONDITION_OPTIONS.map(opt => (
+              <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
+            ))}
+          </View>
+        </View>
+      );
+    }
+
+    if (isElectronicsCategory()) {
+      return (
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Electronics Details
+          </ThemedText>
+          <InputField label="Brand" value={brand} onChangeText={setBrand} placeholder="e.g., Sony" theme={theme} />
+          <InputField label="Warranty" value={warranty} onChangeText={setWarranty} placeholder="e.g., 1 year" theme={theme} />
+          
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Condition
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {CONDITION_OPTIONS.map(opt => (
+              <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
+            ))}
+          </View>
+        </View>
+      );
+    }
+
+    if (isCarsCategory()) {
+      return (
+        <View style={styles.section}>
+          <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+            Car Details
+          </ThemedText>
+          <InputField label="Make / Model" value={make} onChangeText={setMake} placeholder="e.g., Toyota Camry" theme={theme} />
+          <InputField label="Model Details" value={model} onChangeText={setModel} placeholder="e.g., 2.5L SE" theme={theme} />
+          <InputField label="Year" value={year} onChangeText={setYear} placeholder="e.g., 2022" keyboardType="numeric" theme={theme} />
+          <InputField label="Mileage" value={mileage} onChangeText={setMileage} placeholder="e.g., 25,000 km" theme={theme} />
+          
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Fuel Type
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {FUEL_TYPES.map(fuel => (
+              <SelectButton key={fuel} label={fuel} selected={fuelType === fuel} onPress={() => setFuelType(fuel)} theme={theme} />
+            ))}
+          </View>
+
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Gear Type
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {GEAR_TYPES.map(gear => (
+              <SelectButton key={gear} label={gear} selected={gearType === gear} onPress={() => setGearType(gear)} theme={theme} />
+            ))}
+          </View>
+
+          <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+            Condition
+          </ThemedText>
+          <View style={styles.optionsRow}>
+            {CONDITION_OPTIONS.map(opt => (
+              <SelectButton key={opt} label={opt} selected={condition === opt} onPress={() => setCondition(opt)} theme={theme} />
+            ))}
+          </View>
+        </View>
+      );
+    }
+
+    if (isPropertyCategory()) {
+      return (
+        <>
+          <View style={styles.section}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Listing Type
+            </ThemedText>
+            <View style={styles.optionsRow}>
+              {listingTypeOptions.map(type => (
+                <SelectButton 
+                  key={type.id || type.slug} 
+                  label={type.name} 
+                  selected={listingType === (type.slug || type.id)} 
+                  onPress={() => setListingType(type.slug || type.id)} 
+                  theme={theme} 
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <ThemedText type="bodyLarge" style={styles.sectionTitle}>
+              Property Details
+            </ThemedText>
+            
+            <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+              Property Type
+            </ThemedText>
+            <View style={styles.optionsRow}>
+              {propertyTypeOptions.map(type => (
+                <SelectButton 
+                  key={type.id || type.slug} 
+                  label={type.name} 
+                  selected={propertyType === (type.slug || type.id)} 
+                  onPress={() => setPropertyType(type.slug || type.id)} 
+                  theme={theme} 
+                />
+              ))}
+            </View>
+
+            {propertyType === 'land' ? (
+              <InputField label="Land Size (sq m)" value={landSize} onChangeText={setLandSize} placeholder="e.g., 500" keyboardType="numeric" theme={theme} />
+            ) : (
+              <>
+                <InputField label="Bedrooms" value={bedrooms} onChangeText={setBedrooms} placeholder="e.g., 3" keyboardType="numeric" theme={theme} />
+                <InputField label="Bathrooms" value={bathrooms} onChangeText={setBathrooms} placeholder="e.g., 2" keyboardType="numeric" theme={theme} />
+                <InputField label="Size (sq ft)" value={sizeSqft} onChangeText={setSizeSqft} placeholder="e.g., 1500" keyboardType="numeric" theme={theme} />
+              </>
+            )}
+
+            {indoorAmenities.length > 0 && (
+              <>
+                <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+                  Amenities
+                </ThemedText>
+                <View style={styles.amenitiesGrid}>
+                  {indoorAmenities.map(amenity => (
+                    <AmenityChip
+                      key={getAmenityKey(amenity)}
+                      amenity={amenity}
+                      selected={selectedAmenities.includes(getAmenityKey(amenity))}
+                      onPress={() => toggleAmenity(amenity)}
+                      theme={theme}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {listingType === 'rent' && (propertyType === 'house' || propertyType === 'apartment') && nearbyAmenities.length > 0 && (
+              <>
+                <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary, marginTop: Spacing.md }]}>
+                  Nearby
+                </ThemedText>
+                <View style={styles.amenitiesGrid}>
+                  {nearbyAmenities.map(amenity => (
+                    <AmenityChip
+                      key={getAmenityKey(amenity)}
+                      amenity={amenity}
+                      selected={selectedNearbyAmenities.includes(getAmenityKey(amenity))}
+                      onPress={() => toggleNearbyAmenity(amenity)}
+                      theme={theme}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
+
+            {listingType === 'rent' ? (
+              <>
+                <ThemedText type="h3" style={styles.subsectionTitle}>
+                  Rental Details
+                </ThemedText>
+                <InputField label="Monthly Rent" value={monthlyRent} onChangeText={setMonthlyRent} placeholder="e.g., 2500" keyboardType="numeric" theme={theme} />
+                <InputField label="Deposit Amount" value={deposit} onChangeText={setDeposit} placeholder="e.g., 5000" keyboardType="numeric" theme={theme} />
+                <InputField label="Min Contract Duration" value={minContract} onChangeText={setMinContract} placeholder="e.g., 12 months" theme={theme} />
+                
+                <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
+                  Furnished
+                </ThemedText>
+                <View style={styles.optionsRow}>
+                  <SelectButton label="Yes" selected={furnished === 'Yes'} onPress={() => setFurnished('Yes')} theme={theme} />
+                  <SelectButton label="No" selected={furnished === 'No'} onPress={() => setFurnished('No')} theme={theme} />
+                  <SelectButton label="Partially" selected={furnished === 'Partially'} onPress={() => setFurnished('Partially')} theme={theme} />
+                </View>
+              </>
+            ) : (
+              <>
+                <ThemedText type="h3" style={styles.subsectionTitle}>
+                  Sale Details
+                </ThemedText>
+                <InputField label="Sale Price" value={salePrice} onChangeText={setSalePrice} placeholder="e.g., 500000" keyboardType="numeric" theme={theme} />
+                <InputField label="Ownership Type" value={ownershipType} onChangeText={setOwnershipType} placeholder="e.g., Freehold" theme={theme} />
+                <InputField label="Property Age" value={propertyAge} onChangeText={setPropertyAge} placeholder="e.g., 5 years" theme={theme} />
+                <InputField label="Payment Options" value={paymentOptions} onChangeText={setPaymentOptions} placeholder="e.g., Cash, Installments" theme={theme} />
+              </>
+            )}
+          </View>
+        </>
+      );
+    }
+
+    return null;
+  }
+
+  if (dataLoading) {
+    return <LoadingScreen theme={theme} />;
   }
 
   return (
@@ -709,31 +890,35 @@ export default function AddPost({ navigation }) {
             Category
           </ThemedText>
           <View style={styles.typeGrid}>
-            {CATEGORIES.map(cat => (
-              <Pressable
-                key={cat.id}
-                onPress={() => setCategory(cat.id)}
-                style={[
-                  styles.typeChip,
-                  { 
-                    backgroundColor: category === cat.id ? theme.primary + '20' : theme.surface,
-                    borderColor: category === cat.id ? theme.primary : theme.border,
-                  }
-                ]}
-              >
-                <Feather 
-                  name={cat.icon} 
-                  size={20} 
-                  color={category === cat.id ? theme.primary : theme.textSecondary} 
-                />
-                <ThemedText 
-                  type="body" 
-                  style={{ color: category === cat.id ? theme.primary : theme.textSecondary }}
+            {categories.map(cat => {
+              const icon = getCategoryIcon(cat);
+              const isSelected = selectedCategory?.id === cat.id;
+              return (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => setSelectedCategory(cat)}
+                  style={[
+                    styles.typeChip,
+                    { 
+                      backgroundColor: isSelected ? theme.primary + '20' : theme.surface,
+                      borderColor: isSelected ? theme.primary : theme.border,
+                    }
+                  ]}
                 >
-                  {cat.label}
-                </ThemedText>
-              </Pressable>
-            ))}
+                  <Feather 
+                    name={icon} 
+                    size={20} 
+                    color={isSelected ? theme.primary : theme.textSecondary} 
+                  />
+                  <ThemedText 
+                    type="body" 
+                    style={{ color: isSelected ? theme.primary : theme.textSecondary }}
+                  >
+                    {cat.name}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
@@ -825,12 +1010,18 @@ export default function AddPost({ navigation }) {
             label="Location"
             value={location}
             onChangeText={setLocation}
-            onSelect={setLocation}
+            onSelect={(city) => {
+              setSelectedCity(city);
+              setLocation(city.name);
+            }}
+            cities={cities}
             theme={theme}
           />
         </View>
 
         {renderCategoryFields()}
+
+        <View style={{ height: Spacing.xl }} />
       </KeyboardAwareScrollView>
     </ThemedView>
   );
@@ -840,36 +1031,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
   },
   headerButton: {
-    width: 60,
+    padding: Spacing.xs,
+    minWidth: 60,
+    alignItems: 'center',
   },
   headerTitle: {
     fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
   },
   scrollContent: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
+    paddingHorizontal: Spacing.md,
   },
   section: {
-    gap: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   sectionTitle: {
-    fontWeight: '700',
-    marginBottom: Spacing.xs,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
   },
   subsectionTitle: {
-    fontWeight: '600',
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xs,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
   },
   typeGrid: {
     flexDirection: 'row',
@@ -882,64 +1076,74 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.small,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
+  uploadArea: {
+    height: 150,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  imagesScroll: {
+    flexGrow: 0,
+  },
+  imageContainer: {
+    position: 'relative',
+    marginRight: Spacing.sm,
+  },
+  uploadedImage: {
+    width: 100,
+    height: 100,
+    borderRadius: BorderRadius.md,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addImageButton: {
+    width: 100,
+    height: 100,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   inputContainer: {
-    gap: Spacing.xs,
-    zIndex: 1,
+    marginBottom: Spacing.md,
   },
   label: {
-    fontWeight: '500',
+    marginBottom: Spacing.xs,
   },
   input: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.small,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
     fontSize: 16,
   },
-  dropdown: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    borderWidth: 1,
-    borderRadius: BorderRadius.small,
-    marginTop: Spacing.xs,
-    maxHeight: 200,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  dropdownScroll: {
-    maxHeight: 200,
-  },
-  dropdownItem: {
-    padding: Spacing.md,
-    borderBottomWidth: 1,
-  },
   textArea: {
-    minHeight: 100,
+    height: 100,
     textAlignVertical: 'top',
-    paddingTop: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   selectButton: {
-    flex: 1,
-    minWidth: '30%',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.small,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    alignItems: 'center',
   },
   amenitiesGrid: {
     flexDirection: 'row',
@@ -951,43 +1155,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.xs,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.small,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
   },
-  imagesScroll: {
-    marginHorizontal: -Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-  },
-  imageContainer: {
-    marginRight: Spacing.sm,
-    position: 'relative',
-  },
-  uploadedImage: {
-    width: 120,
-    height: 120,
-    borderRadius: BorderRadius.medium,
-  },
-  removeImageButton: {
+  dropdown: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 12,
-    padding: 4,
+    top: '100%',
+    left: 0,
+    right: 0,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    zIndex: 1000,
+    maxHeight: 200,
   },
-  addImageButton: {
-    width: 120,
-    height: 120,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
+  dropdownScroll: {
+    maxHeight: 200,
   },
-  uploadArea: {
-    height: 200,
-    borderRadius: BorderRadius.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
+  dropdownItem: {
+    padding: Spacing.md,
+    borderBottomWidth: 1,
   },
 });
