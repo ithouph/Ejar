@@ -34,6 +34,34 @@ export function AuthProvider({ children }) {
 
   async function loadSession() {
     try {
+      const isGuestMode = await authApi.isGuestSession();
+      
+      if (isGuestMode) {
+        const guestSession = await authApi.getGuestSession();
+        if (guestSession) {
+          setSession(guestSession);
+          setUser(guestSession.user);
+          
+          const formattedProfile = {
+            id: guestSession.profile.id,
+            phone: guestSession.profile.phone,
+            whatsapp_number: guestSession.profile.whatsappNumber,
+            first_name: guestSession.profile.firstName,
+            last_name: guestSession.profile.lastName,
+            city_id: guestSession.profile.cityId,
+            cities: { name: 'Nouakchott' },
+            role: guestSession.profile.role || 'normal',
+            wallet_balance_mru: guestSession.profile.walletBalance || 0,
+            free_posts_remaining: guestSession.profile.freePostsRemaining || 0,
+            isGuest: true,
+          };
+          
+          setProfile(formattedProfile);
+          setLoading(false);
+          return;
+        }
+      }
+      
       const session = await authApi.getSession();
       setSession(session);
       setUser(session?.user ?? null);
@@ -176,45 +204,41 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // TEMPORARY: Guest login for testing without Supabase setup
   async function signInAsGuest() {
     try {
       setLoading(true);
       
-      const guestUser = {
-        id: '00000000-0000-0000-0000-000000000001',
-        phone: '+22212345678',
-      };
+      const { user: guestUser, session: guestSession, profile: guestProfile } = await authApi.continueAsGuest();
       
-      const guestSession = {
-        user: guestUser,
-        access_token: 'guest-token',
-      };
-
-      const guestProfile = {
-        id: guestUser.id,
-        phone: guestUser.phone,
-        whatsapp_number: guestUser.phone,
-        first_name: 'Guest',
-        last_name: 'User',
-        city_id: null,
+      const formattedProfile = {
+        id: guestProfile.id,
+        phone: guestProfile.phone,
+        whatsapp_number: guestProfile.whatsappNumber,
+        first_name: guestProfile.firstName,
+        last_name: guestProfile.lastName,
+        city_id: guestProfile.cityId,
         cities: { name: 'Nouakchott' },
-        role: 'normal',
-        wallet_balance_mru: 0,
-        free_posts_remaining: 5,
+        role: guestProfile.role || 'normal',
+        wallet_balance_mru: guestProfile.walletBalance || 0,
+        free_posts_remaining: guestProfile.freePostsRemaining || 0,
+        isGuest: true,
       };
       
       setUser(guestUser);
       setSession(guestSession);
-      setProfile(guestProfile);
+      setProfile(formattedProfile);
       
-      return { user: guestUser, session: guestSession, profile: guestProfile };
+      return { user: guestUser, session: guestSession, profile: formattedProfile };
     } catch (error) {
       console.error('Guest sign in error:', error);
       throw error;
     } finally {
       setLoading(false);
     }
+  }
+
+  function isGuest() {
+    return profile?.isGuest === true;
   }
 
   const value = {
@@ -224,6 +248,7 @@ export function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!user,
     isProfileComplete: !!profile,
+    isGuest: isGuest(),
     sendOtp,
     verifyOtp,
     completeRegistration,

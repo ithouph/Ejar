@@ -156,4 +156,107 @@ export const auth = {
     const devMode = await AsyncStorage.getItem(DEV_MODE_KEY);
     return devMode === 'true';
   },
+
+  async continueAsGuest() {
+    const GUEST_USER_ID = 'u0000000-0000-0000-0000-000000000001';
+    const GUEST_SESSION_KEY = '@ejar_guest_session';
+    
+    try {
+      if (supabase) {
+        const { data: guestUser, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', GUEST_USER_ID)
+          .single();
+        
+        if (error || !guestUser) {
+          console.log('Guest user not found in database, using local fallback');
+        } else {
+          const guestSession = {
+            user: {
+              id: guestUser.id,
+              phone: guestUser.phone,
+              created_at: guestUser.created_at,
+            },
+            profile: {
+              id: guestUser.id,
+              firstName: guestUser.first_name,
+              lastName: guestUser.last_name,
+              phone: guestUser.phone,
+              whatsappNumber: guestUser.whatsapp_number,
+              cityId: guestUser.city_id,
+              role: guestUser.role,
+              walletBalance: parseFloat(guestUser.wallet_balance_mru) || 0,
+              freePostsRemaining: guestUser.free_posts_remaining || 0,
+              isGuest: true,
+            },
+            access_token: 'guest-token-' + Date.now(),
+            expires_at: Date.now() + 86400000 * 30,
+            isGuest: true,
+          };
+          
+          await AsyncStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(guestSession));
+          await AsyncStorage.setItem(DEV_MODE_KEY, 'guest');
+          
+          console.log('Guest session created from database');
+          return { user: guestSession.user, session: guestSession, profile: guestSession.profile };
+        }
+      }
+      
+      const localGuestUser = {
+        id: GUEST_USER_ID,
+        phone: '+22200000001',
+        created_at: new Date().toISOString(),
+      };
+      
+      const localGuestProfile = {
+        id: GUEST_USER_ID,
+        firstName: 'Guest',
+        lastName: 'User',
+        phone: '+22200000001',
+        whatsappNumber: '+22200000001',
+        cityId: null,
+        role: 'normal',
+        walletBalance: 0,
+        freePostsRemaining: 0,
+        isGuest: true,
+      };
+      
+      const localGuestSession = {
+        user: localGuestUser,
+        profile: localGuestProfile,
+        access_token: 'guest-token-' + Date.now(),
+        expires_at: Date.now() + 86400000 * 30,
+        isGuest: true,
+      };
+      
+      await AsyncStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(localGuestSession));
+      await AsyncStorage.setItem(DEV_MODE_KEY, 'guest');
+      
+      console.log('Guest session created locally');
+      return { user: localGuestUser, session: localGuestSession, profile: localGuestProfile };
+    } catch (err) {
+      console.error('Failed to create guest session:', err);
+      throw new Error('Failed to continue as guest. Please try again.');
+    }
+  },
+
+  async isGuestSession() {
+    const devMode = await AsyncStorage.getItem(DEV_MODE_KEY);
+    return devMode === 'guest';
+  },
+
+  async getGuestSession() {
+    const GUEST_SESSION_KEY = '@ejar_guest_session';
+    const sessionStr = await AsyncStorage.getItem(GUEST_SESSION_KEY);
+    if (sessionStr) {
+      const session = JSON.parse(sessionStr);
+      if (session.expires_at > Date.now()) {
+        return session;
+      }
+    }
+    return null;
+  },
+
+  GUEST_USER_ID: 'u0000000-0000-0000-0000-000000000001',
 };
