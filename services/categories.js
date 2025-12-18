@@ -89,12 +89,16 @@ export const categories = {
       throw new Error('Supabase not configured');
     }
 
+    const updateData = {};
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.slug !== undefined) updateData.slug = updates.slug;
+    if (updates.type !== undefined) updateData.type = updates.type;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.metadata !== undefined) updateData.metadata = updates.metadata;
+
     const { data, error } = await supabase
       .from('service_categories')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
