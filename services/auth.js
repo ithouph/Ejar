@@ -158,7 +158,7 @@ export const auth = {
   },
 
   async continueAsGuest() {
-    const GUEST_USER_ID = 'u0000000-0000-0000-0000-000000000001';
+    const GUEST_PHONE = '+22200000000';
     const GUEST_SESSION_KEY = '@ejar_guest_session';
     
     try {
@@ -166,7 +166,7 @@ export const auth = {
         const { data: guestUser, error } = await supabase
           .from('users')
           .select('*')
-          .eq('id', GUEST_USER_ID)
+          .eq('phone', GUEST_PHONE)
           .single();
         
         if (error || !guestUser) {
@@ -204,17 +204,17 @@ export const auth = {
       }
       
       const localGuestUser = {
-        id: GUEST_USER_ID,
-        phone: '+22200000001',
+        id: 'guest-' + Date.now(),
+        phone: GUEST_PHONE,
         created_at: new Date().toISOString(),
       };
       
       const localGuestProfile = {
-        id: GUEST_USER_ID,
+        id: localGuestUser.id,
         firstName: 'Guest',
         lastName: 'User',
-        phone: '+22200000001',
-        whatsappNumber: '+22200000001',
+        phone: GUEST_PHONE,
+        whatsappNumber: GUEST_PHONE,
         cityId: null,
         role: 'normal',
         walletBalance: 0,
@@ -258,5 +258,5 @@ export const auth = {
     return null;
   },
 
-  GUEST_USER_ID: 'u0000000-0000-0000-0000-000000000001',
+  GUEST_PHONE: '+22200000000',
 };

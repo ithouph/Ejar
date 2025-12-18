@@ -18,14 +18,16 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================
 
 -- GUEST USER (Default user for "Continue as Guest")
+-- Uses auto-generated UUID instead of hardcoded ID
+-- The guest user is identified by phone number '+22200000000'
 INSERT INTO users (
     id, phone, whatsapp_number, first_name, last_name, city_id,
     role, wallet_balance_mru, free_posts_remaining, profile_photo_url
 ) 
 SELECT 
-    'u0000000-0000-0000-0000-000000000001',
-    '+22200000001',
-    '+22200000001',
+    uuid_generate_v4(),
+    '+22200000000',
+    '+22200000000',
     'Guest',
     'User',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
@@ -33,7 +35,7 @@ SELECT
     0.00,
     0,
     NULL
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE id = 'u0000000-0000-0000-0000-000000000001');
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE phone = '+22200000000');
 
 -- NORMAL USER 1 - Active user with balance (Nouakchott)
 INSERT INTO users (
