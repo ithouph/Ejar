@@ -1,52 +1,78 @@
 import { supabase } from '../config/supabase';
 
+const FALLBACK_CITIES = [
+  { id: 'city-1', name: 'Nouakchott', region: 'Nouakchott', is_active: true },
+  { id: 'city-2', name: 'Nouadhibou', region: 'Dakhlet Nouadhibou', is_active: true },
+  { id: 'city-3', name: 'Kiffa', region: 'Assaba', is_active: true },
+  { id: 'city-4', name: 'Kaédi', region: 'Gorgol', is_active: true },
+  { id: 'city-5', name: 'Rosso', region: 'Trarza', is_active: true },
+  { id: 'city-6', name: 'Zouérat', region: 'Tiris Zemmour', is_active: true },
+  { id: 'city-7', name: 'Atar', region: 'Adrar', is_active: true },
+  { id: 'city-8', name: 'Néma', region: 'Hodh Ech Chargui', is_active: true },
+  { id: 'city-9', name: 'Sélibaby', region: 'Guidimaka', is_active: true },
+  { id: 'city-10', name: 'Aleg', region: 'Brakna', is_active: true },
+];
+
 export const cities = {
   async getAll() {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      console.log('Supabase not configured, using fallback cities');
+      return FALLBACK_CITIES;
     }
 
-    const { data, error } = await supabase
-      .from('cities')
-      .select('*')
-      .eq('is_active', true)
-      .order('name');
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
 
-    if (error) throw error;
-    return data || [];
+      if (error) throw error;
+      return data && data.length > 0 ? data : FALLBACK_CITIES;
+    } catch (error) {
+      console.log('Cities fetch failed, using fallback:', error.message);
+      return FALLBACK_CITIES;
+    }
   },
 
   async getById(cityId) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return null;
+      return FALLBACK_CITIES.find(c => c.id === cityId) || null;
     }
 
-    const { data, error } = await supabase
-      .from('cities')
-      .select('*')
-      .eq('id', cityId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('id', cityId)
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.log('City fetch failed, using fallback:', error.message);
+      return FALLBACK_CITIES.find(c => c.id === cityId) || null;
+    }
   },
 
   async getByName(name) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return null;
+      return FALLBACK_CITIES.find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
     }
 
-    const { data, error } = await supabase
-      .from('cities')
-      .select('*')
-      .ilike('name', name)
-      .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .ilike('name', name)
+        .maybeSingle();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.log('City fetch by name failed, using fallback:', error.message);
+      return FALLBACK_CITIES.find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
+    }
   },
 
   async create(city) {
