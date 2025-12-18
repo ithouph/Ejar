@@ -17,6 +17,21 @@ Ejar is a React Native mobile application built with Expo designed as a marketpl
 ## Recent Changes
 
 ### December 2025
+- **Supabase-First Architecture**: All services now require Supabase connection
+  - No local fallback data - all data comes from database
+  - Proper error handling with user-friendly messages
+  - Services throw errors instead of returning empty arrays
+- **Guest User Support**: Added "Continue as Guest" functionality
+  - Guest User ID: `u0000000-0000-0000-0000-000000000001`
+  - Loads from database when available, local fallback otherwise
+  - Guest users can browse but cannot post or access wallet
+  - `isGuest` flag in AuthContext to check guest status
+- **Comprehensive Seed Data**: DATABASE_SEED.sql includes all test data
+  - Users for all 5 roles (Guest, Normal, Member, Ex-Member, Leader)
+  - Sample posts for all categories
+  - Wallet transactions (pending, approved, rejected)
+  - Member reports, notifications, reviews, saved posts
+  - All IDs are proper UUIDs
 - **Phone OTP Authentication**: Replaced Google OAuth with phone-based OTP authentication
   - Users authenticate with phone number (+222 Mauritania code)
   - OTP verification step added
