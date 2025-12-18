@@ -135,11 +135,15 @@ export default function Balance({ navigation }) {
         reportDetails.trim()
       );
       
+      setReportModalVisible(false);
+      setSelectedTransaction(null);
+      
       Alert.alert(
         'Report Submitted',
         'Your report has been submitted and will be reviewed by a leader. If approved, the member will be penalized 500 MRU.'
       );
-      setReportModalVisible(false);
+      
+      loadWalletData();
     } catch (error) {
       console.error('Error submitting report:', error);
       Alert.alert('Error', 'Failed to submit report. Please try again.');
