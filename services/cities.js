@@ -73,12 +73,14 @@ export const cities = {
       throw new Error('Supabase not configured');
     }
 
+    const updateData = {};
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.region !== undefined) updateData.region = updates.region;
+    if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+
     const { data, error } = await supabase
       .from('cities')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

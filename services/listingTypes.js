@@ -61,12 +61,17 @@ export const listingTypes = {
       throw new Error('Supabase not configured');
     }
 
+    const updateData = {};
+    if (updates.name !== undefined) updateData.name = updates.name;
+    if (updates.slug !== undefined) updateData.slug = updates.slug;
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.icon !== undefined) updateData.icon = updates.icon;
+    if (updates.sort_order !== undefined) updateData.sort_order = updates.sort_order;
+    if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+
     const { data, error } = await supabase
       .from('listing_types')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
