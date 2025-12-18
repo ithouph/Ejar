@@ -1,83 +1,66 @@
 import { supabase } from '../config/supabase';
 
-const FALLBACK_CITIES = [
-  { id: 'city-1', name: 'Nouakchott', region: 'Nouakchott', is_active: true },
-  { id: 'city-2', name: 'Nouadhibou', region: 'Dakhlet Nouadhibou', is_active: true },
-  { id: 'city-3', name: 'Kiffa', region: 'Assaba', is_active: true },
-  { id: 'city-4', name: 'Kaédi', region: 'Gorgol', is_active: true },
-  { id: 'city-5', name: 'Rosso', region: 'Trarza', is_active: true },
-  { id: 'city-6', name: 'Zouérat', region: 'Tiris Zemmour', is_active: true },
-  { id: 'city-7', name: 'Atar', region: 'Adrar', is_active: true },
-  { id: 'city-8', name: 'Néma', region: 'Hodh Ech Chargui', is_active: true },
-  { id: 'city-9', name: 'Sélibaby', region: 'Guidimaka', is_active: true },
-  { id: 'city-10', name: 'Aleg', region: 'Brakna', is_active: true },
-];
-
 export const cities = {
   async getAll() {
     if (!supabase) {
-      console.log('Supabase not configured, using fallback cities');
-      return FALLBACK_CITIES;
+      throw new Error('Database not configured. Please check your Supabase settings.');
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('cities')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
 
-      if (error) throw error;
-      return data && data.length > 0 ? data : FALLBACK_CITIES;
-    } catch (error) {
-      console.log('Cities fetch failed, using fallback:', error.message);
-      return FALLBACK_CITIES;
+    if (error) {
+      console.error('Failed to fetch cities:', error.message);
+      throw new Error('Failed to load cities. Please try again.');
     }
+    
+    return data || [];
   },
 
   async getById(cityId) {
     if (!supabase) {
-      return FALLBACK_CITIES.find(c => c.id === cityId) || null;
+      throw new Error('Database not configured.');
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('cities')
-        .select('*')
-        .eq('id', cityId)
-        .single();
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('id', cityId)
+      .single();
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.log('City fetch failed, using fallback:', error.message);
-      return FALLBACK_CITIES.find(c => c.id === cityId) || null;
+    if (error) {
+      console.error('Failed to fetch city:', error.message);
+      throw new Error('Failed to load city details.');
     }
+    
+    return data;
   },
 
   async getByName(name) {
     if (!supabase) {
-      return FALLBACK_CITIES.find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
+      throw new Error('Database not configured.');
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('cities')
-        .select('*')
-        .ilike('name', name)
-        .maybeSingle();
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .ilike('name', name)
+      .maybeSingle();
 
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.log('City fetch by name failed, using fallback:', error.message);
-      return FALLBACK_CITIES.find(c => c.name.toLowerCase() === name.toLowerCase()) || null;
+    if (error) {
+      console.error('Failed to fetch city by name:', error.message);
+      throw new Error('Failed to find city.');
     }
+    
+    return data;
   },
 
   async create(city) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -90,13 +73,17 @@ export const cities = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create city:', error.message);
+      throw new Error('Failed to create city.');
+    }
+    
     return data;
   },
 
   async update(id, updates) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const updateData = {};
@@ -111,13 +98,17 @@ export const cities = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to update city:', error.message);
+      throw new Error('Failed to update city.');
+    }
+    
     return data;
   },
 
   async delete(id) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { error } = await supabase
@@ -125,7 +116,11 @@ export const cities = {
       .update({ is_active: false })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to delete city:', error.message);
+      throw new Error('Failed to delete city.');
+    }
+    
     return true;
   },
 };
