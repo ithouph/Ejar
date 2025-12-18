@@ -1,0 +1,205 @@
+Here is **one clean, complete, and unified summary text** of the whole system, written clearly so you can confirm everything is correct:
+
+---
+
+## Ejar Marketplace – Complete System Specification
+
+**App Type:**
+Mobile application for the Ejar marketplace with a wallet-based payment system, city-based approvals, and a 4-tier user role model.
+
+---
+
+## User Roles (4 Types)
+
+### 1. Normal User
+
+* Can create posts.
+* Gets **5 free posts** (non-refundable).
+* After free posts are used, **each post costs 10 MRU**, automatically deducted from wallet.
+* Can upload payment proof to add balance.
+* Can see all their posts (paid & unpaid) on **My Posts** page.
+* Can view payment status of posts.
+* Can report a member if a payment is unfairly rejected.
+* Cannot approve or reject payments.
+
+---
+
+### 2. Member
+
+* Must have **at least 1000 MRU balance** to actively approve/reject payments.
+* Can approve/reject **only payments from users in the same city**.
+* Earns **5 MRU for each approved payment**.
+* Pays **10 MRU per post**, auto-deducted (no approval required for their own posts).
+* If balance drops below **1000 MRU**:
+
+  * Can still see the payment page
+  * Approve/Reject buttons are disabled (read-only)
+* Can see:
+
+  * Payment screenshot
+  * Transaction info related to them
+* **Cannot see full post details**, only transaction-related info.
+
+---
+
+### 3. Ex-Member (Subscription Role)
+
+* Only **Leader** can assign this role.
+* Requires **2000 MRU** to activate.
+* Monthly subscription fee: **500 MRU auto-deducted**.
+* If balance is insufficient:
+
+  * Ex-Member status ends automatically
+  * User is notified
+  * Settings page shows subscription ended
+* To restore Ex-Member:
+
+  * User must add **2000 MRU again**
+* Permissions:
+
+  * Can view **unpaid post details**
+  * Cannot approve or reject payments
+
+---
+
+### 4. Leader (Super Admin)
+
+* Full system access.
+* Can:
+
+  * View all users and members
+  * Promote **Normal → Member** (only if balance ≥ 1000 MRU)
+  * Promote **Normal → Ex-Member** (only if balance ≥ 2000 MRU)
+  * Search users by phone number
+  * View all posts using a **custom display ID** (not DB ID)
+  * Review all payment reports with full details
+  * Approve reports and charge **500 MRU penalty** to a member
+* **Leader does NOT approve/reject payments** like members.
+
+---
+
+## Wallet & Payment System
+
+* Currency: **MRU (Mauritanian Ouguiya)**.
+* Wallet shows:
+
+  * Current balance
+  * Full transaction history
+* Users add balance by:
+
+  * Uploading payment screenshot
+  * Filling payment details
+* Payments are routed:
+
+  * To a **member in the same city**
+  * If no member exists → routed to **Leader**
+
+---
+
+## Posting Rules
+
+* Normal users:
+
+  * First 5 posts are free
+  * After that, **10 MRU per post**
+* Members:
+
+  * Always pay **10 MRU per post**
+  * Posts publish immediately
+* Deleting a post:
+
+  * Does **NOT** restore free posts
+  * Does **NOT** refund MRU
+
+---
+
+## City-Based System
+
+* **City is mandatory** for:
+
+  * All users
+  * All posts
+* Members can only approve payments from users in the **same city**.
+* City determines which member can approve a payment.
+
+---
+
+## Pages & Features
+
+### My Posts Page
+
+* Shows all user posts (paid & unpaid)
+* Shows payment status:
+
+  * Free
+  * Paid (10 MRU)
+* Shows city and visibility state
+
+### Balance Page
+
+* Upload payment proof
+* View transaction history
+* See which transactions were for posts, approvals, subscriptions, or penalties
+
+### Member Payment Page
+
+* City-filtered payment requests
+* Approve / Reject (if balance ≥ 1000 MRU)
+* Limited post visibility
+
+### Profile Page
+
+* User can edit:
+
+  * First name
+  * Last name
+  * Phone number
+  * WhatsApp number
+  * City
+* Authentication system remains unchanged
+
+### Settings Page
+
+* Shows Ex-Member subscription status
+* Renewal and restoration requirements
+
+---
+
+## Reporting System
+
+* Users can report members for unfair rejection.
+* Leader reviews reports with full transaction details.
+* If report is approved:
+
+  * Member is charged **500 MRU penalty**
+* Notifications sent to all involved users.
+
+---
+
+## Notifications (Real-Time)
+
+* Payment approved / rejected
+* Balance credited
+* Post payment deducted
+* Member rewards (5 MRU)
+* Ex-Member subscription ending or restored
+* Role changes
+* Report decisions
+
+---
+
+## Post Visibility
+
+* **Home feed shows only posts that are:**
+
+  * `paid = true`
+  * `status = active`
+
+---
+
+If you want, next I can:
+
+* Convert this into a **database schema**
+* Create **API flow diagrams**
+* Write **Supabase policies**
+* Or turn this into a **developer-ready spec**
