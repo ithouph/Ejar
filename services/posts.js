@@ -1,8 +1,10 @@
 import { supabase } from '../config/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { wallet } from './wallet';
 
 const DEV_POSTS_KEY = '@ejar_dev_posts';
+const DEV_USER_KEY = '@ejar_dev_user_profile';
 
 const SAMPLE_POSTS = [
   {
@@ -17,7 +19,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: true,
-    totalViews: 245,
+    postCostMru: 0,
     totalFavorites: 18,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -40,7 +42,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: false,
-    totalViews: 189,
+    postCostMru: 10,
     totalFavorites: 32,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -63,7 +65,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: true,
-    totalViews: 312,
+    postCostMru: 0,
     totalFavorites: 45,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -86,7 +88,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: true,
-    totalViews: 198,
+    postCostMru: 0,
     totalFavorites: 28,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -109,7 +111,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: false,
-    totalViews: 156,
+    postCostMru: 10,
     totalFavorites: 21,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -132,7 +134,7 @@ const SAMPLE_POSTS = [
     status: 'active',
     paid: true,
     wasFreePost: false,
-    totalViews: 423,
+    postCostMru: 10,
     totalFavorites: 67,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -144,15 +146,6 @@ const SAMPLE_POSTS = [
     city: { name: 'Nouadhibou', region: 'Dakhlet Nouadhibou' },
   },
 ];
-
-async function isDevMode() {
-  try {
-    const devMode = await AsyncStorage.getItem('@ejar_dev_mode');
-    return devMode === 'true';
-  } catch {
-    return true;
-  }
-}
 
 async function getDevPosts() {
   try {
@@ -177,6 +170,30 @@ async function saveDevPosts(posts) {
   await AsyncStorage.setItem(DEV_POSTS_KEY, JSON.stringify(posts));
 }
 
+async function getDevUserProfile() {
+  try {
+    const profileStr = await AsyncStorage.getItem(DEV_USER_KEY);
+    if (profileStr) {
+      return JSON.parse(profileStr);
+    }
+    return {
+      role: 'normal',
+      free_posts_remaining: 5,
+      wallet_balance_mru: 5000,
+    };
+  } catch {
+    return {
+      role: 'normal',
+      free_posts_remaining: 5,
+      wallet_balance_mru: 5000,
+    };
+  }
+}
+
+async function saveDevUserProfile(profile) {
+  await AsyncStorage.setItem(DEV_USER_KEY, JSON.stringify(profile));
+}
+
 function formatPost(post) {
   if (!post) return null;
   return {
@@ -192,7 +209,7 @@ function formatPost(post) {
     status: post.status,
     paid: post.paid,
     wasFreePost: post.was_free_post,
-    totalViews: post.total_views || 0,
+    postCostMru: parseFloat(post.post_cost_mru) || 0,
     totalFavorites: post.total_favorites || 0,
     createdAt: post.created_at,
     updatedAt: post.updated_at,
@@ -260,7 +277,7 @@ export const posts = {
     } catch (error) {
       console.log('Using local data:', error.message);
       let devPosts = await getDevPosts();
-      devPosts = devPosts.filter(p => p.status === 'active');
+      devPosts = devPosts.filter(p => p.status === 'active' && p.paid === true);
       
       if (filters.category && filters.category !== 'all') {
         devPosts = devPosts.filter(p => p.category === filters.category);
@@ -320,9 +337,101 @@ export const posts = {
     }
   },
 
+  async checkPostingCost(userId) {
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('role, free_posts_remaining, wallet_balance_mru')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      const role = user.role;
+      const freePostsRemaining = user.free_posts_remaining || 0;
+      const balance = parseFloat(user.wallet_balance_mru) || 0;
+
+      if (role === 'member') {
+        return {
+          isFree: false,
+          cost: wallet.POST_COST_MRU,
+          canPost: balance >= wallet.POST_COST_MRU,
+          freePostsRemaining: 0,
+          balance,
+          message: balance >= wallet.POST_COST_MRU 
+            ? `${wallet.POST_COST_MRU} MRU will be deducted from your wallet`
+            : `Insufficient balance. You need ${wallet.POST_COST_MRU} MRU to post.`,
+        };
+      }
+
+      if (freePostsRemaining > 0) {
+        return {
+          isFree: true,
+          cost: 0,
+          canPost: true,
+          freePostsRemaining,
+          balance,
+          message: `This post is free (${freePostsRemaining} free posts remaining)`,
+        };
+      }
+
+      return {
+        isFree: false,
+        cost: wallet.POST_COST_MRU,
+        canPost: balance >= wallet.POST_COST_MRU,
+        freePostsRemaining: 0,
+        balance,
+        message: balance >= wallet.POST_COST_MRU 
+          ? `${wallet.POST_COST_MRU} MRU will be deducted from your wallet`
+          : `Insufficient balance. You need ${wallet.POST_COST_MRU} MRU to post.`,
+      };
+    } catch {
+      const devProfile = await getDevUserProfile();
+      const freePostsRemaining = devProfile.free_posts_remaining || 0;
+      const balance = devProfile.wallet_balance_mru || 0;
+
+      if (freePostsRemaining > 0) {
+        return {
+          isFree: true,
+          cost: 0,
+          canPost: true,
+          freePostsRemaining,
+          balance,
+          message: `This post is free (${freePostsRemaining} free posts remaining)`,
+        };
+      }
+
+      return {
+        isFree: false,
+        cost: wallet.POST_COST_MRU,
+        canPost: balance >= wallet.POST_COST_MRU,
+        freePostsRemaining: 0,
+        balance,
+        message: balance >= wallet.POST_COST_MRU 
+          ? `${wallet.POST_COST_MRU} MRU will be deducted from your wallet`
+          : `Insufficient balance. You need ${wallet.POST_COST_MRU} MRU to post.`,
+      };
+    }
+  },
+
   async create(userId, cityId, post) {
     if (!post.title || !post.title.trim()) {
       throw new Error('Post title is required');
+    }
+
+    const costInfo = await this.checkPostingCost(userId);
+    
+    if (!costInfo.canPost) {
+      throw new Error(costInfo.message);
+    }
+
+    let wasFreePost = costInfo.isFree;
+    let postCostMru = costInfo.cost;
+
+    if (costInfo.isFree) {
+      await wallet.useFreePost(userId);
+    } else {
+      await wallet.deductPostPayment(userId, cityId, null);
     }
 
     const userPosts = await getUserCreatedPosts();
@@ -337,8 +446,8 @@ export const posts = {
       images: post.images || [],
       status: 'active',
       paid: true,
-      wasFreePost: true,
-      totalViews: 0,
+      wasFreePost: wasFreePost,
+      postCostMru: postCostMru,
       totalFavorites: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -353,7 +462,7 @@ export const posts = {
     userPosts.unshift(newPost);
     await saveDevPosts(userPosts);
     
-    console.log('Post created successfully:', newPost.title);
+    console.log('Post created successfully:', newPost.title, wasFreePost ? '(Free)' : `(${postCostMru} MRU)`);
 
     try {
       const { data, error } = await supabase
@@ -367,7 +476,8 @@ export const posts = {
           price: post.price || 0,
           images: post.images || [],
           paid: true,
-          was_free_post: post.was_free_post || true,
+          was_free_post: wasFreePost,
+          post_cost_mru: postCostMru,
           status: 'active',
         })
         .select()
@@ -375,6 +485,13 @@ export const posts = {
 
       if (!error && data) {
         console.log('Post also saved to Supabase');
+        
+        await supabase
+          .from('users')
+          .update({
+            total_posts_created: supabase.rpc('increment_field', { field_name: 'total_posts_created' }),
+          })
+          .eq('id', userId);
       }
     } catch (e) {
       console.log('Supabase save skipped:', e.message);
@@ -427,7 +544,7 @@ export const posts = {
     if (index !== -1) {
       userPosts[index].status = 'deleted';
       await saveDevPosts(userPosts);
-      console.log('Post deleted locally');
+      console.log('Post deleted locally (no refund)');
       return true;
     }
 
