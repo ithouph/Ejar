@@ -3,8 +3,7 @@ import { supabase } from '../config/supabase';
 export const listingTypes = {
   async getAll() {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured. Please check your Supabase settings.');
     }
 
     const { data, error } = await supabase
@@ -13,14 +12,17 @@ export const listingTypes = {
       .eq('is_active', true)
       .order('sort_order');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch listing types:', error.message);
+      throw new Error('Failed to load listing types.');
+    }
+    
     return data || [];
   },
 
   async getBySlug(slug) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return null;
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -30,13 +32,17 @@ export const listingTypes = {
       .eq('is_active', true)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch listing type:', error.message);
+      throw new Error('Failed to load listing type.');
+    }
+    
     return data;
   },
 
   async create(listingType) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -52,13 +58,17 @@ export const listingTypes = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create listing type:', error.message);
+      throw new Error('Failed to create listing type.');
+    }
+    
     return data;
   },
 
   async update(id, updates) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const updateData = {};
@@ -76,13 +86,17 @@ export const listingTypes = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to update listing type:', error.message);
+      throw new Error('Failed to update listing type.');
+    }
+    
     return data;
   },
 
   async delete(id) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { error } = await supabase
@@ -90,7 +104,11 @@ export const listingTypes = {
       .update({ is_active: false })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to delete listing type:', error.message);
+      throw new Error('Failed to delete listing type.');
+    }
+    
     return true;
   },
 };

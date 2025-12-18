@@ -3,8 +3,7 @@ import { supabase } from '../config/supabase';
 export const categories = {
   async getAll() {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured. Please check your Supabase settings.');
     }
 
     const { data, error } = await supabase
@@ -12,14 +11,17 @@ export const categories = {
       .select('*')
       .order('name');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch categories:', error.message);
+      throw new Error('Failed to load categories.');
+    }
+    
     return data || [];
   },
 
   async getById(categoryId) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return null;
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -28,14 +30,17 @@ export const categories = {
       .eq('id', categoryId)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch category:', error.message);
+      throw new Error('Failed to load category.');
+    }
+    
     return data;
   },
 
   async getByType(type) {
     if (!supabase) {
-      console.warn('Supabase not configured, returning empty array');
-      return [];
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -43,14 +48,17 @@ export const categories = {
       .select('*')
       .eq('type', type);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch categories by type:', error.message);
+      throw new Error('Failed to load categories.');
+    }
+    
     return data || [];
   },
 
   async getBySlug(slug) {
     if (!supabase) {
-      console.warn('Supabase not configured');
-      return null;
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -59,13 +67,17 @@ export const categories = {
       .eq('slug', slug)
       .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to fetch category by slug:', error.message);
+      throw new Error('Failed to load category.');
+    }
+    
     return data;
   },
 
   async create(category) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { data, error } = await supabase
@@ -80,13 +92,17 @@ export const categories = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to create category:', error.message);
+      throw new Error('Failed to create category.');
+    }
+    
     return data;
   },
 
   async update(id, updates) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const updateData = {};
@@ -103,13 +119,17 @@ export const categories = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to update category:', error.message);
+      throw new Error('Failed to update category.');
+    }
+    
     return data;
   },
 
   async delete(id) {
     if (!supabase) {
-      throw new Error('Supabase not configured');
+      throw new Error('Database not configured.');
     }
 
     const { error } = await supabase
@@ -117,7 +137,11 @@ export const categories = {
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Failed to delete category:', error.message);
+      throw new Error('Failed to delete category.');
+    }
+    
     return true;
   },
 };
