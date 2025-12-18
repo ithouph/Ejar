@@ -53,98 +53,6 @@ const SAMPLE_POSTS = [
     user: { firstName: 'Fatima', lastName: 'Mint Ali' },
     city: { name: 'Nouakchott', region: 'Nouakchott' },
   },
-  {
-    id: 'sample-3',
-    userId: 'sample-user-2',
-    cityId: 'nouakchott',
-    category: 'phones',
-    title: 'iPhone 14 Pro Max - Like New',
-    description: '256GB, Deep Purple. Includes charger and original box. Battery health 98%.',
-    price: 85000,
-    images: ['https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400'],
-    status: 'active',
-    paid: true,
-    wasFreePost: true,
-    postCostMru: 0,
-    totalFavorites: 45,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    location: 'Nouakchott',
-    name: 'iPhone 14 Pro Max',
-    rating: 4.7,
-    image: 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400',
-    user: { firstName: 'Omar', lastName: 'Ould Cheikh' },
-    city: { name: 'Nouakchott', region: 'Nouakchott' },
-  },
-  {
-    id: 'sample-4',
-    userId: 'sample-user-2',
-    cityId: 'nouakchott',
-    category: 'phones',
-    title: 'Samsung Galaxy S23 Ultra',
-    description: '512GB, Phantom Black. Perfect condition, used for 3 months only.',
-    price: 75000,
-    images: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400'],
-    status: 'active',
-    paid: true,
-    wasFreePost: true,
-    postCostMru: 0,
-    totalFavorites: 28,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    location: 'Nouakchott',
-    name: 'Samsung Galaxy S23 Ultra',
-    rating: 4.6,
-    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400',
-    user: { firstName: 'Aminata', lastName: 'Diallo' },
-    city: { name: 'Nouakchott', region: 'Nouakchott' },
-  },
-  {
-    id: 'sample-5',
-    userId: 'sample-user-3',
-    cityId: 'nouadhibou',
-    category: 'electronics',
-    title: 'MacBook Pro 16" M2 Pro',
-    description: '32GB RAM, 1TB SSD. Excellent condition with original box and charger.',
-    price: 180000,
-    images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
-    status: 'active',
-    paid: true,
-    wasFreePost: false,
-    postCostMru: 10,
-    totalFavorites: 21,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    location: 'Nouadhibou',
-    name: 'MacBook Pro 16"',
-    rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400',
-    user: { firstName: 'Mohamed', lastName: 'Lemine' },
-    city: { name: 'Nouadhibou', region: 'Dakhlet Nouadhibou' },
-  },
-  {
-    id: 'sample-6',
-    userId: 'sample-user-3',
-    cityId: 'nouadhibou',
-    category: 'others',
-    title: 'Toyota Land Cruiser 2020',
-    description: 'V8 engine, full options, leather seats. Well maintained with service history.',
-    price: 2500000,
-    images: ['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400'],
-    status: 'active',
-    paid: true,
-    wasFreePost: false,
-    postCostMru: 10,
-    totalFavorites: 67,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    location: 'Nouadhibou',
-    name: 'Toyota Land Cruiser',
-    rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400',
-    user: { firstName: 'Sidi', lastName: 'Ould Ahmed' },
-    city: { name: 'Nouadhibou', region: 'Dakhlet Nouadhibou' },
-  },
 ];
 
 async function getDevPosts() {
@@ -213,6 +121,8 @@ function formatPost(post) {
     totalFavorites: post.total_favorites || 0,
     createdAt: post.created_at,
     updatedAt: post.updated_at,
+    specifications: post.specifications || null,
+    listingType: post.listing_type || null,
     user: post.users ? {
       id: post.users.id,
       firstName: post.users.first_name,
@@ -229,12 +139,32 @@ function formatPost(post) {
       id: post.service_categories.id,
       name: post.service_categories.name,
       type: post.service_categories.type,
+      slug: post.service_categories.slug,
     } : null,
   };
 }
 
 export const posts = {
   async getAll(filters = {}, limit = 50) {
+    if (!supabase) {
+      console.log('Supabase not configured, using local data');
+      let devPosts = await getDevPosts();
+      devPosts = devPosts.filter(p => p.status === 'active' && p.paid === true);
+      
+      if (filters.category && filters.category !== 'all') {
+        devPosts = devPosts.filter(p => p.category === filters.category);
+      }
+      if (filters.search) {
+        const search = filters.search.toLowerCase();
+        devPosts = devPosts.filter(p => 
+          p.title.toLowerCase().includes(search) || 
+          p.description.toLowerCase().includes(search)
+        );
+      }
+      
+      return devPosts.slice(0, limit);
+    }
+
     try {
       let query = supabase
         .from('posts')
@@ -242,7 +172,7 @@ export const posts = {
           *,
           users (id, first_name, last_name, profile_photo_url, whatsapp_number),
           cities (id, name, region),
-          service_categories (id, name, type)
+          service_categories (id, name, type, slug)
         `)
         .eq('status', 'active')
         .eq('paid', true);
@@ -273,28 +203,23 @@ export const posts = {
         return data.map(post => formatPost(post));
       }
       
-      throw new Error('No data from Supabase');
+      let devPosts = await getDevPosts();
+      devPosts = devPosts.filter(p => p.status === 'active' && p.paid === true);
+      return devPosts.slice(0, limit);
     } catch (error) {
       console.log('Using local data:', error.message);
       let devPosts = await getDevPosts();
       devPosts = devPosts.filter(p => p.status === 'active' && p.paid === true);
-      
-      if (filters.category && filters.category !== 'all') {
-        devPosts = devPosts.filter(p => p.category === filters.category);
-      }
-      if (filters.search) {
-        const search = filters.search.toLowerCase();
-        devPosts = devPosts.filter(p => 
-          p.title.toLowerCase().includes(search) || 
-          p.description.toLowerCase().includes(search)
-        );
-      }
-      
       return devPosts.slice(0, limit);
     }
   },
 
   async getById(postId) {
+    if (!supabase) {
+      const devPosts = await getDevPosts();
+      return devPosts.find(p => p.id === postId) || null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('posts')
@@ -302,7 +227,7 @@ export const posts = {
           *,
           users (id, first_name, last_name, profile_photo_url, whatsapp_number),
           cities (id, name, region),
-          service_categories (id, name, type)
+          service_categories (id, name, type, slug)
         `)
         .eq('id', postId)
         .single();
@@ -316,6 +241,11 @@ export const posts = {
   },
 
   async getByUser(userId) {
+    if (!supabase) {
+      const userPosts = await getUserCreatedPosts();
+      return userPosts.filter(p => p.userId === userId && p.status !== 'deleted');
+    }
+
     try {
       const { data, error } = await supabase
         .from('posts')
@@ -323,7 +253,7 @@ export const posts = {
           *,
           users (id, first_name, last_name, profile_photo_url, whatsapp_number),
           cities (id, name, region),
-          service_categories (id, name, type)
+          service_categories (id, name, type, slug)
         `)
         .eq('user_id', userId)
         .neq('status', 'deleted')
@@ -338,6 +268,34 @@ export const posts = {
   },
 
   async checkPostingCost(userId) {
+    if (!supabase) {
+      const devProfile = await getDevUserProfile();
+      const freePostsRemaining = devProfile.free_posts_remaining || 0;
+      const balance = devProfile.wallet_balance_mru || 0;
+
+      if (freePostsRemaining > 0) {
+        return {
+          isFree: true,
+          cost: 0,
+          canPost: true,
+          freePostsRemaining,
+          balance,
+          message: `This post is free (${freePostsRemaining} free posts remaining)`,
+        };
+      }
+
+      return {
+        isFree: false,
+        cost: wallet.POST_COST_MRU,
+        canPost: balance >= wallet.POST_COST_MRU,
+        freePostsRemaining: 0,
+        balance,
+        message: balance >= wallet.POST_COST_MRU 
+          ? `${wallet.POST_COST_MRU} MRU will be deducted from your wallet`
+          : `Insufficient balance. You need ${wallet.POST_COST_MRU} MRU to post.`,
+      };
+    }
+
     try {
       const { data: user, error } = await supabase
         .from('users')
@@ -414,11 +372,12 @@ export const posts = {
     }
   },
 
-  async create(userId, cityId, post) {
-    if (!post.title || !post.title.trim()) {
+  async create(userId, postData) {
+    if (!postData.title || !postData.title.trim()) {
       throw new Error('Post title is required');
     }
 
+    const cityId = postData.cityId || null;
     const costInfo = await this.checkPostingCost(userId);
     
     if (!costInfo.canPost) {
@@ -434,81 +393,124 @@ export const posts = {
       await wallet.deductPostPayment(userId, cityId, null);
     }
 
-    const userPosts = await getUserCreatedPosts();
-    const newPost = {
-      id: 'post-' + Date.now(),
-      userId: userId,
-      cityId: cityId,
-      category: post.category || 'property',
-      title: post.title.trim(),
-      description: post.description || '',
-      price: post.price || 0,
-      images: post.images || [],
-      status: 'active',
-      paid: true,
-      wasFreePost: wasFreePost,
-      postCostMru: postCostMru,
-      totalFavorites: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      location: post.location || 'Nouakchott',
-      name: post.title.trim(),
-      rating: 4.5,
-      image: post.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
-      user: { firstName: 'You', lastName: '' },
-      city: { name: 'Nouakchott', region: 'Nouakchott' },
-    };
-    
-    userPosts.unshift(newPost);
-    await saveDevPosts(userPosts);
-    
-    console.log('Post created successfully:', newPost.title, wasFreePost ? '(Free)' : `(${postCostMru} MRU)`);
+    if (!supabase) {
+      const userPosts = await getUserCreatedPosts();
+      const newPost = {
+        id: 'post-' + Date.now(),
+        userId: userId,
+        cityId: cityId,
+        category: postData.category || 'property',
+        title: postData.title.trim(),
+        description: postData.description || '',
+        price: postData.price || 0,
+        images: postData.images || [],
+        status: 'active',
+        paid: true,
+        wasFreePost: wasFreePost,
+        postCostMru: postCostMru,
+        totalFavorites: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: postData.location || 'Nouakchott',
+        listingType: postData.listingType || 'sale',
+        specifications: postData.specifications || {},
+        name: postData.title.trim(),
+        rating: 4.5,
+        image: postData.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
+        user: { firstName: 'You', lastName: '' },
+        city: { name: 'Nouakchott', region: 'Nouakchott' },
+      };
+      
+      userPosts.unshift(newPost);
+      await saveDevPosts(userPosts);
+      console.log('Post created locally:', newPost.title);
+      return newPost;
+    }
 
     try {
+      const insertData = {
+        user_id: userId,
+        city_id: cityId,
+        category_id: postData.categoryId || null,
+        title: postData.title.trim(),
+        description: postData.description || '',
+        price: postData.price || 0,
+        images: postData.images || [],
+        listing_type: postData.listingType || 'sale',
+        specifications: postData.specifications || {},
+        paid: true,
+        was_free_post: wasFreePost,
+        post_cost_mru: postCostMru,
+        status: 'active',
+      };
+
       const { data, error } = await supabase
         .from('posts')
-        .insert({
-          user_id: userId,
-          city_id: cityId,
-          category_id: post.category_id || null,
-          title: post.title.trim(),
-          description: post.description || '',
-          price: post.price || 0,
-          images: post.images || [],
-          paid: true,
-          was_free_post: wasFreePost,
-          post_cost_mru: postCostMru,
-          status: 'active',
-        })
-        .select()
+        .insert(insertData)
+        .select(`
+          *,
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type, slug)
+        `)
         .single();
 
-      if (!error && data) {
-        console.log('Post also saved to Supabase');
-        
-        await supabase
-          .from('users')
-          .update({
-            total_posts_created: supabase.rpc('increment_field', { field_name: 'total_posts_created' }),
-          })
-          .eq('id', userId);
-      }
-    } catch (e) {
-      console.log('Supabase save skipped:', e.message);
+      if (error) throw error;
+
+      await supabase
+        .from('users')
+        .update({ total_posts_created: supabase.sql`total_posts_created + 1` })
+        .eq('id', userId);
+
+      console.log('Post created in Supabase:', data.title);
+      return formatPost(data);
+    } catch (error) {
+      console.error('Supabase create failed, saving locally:', error.message);
+      
+      const userPosts = await getUserCreatedPosts();
+      const newPost = {
+        id: 'post-' + Date.now(),
+        userId: userId,
+        cityId: cityId,
+        category: postData.category || 'property',
+        title: postData.title.trim(),
+        description: postData.description || '',
+        price: postData.price || 0,
+        images: postData.images || [],
+        status: 'active',
+        paid: true,
+        wasFreePost: wasFreePost,
+        postCostMru: postCostMru,
+        totalFavorites: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: postData.location || 'Nouakchott',
+        listingType: postData.listingType || 'sale',
+        specifications: postData.specifications || {},
+        name: postData.title.trim(),
+        rating: 4.5,
+        image: postData.images?.[0] || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400',
+        user: { firstName: 'You', lastName: '' },
+        city: { name: 'Nouakchott', region: 'Nouakchott' },
+      };
+      
+      userPosts.unshift(newPost);
+      await saveDevPosts(userPosts);
+      return newPost;
     }
-    
-    return newPost;
   },
 
   async update(postId, userId, updates) {
-    const userPosts = await getUserCreatedPosts();
-    const index = userPosts.findIndex(p => p.id === postId);
-    
-    if (index !== -1) {
-      userPosts[index] = { ...userPosts[index], ...updates, updatedAt: new Date().toISOString() };
-      await saveDevPosts(userPosts);
-      console.log('Post updated locally');
-      return userPosts[index];
+    if (!supabase) {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index] = { ...userPosts[index], ...updates, updatedAt: new Date().toISOString() };
+        await saveDevPosts(userPosts);
+        return userPosts[index];
+      }
+      throw new Error('Post not found');
     }
 
     try {
@@ -521,31 +523,48 @@ export const posts = {
       if (updates.price !== undefined) updateData.price = updates.price;
       if (updates.images !== undefined) updateData.images = updates.images;
       if (updates.category_id !== undefined) updateData.category_id = updates.category_id;
+      if (updates.specifications !== undefined) updateData.specifications = updates.specifications;
+      if (updates.listing_type !== undefined) updateData.listing_type = updates.listing_type;
 
       const { data, error } = await supabase
         .from('posts')
         .update(updateData)
         .eq('id', postId)
         .eq('user_id', userId)
-        .select()
+        .select(`
+          *,
+          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          cities (id, name, region),
+          service_categories (id, name, type, slug)
+        `)
         .single();
 
       if (error) throw error;
       return formatPost(data);
-    } catch {
+    } catch (error) {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index] = { ...userPosts[index], ...updates, updatedAt: new Date().toISOString() };
+        await saveDevPosts(userPosts);
+        return userPosts[index];
+      }
       throw new Error('Post not found');
     }
   },
 
   async delete(postId, userId) {
-    const userPosts = await getUserCreatedPosts();
-    const index = userPosts.findIndex(p => p.id === postId);
-    
-    if (index !== -1) {
-      userPosts[index].status = 'deleted';
-      await saveDevPosts(userPosts);
-      console.log('Post deleted locally (no refund)');
-      return true;
+    if (!supabase) {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index].status = 'deleted';
+        await saveDevPosts(userPosts);
+        return true;
+      }
+      return false;
     }
 
     try {
@@ -561,19 +580,29 @@ export const posts = {
       if (error) throw error;
       return true;
     } catch {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index].status = 'deleted';
+        await saveDevPosts(userPosts);
+        return true;
+      }
       return false;
     }
   },
 
   async end(postId, userId) {
-    const userPosts = await getUserCreatedPosts();
-    const index = userPosts.findIndex(p => p.id === postId);
-    
-    if (index !== -1) {
-      userPosts[index].status = 'ended';
-      await saveDevPosts(userPosts);
-      console.log('Post ended locally');
-      return true;
+    if (!supabase) {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index].status = 'ended';
+        await saveDevPosts(userPosts);
+        return true;
+      }
+      return false;
     }
 
     try {
@@ -589,13 +618,56 @@ export const posts = {
       if (error) throw error;
       return true;
     } catch {
+      const userPosts = await getUserCreatedPosts();
+      const index = userPosts.findIndex(p => p.id === postId);
+      
+      if (index !== -1) {
+        userPosts[index].status = 'ended';
+        await saveDevPosts(userPosts);
+        return true;
+      }
       return false;
     }
   },
 
   async uploadImages(userId, imageUris) {
-    console.log('Using local image URIs');
-    return imageUris;
+    if (!supabase) {
+      console.log('Using local image URIs');
+      return imageUris;
+    }
+
+    try {
+      const uploadedUrls = [];
+
+      for (const uri of imageUris) {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const fileName = `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+        const filePath = `posts/${fileName}`;
+
+        const { error } = await supabase.storage
+          .from('post-images')
+          .upload(filePath, blob, {
+            contentType: 'image/jpeg',
+            upsert: false,
+          });
+
+        if (error) {
+          console.error('Upload error:', error);
+          uploadedUrls.push(uri);
+        } else {
+          const { data: { publicUrl } } = supabase.storage
+            .from('post-images')
+            .getPublicUrl(filePath);
+          uploadedUrls.push(publicUrl);
+        }
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.log('Upload failed, using local URIs:', error.message);
+      return imageUris;
+    }
   },
 
   async pickImages(maxImages = 5) {
@@ -617,5 +689,45 @@ export const posts = {
     }
 
     return [];
+  },
+
+  async incrementFavorites(postId) {
+    if (!supabase) {
+      const devPosts = await getDevPosts();
+      const post = devPosts.find(p => p.id === postId);
+      if (post) {
+        post.totalFavorites = (post.totalFavorites || 0) + 1;
+      }
+      return;
+    }
+
+    try {
+      await supabase
+        .from('posts')
+        .update({ total_favorites: supabase.sql`total_favorites + 1` })
+        .eq('id', postId);
+    } catch (error) {
+      console.error('Error incrementing favorites:', error);
+    }
+  },
+
+  async decrementFavorites(postId) {
+    if (!supabase) {
+      const devPosts = await getDevPosts();
+      const post = devPosts.find(p => p.id === postId);
+      if (post && post.totalFavorites > 0) {
+        post.totalFavorites -= 1;
+      }
+      return;
+    }
+
+    try {
+      await supabase
+        .from('posts')
+        .update({ total_favorites: supabase.sql`GREATEST(total_favorites - 1, 0)` })
+        .eq('id', postId);
+    } catch (error) {
+      console.error('Error decrementing favorites:', error);
+    }
   },
 };
