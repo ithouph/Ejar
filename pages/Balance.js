@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, View, Pressable, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, View, Pressable, ActivityIndicator, Modal, TextInput, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
@@ -7,12 +7,14 @@ import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { Spacing, BorderRadius } from '../theme/global';
 import { useAuth } from '../contexts/AuthContext';
-import { wallet as walletApi } from '../services';
+import { wallet as walletApi, reports as reportsApi } from '../services';
 import { useFocusEffect } from '@react-navigation/native';
 
-function TransactionItem({ transaction, theme }) {
+function TransactionItem({ transaction, theme, onReport }) {
   const isCredit = ['deposit', 'approval_reward', 'refund'].includes(transaction.type);
   const isPending = transaction.status === 'pending';
+  const isRejected = transaction.status === 'rejected';
+  const canReport = isRejected && transaction.type === 'deposit' && transaction.approvedByMemberId;
   
   const getStatusColor = () => {
     switch (transaction.status) {
@@ -49,6 +51,22 @@ function TransactionItem({ transaction, theme }) {
             {transaction.timeAgo}
           </ThemedText>
         </View>
+        {isRejected && transaction.rejectionReason ? (
+          <ThemedText type="caption" style={{ color: theme.error, marginTop: 2 }} numberOfLines={1}>
+            Reason: {transaction.rejectionReason}
+          </ThemedText>
+        ) : null}
+        {canReport ? (
+          <Pressable 
+            onPress={() => onReport(transaction)}
+            style={[styles.reportButton, { backgroundColor: theme.error + '15' }]}
+          >
+            <Feather name="flag" size={12} color={theme.error} />
+            <ThemedText type="caption" style={{ color: theme.error }}>
+              Report Unfair Rejection
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </View>
       
       <View style={styles.transactionAmount}>
@@ -76,6 +94,11 @@ export default function Balance({ navigation }) {
   const [walletData, setWalletData] = useState({ balance: 0, freePostsRemaining: 0 });
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -86,6 +109,44 @@ export default function Balance({ navigation }) {
       }
     }, [user])
   );
+
+  const handleReport = (transaction) => {
+    setSelectedTransaction(transaction);
+    setReportReason('');
+    setReportDetails('');
+    setReportModalVisible(true);
+  };
+
+  const submitReport = async () => {
+    if (!reportReason.trim()) {
+      Alert.alert('Error', 'Please provide a reason for reporting');
+      return;
+    }
+
+    if (!selectedTransaction || !user) return;
+
+    setSubmittingReport(true);
+    try {
+      await reportsApi.create(
+        user.id,
+        selectedTransaction.approvedByMemberId,
+        selectedTransaction.id,
+        reportReason.trim(),
+        reportDetails.trim()
+      );
+      
+      Alert.alert(
+        'Report Submitted',
+        'Your report has been submitted and will be reviewed by a leader. If approved, the member will be penalized 500 MRU.'
+      );
+      setReportModalVisible(false);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
 
   const loadWalletData = async () => {
     if (!user) {
@@ -223,12 +284,99 @@ export default function Balance({ navigation }) {
                   key={transaction.id}
                   transaction={transaction}
                   theme={theme}
+                  onReport={handleReport}
                 />
               ))
             )}
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={reportModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReportModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.background }]}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h2">Report Unfair Rejection</ThemedText>
+              <Pressable onPress={() => setReportModalVisible(false)}>
+                <Feather name="x" size={24} color={theme.textPrimary} />
+              </Pressable>
+            </View>
+
+            {selectedTransaction ? (
+              <View style={[styles.reportInfo, { backgroundColor: theme.surface }]}>
+                <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
+                  Transaction: {selectedTransaction.amount} MRU Deposit
+                </ThemedText>
+                {selectedTransaction.rejectionReason ? (
+                  <ThemedText type="bodySmall" style={{ color: theme.error }}>
+                    Rejection reason: {selectedTransaction.rejectionReason}
+                  </ThemedText>
+                ) : null}
+              </View>
+            ) : null}
+
+            <View style={styles.inputGroup}>
+              <ThemedText type="bodySmall" style={{ marginBottom: Spacing.xs }}>
+                Why do you think this was unfair?
+              </ThemedText>
+              <TextInput
+                style={[styles.textInput, { 
+                  backgroundColor: theme.surface, 
+                  color: theme.textPrimary,
+                  borderColor: theme.border 
+                }]}
+                value={reportReason}
+                onChangeText={setReportReason}
+                placeholder="e.g., I provided valid payment proof"
+                placeholderTextColor={theme.textSecondary}
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <ThemedText type="bodySmall" style={{ marginBottom: Spacing.xs }}>
+                Additional details (optional)
+              </ThemedText>
+              <TextInput
+                style={[styles.textInput, styles.textArea, { 
+                  backgroundColor: theme.surface, 
+                  color: theme.textPrimary,
+                  borderColor: theme.border 
+                }]}
+                value={reportDetails}
+                onChangeText={setReportDetails}
+                placeholder="Provide any additional context..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+
+            <ThemedText type="caption" style={{ color: theme.textSecondary, marginBottom: Spacing.md }}>
+              If your report is approved, the member who rejected your payment will be penalized 500 MRU.
+            </ThemedText>
+
+            <Pressable
+              onPress={submitReport}
+              disabled={submittingReport}
+              style={[styles.submitButton, { backgroundColor: theme.error }]}
+            >
+              {submittingReport ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <ThemedText type="body" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                  Submit Report
+                </ThemedText>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -361,5 +509,56 @@ const styles = StyleSheet.create({
   emptyTransactions: {
     alignItems: 'center',
     paddingVertical: Spacing['2xl'],
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.small,
+    marginTop: Spacing.xs,
+    alignSelf: 'flex-start',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: BorderRadius.large,
+    borderTopRightRadius: BorderRadius.large,
+    padding: Spacing.xl,
+    paddingBottom: Spacing['2xl'],
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  reportInfo: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.medium,
+    marginBottom: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  inputGroup: {
+    marginBottom: Spacing.md,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.medium,
+    padding: Spacing.md,
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 100,
+  },
+  submitButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.medium,
   },
 });
