@@ -107,48 +107,34 @@ function SelectButton({ label, selected, onPress, theme }) {
   );
 }
 
-function LocationAutocomplete({ label, value, onChangeText, onSelect, cities, theme }) {
+function CityPicker({ label, selectedCity, onSelect, cities, theme }) {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [filteredLocations, setFilteredLocations] = useState([]);
-
-  const handleTextChange = (text) => {
-    onChangeText(text);
-    
-    if (text.trim().length > 0) {
-      const filtered = cities.filter(city =>
-        city.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredLocations(filtered);
-      setShowDropdown(true);
-    } else {
-      setFilteredLocations([]);
-      setShowDropdown(false);
-    }
-  };
-
-  const handleSelect = (city) => {
-    onSelect(city);
-    setShowDropdown(false);
-    setFilteredLocations([]);
-  };
 
   return (
     <View style={styles.inputContainer}>
       <ThemedText type="bodySmall" style={[styles.label, { color: theme.textSecondary }]}>
         {label}
       </ThemedText>
-      <TextInput
-        value={value}
-        onChangeText={handleTextChange}
-        placeholder="Search for a location..."
-        placeholderTextColor={theme.textSecondary}
-        style={[styles.input, { 
+      <Pressable
+        onPress={() => setShowDropdown(!showDropdown)}
+        style={[styles.input, styles.pickerButton, { 
           backgroundColor: theme.surface,
-          color: theme.textPrimary,
           borderColor: theme.border 
         }]}
-      />
-      {showDropdown && filteredLocations.length > 0 ? (
+      >
+        <ThemedText 
+          type="body" 
+          style={{ color: selectedCity ? theme.textPrimary : theme.textSecondary }}
+        >
+          {selectedCity ? selectedCity.name : 'Select a city...'}
+        </ThemedText>
+        <Feather 
+          name={showDropdown ? 'chevron-up' : 'chevron-down'} 
+          size={20} 
+          color={theme.textSecondary} 
+        />
+      </Pressable>
+      {showDropdown ? (
         <View style={[styles.dropdown, { 
           backgroundColor: theme.surface,
           borderColor: theme.border 
@@ -158,15 +144,27 @@ function LocationAutocomplete({ label, value, onChangeText, onSelect, cities, th
             nestedScrollEnabled={true}
             keyboardShouldPersistTaps="handled"
           >
-            {filteredLocations.map((city, index) => (
+            {cities.map((city, index) => (
               <Pressable
                 key={city.id || index}
-                onPress={() => handleSelect(city)}
-                style={[styles.dropdownItem, { borderBottomColor: theme.border }]}
+                onPress={() => {
+                  onSelect(city);
+                  setShowDropdown(false);
+                }}
+                style={[
+                  styles.dropdownItem, 
+                  { 
+                    borderBottomColor: theme.border,
+                    backgroundColor: selectedCity?.id === city.id ? theme.primary + '15' : 'transparent'
+                  }
+                ]}
               >
                 <ThemedText type="body" style={{ color: theme.textPrimary }}>
                   {city.name}
                 </ThemedText>
+                {selectedCity?.id === city.id ? (
+                  <Feather name="check" size={18} color={theme.primary} />
+                ) : null}
               </Pressable>
             ))}
           </ScrollView>
@@ -233,7 +231,6 @@ export default function AddPost({ navigation }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const [location, setLocation] = useState('');
   const [selectedCity, setSelectedCity] = useState(null);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -521,8 +518,8 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (!location.trim() && !selectedCity) {
-      Alert.alert('Error', 'Please enter a location');
+    if (!selectedCity) {
+      Alert.alert('Error', 'Please select a city');
       return;
     }
 
@@ -541,7 +538,7 @@ export default function AddPost({ navigation }) {
         title: title.trim(),
         description: description.trim(),
         price: price ? parseFloat(price) : null,
-        location: selectedCity?.name || location.trim(),
+        location: selectedCity?.name || '',
         cityId: selectedCity?.id || null,
         images,
         listingType,
@@ -1006,14 +1003,10 @@ export default function AddPost({ navigation }) {
             theme={theme}
           />
 
-          <LocationAutocomplete
-            label="Location"
-            value={location}
-            onChangeText={setLocation}
-            onSelect={(city) => {
-              setSelectedCity(city);
-              setLocation(city.name);
-            }}
+          <CityPicker
+            label="City"
+            selectedCity={selectedCity}
+            onSelect={setSelectedCity}
             cities={cities}
             theme={theme}
           />
@@ -1175,5 +1168,13 @@ const styles = StyleSheet.create({
   dropdownItem: {
     padding: Spacing.md,
     borderBottomWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
