@@ -6,3 +6,5 @@ export { posts } from './posts';
 export { savedPosts } from './savedPosts';
 export { reviews } from './reviews';
 export { wallet } from './wallet';
+export { notifications } from './notifications';
+export { reports } from './reports';

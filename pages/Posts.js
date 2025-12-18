@@ -30,15 +30,38 @@ function CompactPostCard({ post, theme, currentUserId, onDelete, isSaved, onTogg
     );
   };
 
+  const getStatusBadge = () => {
+    if (post.status === 'pending') {
+      return { label: 'Pending', color: theme.warning, icon: 'clock' };
+    }
+    if (!post.paid) {
+      return { label: 'Unpaid', color: theme.error, icon: 'alert-circle' };
+    }
+    if (post.wasFreePost) {
+      return { label: 'Free', color: theme.success, icon: 'gift' };
+    }
+    return { label: 'Paid', color: theme.success, icon: 'check-circle' };
+  };
+
+  const badge = getStatusBadge();
+
   return (
     <Pressable onPress={onPress} style={[styles.compactPostCard, { backgroundColor: theme.surface }]}>
-      {post.image ? (
-        <Image source={{ uri: post.image }} style={styles.compactPostImage} />
-      ) : (
-        <View style={[styles.compactPostImage, { backgroundColor: theme.surfaceHover, alignItems: 'center', justifyContent: 'center' }]}>
-          <Feather name="image" size={24} color={theme.textSecondary} />
+      <View style={styles.compactImageContainer}>
+        {post.image ? (
+          <Image source={{ uri: post.image }} style={styles.compactPostImage} />
+        ) : (
+          <View style={[styles.compactPostImage, { backgroundColor: theme.surfaceHover, alignItems: 'center', justifyContent: 'center' }]}>
+            <Feather name="image" size={24} color={theme.textSecondary} />
+          </View>
+        )}
+        <View style={[styles.statusBadgeCompact, { backgroundColor: badge.color }]}>
+          <Feather name={badge.icon} size={10} color={theme.buttonText} />
+          <ThemedText type="caption" style={{ color: theme.buttonText, fontSize: 10 }}>
+            {badge.label}
+          </ThemedText>
         </View>
-      )}
+      </View>
       <View style={styles.compactPostContent}>
         <ThemedText type="bodySmall" style={styles.compactPostText} numberOfLines={2}>
           {post.title}
@@ -94,6 +117,21 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave,
     );
   };
 
+  const getStatusBadge = () => {
+    if (post.status === 'pending') {
+      return { label: 'Pending', color: theme.warning, icon: 'clock' };
+    }
+    if (!post.paid) {
+      return { label: 'Unpaid', color: theme.error, icon: 'alert-circle' };
+    }
+    if (post.wasFreePost) {
+      return { label: 'Free', color: theme.success, icon: 'gift' };
+    }
+    return { label: 'Paid', color: theme.success, icon: 'check-circle' };
+  };
+
+  const badge = getStatusBadge();
+
   return (
     <Pressable onPress={onPress} style={[styles.postCard, { backgroundColor: theme.surface }]}>
       <View style={styles.postHeader}>
@@ -104,6 +142,12 @@ function PostCard({ post, theme, currentUserId, onDelete, isSaved, onToggleSave,
           </ThemedText>
           <ThemedText type="caption" style={{ color: theme.textSecondary }}>
             {post.cityName} • {post.timeAgo}
+          </ThemedText>
+        </View>
+        <View style={[styles.statusBadge, { backgroundColor: badge.color }]}>
+          <Feather name={badge.icon} size={12} color={theme.buttonText} />
+          <ThemedText type="caption" style={{ color: theme.buttonText, fontSize: 11 }}>
+            {badge.label}
           </ThemedText>
         </View>
         {isOwnPost ? (
@@ -593,5 +637,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
+  },
+  compactImageContainer: {
+    position: 'relative',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.small,
+    marginRight: Spacing.sm,
+  },
+  statusBadgeCompact: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
 });

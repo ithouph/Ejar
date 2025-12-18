@@ -168,6 +168,54 @@ export default function Profile({ navigation }) {
           </View>
         </Pressable>
 
+        {(profile?.role === 'member' || profile?.role === 'leader') ? (
+          <Pressable
+            onPress={() => navigation.navigate('MemberApprovals')}
+            style={[styles.roleCard, { backgroundColor: '#22c55e' }]}
+          >
+            <View style={styles.roleCardContent}>
+              <View style={styles.roleCardLeft}>
+                <View style={styles.roleCardIcon}>
+                  <Feather name="check-circle" size={24} color="#FFFFFF" />
+                </View>
+                <View>
+                  <ThemedText type="bodyLarge" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                    Payment Approvals
+                  </ThemedText>
+                  <ThemedText type="caption" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Approve deposits and earn 5 MRU
+                  </ThemedText>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={20} color="#FFFFFF" />
+            </View>
+          </Pressable>
+        ) : null}
+
+        {profile?.role === 'leader' ? (
+          <Pressable
+            onPress={() => navigation.navigate('LeaderDashboard')}
+            style={[styles.roleCard, { backgroundColor: '#8b5cf6' }]}
+          >
+            <View style={styles.roleCardContent}>
+              <View style={styles.roleCardLeft}>
+                <View style={styles.roleCardIcon}>
+                  <Feather name="shield" size={24} color="#FFFFFF" />
+                </View>
+                <View>
+                  <ThemedText type="bodyLarge" style={{ color: '#FFFFFF', fontWeight: '600' }}>
+                    Leader Dashboard
+                  </ThemedText>
+                  <ThemedText type="caption" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Manage users, reports, and escalations
+                  </ThemedText>
+                </View>
+              </View>
+              <Feather name="chevron-right" size={20} color="#FFFFFF" />
+            </View>
+          </Pressable>
+        ) : null}
+
         <View style={styles.gridContainer}>
           <Pressable
             style={[styles.gridCard, { backgroundColor: theme.surface }]}
@@ -337,5 +385,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
     borderRadius: BorderRadius.small,
+  },
+  roleCard: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.large,
+  },
+  roleCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  roleCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  roleCardIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

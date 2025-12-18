@@ -234,4 +234,255 @@ export const users = {
     if (user.fullName) return user.fullName;
     return `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || 'Anonymous User';
   },
+
+  async searchByPhone(phone) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          *,
+          cities (id, name, region)
+        `)
+        .ilike('phone', `%${phone}%`)
+        .limit(20);
+
+      if (error) throw error;
+      return (data || []).map(u => formatUser(u));
+    } catch {
+      return [];
+    }
+  },
+
+  async getAllUsers(filters = {}, limit = 100) {
+    try {
+      let query = supabase
+        .from('users')
+        .select(`
+          *,
+          cities (id, name, region)
+        `);
+
+      if (filters.role) {
+        query = query.eq('role', filters.role);
+      }
+      if (filters.cityId) {
+        query = query.eq('city_id', filters.cityId);
+      }
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return (data || []).map(u => formatUser(u));
+    } catch {
+      return [];
+    }
+  },
+
+  async getMembersInCity(cityId) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(`
+          *,
+          cities (id, name, region)
+        `)
+        .eq('city_id', cityId)
+        .eq('role', 'member')
+        .gte('wallet_balance_mru', 1000);
+
+      if (error) throw error;
+      return (data || []).map(u => formatUser(u));
+    } catch {
+      return [];
+    }
+  },
+
+  async promoteToMember(userId, leaderId) {
+    try {
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('wallet_balance_mru, role')
+        .eq('id', userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (parseFloat(user.wallet_balance_mru) < 1000) {
+        throw new Error('User must have at least 1000 MRU balance to become a Member');
+      }
+
+      if (user.role !== 'normal') {
+        throw new Error('Only normal users can be promoted to Member');
+      }
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          role: 'member',
+          promoted_by_leader_id: leaderId,
+        })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      await supabase
+        .from('role_change_logs')
+        .insert({
+          user_id: userId,
+          changed_by_leader_id: leaderId,
+          previous_role: user.role,
+          new_role: 'member',
+          user_balance_at_change: user.wallet_balance_mru,
+        });
+
+      return true;
+    } catch (err) {
+      console.error('Promote to member error:', err);
+      throw err;
+    }
+  },
+
+  async promoteToExMember(userId, leaderId) {
+    try {
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('wallet_balance_mru, role')
+        .eq('id', userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (parseFloat(user.wallet_balance_mru) < 2000) {
+        throw new Error('User must have at least 2000 MRU balance to become an Ex-Member');
+      }
+
+      if (user.role !== 'normal') {
+        throw new Error('Only normal users can be promoted to Ex-Member');
+      }
+
+      const now = new Date();
+      const nextPaymentDue = new Date(now);
+      nextPaymentDue.setMonth(nextPaymentDue.getMonth() + 1);
+
+      const newBalance = parseFloat(user.wallet_balance_mru) - 2000;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          role: 'ex_member',
+          wallet_balance_mru: newBalance,
+          promoted_by_leader_id: leaderId,
+          ex_member_activated_at: now.toISOString(),
+          ex_member_last_payment_at: now.toISOString(),
+          ex_member_next_payment_due: nextPaymentDue.toISOString(),
+          ex_member_is_active: true,
+        })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      await supabase
+        .from('wallet_transactions')
+        .insert({
+          user_id: userId,
+          type: 'ex_member_subscription',
+          amount_mru: -2000,
+          balance_before_mru: user.wallet_balance_mru,
+          balance_after_mru: newBalance,
+          status: 'approved',
+        });
+
+      await supabase
+        .from('role_change_logs')
+        .insert({
+          user_id: userId,
+          changed_by_leader_id: leaderId,
+          previous_role: user.role,
+          new_role: 'ex_member',
+          user_balance_at_change: user.wallet_balance_mru,
+        });
+
+      await supabase
+        .from('subscription_history')
+        .insert({
+          user_id: userId,
+          action: 'activated',
+          amount_charged_mru: 2000,
+          balance_before_mru: user.wallet_balance_mru,
+          balance_after_mru: newBalance,
+          next_payment_due: nextPaymentDue.toISOString(),
+        });
+
+      return true;
+    } catch (err) {
+      console.error('Promote to ex-member error:', err);
+      throw err;
+    }
+  },
+
+  async demoteToNormal(userId, leaderId, reason = '') {
+    try {
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('role, wallet_balance_mru')
+        .eq('id', userId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          role: 'normal',
+          ex_member_is_active: false,
+        })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      await supabase
+        .from('role_change_logs')
+        .insert({
+          user_id: userId,
+          changed_by_leader_id: leaderId,
+          previous_role: user.role,
+          new_role: 'normal',
+          user_balance_at_change: user.wallet_balance_mru,
+          reason,
+        });
+
+      return true;
+    } catch (err) {
+      console.error('Demote to normal error:', err);
+      throw err;
+    }
+  },
+
+  async getExMemberStatus(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('role, ex_member_is_active, ex_member_next_payment_due, wallet_balance_mru')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data.role !== 'ex_member') {
+        return { isExMember: false };
+      }
+
+      return {
+        isExMember: true,
+        isActive: data.ex_member_is_active,
+        nextPaymentDue: data.ex_member_next_payment_due,
+        balance: parseFloat(data.wallet_balance_mru),
+        canRenew: parseFloat(data.wallet_balance_mru) >= 500,
+      };
+    } catch {
+      return { isExMember: false };
+    }
+  },
 };

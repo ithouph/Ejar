@@ -32,6 +32,23 @@ Ejar is a React Native mobile application built with Expo designed as a marketpl
   - City members approve deposits
   - Members earn rewards for approvals
   - Leaders can handle cross-city and escalated requests
+- **Member Approvals Page**: Role-based approval system
+  - Members see pending deposits in their city
+  - View payment proof screenshots
+  - Approve/reject with balance validation (1000 MRU minimum)
+  - Leaders can approve all cities
+- **Leader Dashboard Page**: Admin control panel with 3 tabs
+  - Escalated Deposits: Handle cross-city or escalated requests
+  - Unfair Reports: Review rejection reports (500 MRU penalty)
+  - User Management: Search by phone, promote/demote roles
+- **Updated Profile Page**: Role-based navigation cards
+  - Members see "Payment Approvals" card (green)
+  - Leaders see both "Payment Approvals" and "Leader Dashboard" (purple)
+- **Posts Page Enhancement**: Payment status badges
+  - Pending (yellow): Post awaiting review
+  - Unpaid (red): Post not paid
+  - Free (green): Used free post
+  - Paid (green): Paid 10 MRU
 - **Updated User Profile Pages**: Profile and EditProfile work with new schema
   - Display phone, WhatsApp, city, and role
   - City selection dropdown
@@ -109,22 +126,26 @@ Key tables (see DATABASE_SETUP.sql for complete schema):
 /services            - Backend services (modular)
   index.js           - Exports all services
   auth.js            - Phone OTP authentication
-  users.js           - User profile CRUD
+  users.js           - User profile CRUD with role management
   cities.js          - City data
   categories.js      - Service categories
-  posts.js           - Marketplace listings
+  posts.js           - Marketplace listings with payment tracking
   savedPosts.js      - Favorites/bookmarks
   reviews.js         - Post reviews
-  wallet.js          - Balance & transactions
+  wallet.js          - Balance & transactions with approval system
+  notifications.js   - Push notifications for approvals
+  reports.js         - Member unfair rejection reports
 
 /pages
   Login.js           - Phone OTP login
   CompleteProfile.js - New user onboarding
-  Profile.js         - User profile display
+  Profile.js         - User profile display with role-based nav
   EditProfile.js     - Profile editing
   Balance.js         - Wallet balance view
   AddBalance.js      - Deposit request form
-  Posts.js           - User's posts
+  MemberApprovals.js - Member deposit approval page
+  LeaderDashboard.js - Leader admin control panel
+  Posts.js           - User's posts with payment status badges
   AddPost.js         - Create new post
   Discover.js        - Browse listings
   Saved.js           - Saved posts
