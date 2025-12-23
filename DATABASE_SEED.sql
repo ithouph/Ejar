@@ -1,25 +1,18 @@
 -- ============================================
 -- EJAR MARKETPLACE - SEED DATA
 -- Run this AFTER DATABASE_SETUP.sql
+-- Fills ALL tables with sample data for testing
 -- ============================================
 
 -- Enable UUID extension (if not already enabled)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- IMPORTANT: Get existing IDs from SETUP tables
--- The SETUP.sql already creates cities, categories, listing_types, etc.
--- We need to use those existing IDs for our seed data
+-- 1. USERS - ALL ROLES (11 users total)
+-- Guest, Normal (3), Member (3), Ex-Member (2), Leader (2)
 -- ============================================
 
--- ============================================
--- 1. USERS - ALL ROLES
--- Using the first city from the cities table for all users
--- ============================================
-
--- GUEST USER (Default user for "Continue as Guest")
--- Uses auto-generated UUID instead of hardcoded ID
--- The guest user is identified by phone number '+22200000000'
+-- GUEST USER (identified by phone '+22200000000')
 INSERT INTO users (
     id, phone, whatsapp_number, first_name, last_name, city_id,
     role, wallet_balance_mru, free_posts_remaining, profile_photo_url
@@ -157,7 +150,7 @@ SELECT
     7500.00
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE id = 'u2222222-2222-2222-2222-222222222223');
 
--- EX-MEMBER 1 - Demoted member in Nouakchott (subscription expired)
+-- EX-MEMBER 1 - Active subscription in Nouakchott
 INSERT INTO users (
     id, phone, whatsapp_number, first_name, last_name, city_id,
     role, wallet_balance_mru, free_posts_remaining,
@@ -178,7 +171,7 @@ SELECT
     NOW() + INTERVAL '15 days'
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE id = 'u3333333-3333-3333-3333-333333333331');
 
--- EX-MEMBER 2 - Demoted member in Kiffa
+-- EX-MEMBER 2 - Expired subscription in Kiffa
 INSERT INTO users (
     id, phone, whatsapp_number, first_name, last_name, city_id,
     role, wallet_balance_mru, free_posts_remaining,
@@ -234,19 +227,17 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE id = 'u4444444-4444-4444-4444-444444444442');
 
 -- ============================================
--- 2. POSTS - Sample listings across categories
--- Using existing category IDs from SETUP
+-- 2. POSTS - Sample listings (11 posts)
 -- ============================================
 
 -- Property Post 1 - Apartment for rent in Nouakchott (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666601',
-    'POST-2024-0001',
     'u1111111-1111-1111-1111-111111111111',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
@@ -262,13 +253,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Property Post 2 - Villa for sale in Nouakchott (FREE POST, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666602',
-    'POST-2024-0002',
     'u1111111-1111-1111-1111-111111111111',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
@@ -284,13 +274,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Phone Post - iPhone for sale (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666603',
-    'POST-2024-0003',
     'u1111111-1111-1111-1111-111111111112',
     (SELECT id FROM cities WHERE name = 'Nouadhibou' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Phones' LIMIT 1),
@@ -306,13 +295,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Laptop Post - MacBook for sale (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666604',
-    'POST-2024-0004',
     'u2222222-2222-2222-2222-222222222221',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Laptops' LIMIT 1),
@@ -328,13 +316,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Car Post - Toyota for sale (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666605',
-    'POST-2024-0005',
     'u2222222-2222-2222-2222-222222222222',
     (SELECT id FROM cities WHERE name = 'Nouadhibou' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Cars' LIMIT 1),
@@ -350,13 +337,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Electronics Post - TV for sale (UNPAID, PENDING_PAYMENT)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666606',
-    'POST-2024-0006',
     'u1111111-1111-1111-1111-111111111113',
     (SELECT id FROM cities WHERE name = 'Kaédi' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Electronics' LIMIT 1),
@@ -372,13 +358,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Furniture Post (FREE POST, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666607',
-    'POST-2024-0007',
     'u3333333-3333-3333-3333-333333333331',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Furniture' LIMIT 1),
@@ -394,13 +379,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Property in Atar (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666608',
-    'POST-2024-0008',
     'u2222222-2222-2222-2222-222222222223',
     (SELECT id FROM cities WHERE name = 'Atar' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
@@ -414,15 +398,14 @@ SELECT
     NOW() - INTERVAL '12 days'
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666666608');
 
--- Others Post (FREE POST, ACTIVE)
+-- Others Post - Service (FREE POST, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666609',
-    'POST-2024-0009',
     'u1111111-1111-1111-1111-111111111111',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Others' LIMIT 1),
@@ -438,13 +421,12 @@ WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666
 
 -- Post from ex-member (ENDED)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
-    paid, was_free_post, status, created_at
+    paid, was_free_post, status, ended_at, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666610',
-    'POST-2024-0010',
     'u3333333-3333-3333-3333-333333333332',
     (SELECT id FROM cities WHERE name = 'Kiffa' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Electronics' LIMIT 1),
@@ -455,18 +437,18 @@ SELECT
     true,
     false,
     'ended',
+    NOW() - INTERVAL '15 days',
     NOW() - INTERVAL '45 days'
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666666610');
 
 -- Leader test post (PAID, ACTIVE)
 INSERT INTO posts (
-    id, display_id, user_id, city_id, category_id,
+    id, user_id, city_id, category_id,
     title, description, price, images,
     paid, was_free_post, status, created_at
 )
 SELECT
     'po666666-6666-6666-6666-666666666611',
-    'POST-2024-0011',
     'u4444444-4444-4444-4444-444444444441',
     (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
     (SELECT id FROM service_categories WHERE name = 'Others' LIMIT 1),
@@ -481,8 +463,7 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM posts WHERE id = 'po666666-6666-6666-6666-666666666611');
 
 -- ============================================
--- 3. WALLET TRANSACTIONS
--- Using correct column names from schema
+-- 3. WALLET TRANSACTIONS (10 transactions)
 -- ============================================
 
 -- Pending deposit from Normal User 3 (awaiting approval)
@@ -547,7 +528,7 @@ WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-77
 -- Member approval reward
 INSERT INTO wallet_transactions (
     id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
-    status, notes, created_at
+    status, created_at
 )
 SELECT
     'wt777777-7777-7777-7777-777777777704',
@@ -558,7 +539,6 @@ SELECT
     14975.00,
     15000.00,
     'approved',
-    'Reward for approving deposit wt777777-7777-7777-7777-777777777702',
     NOW() - INTERVAL '3 days'
 WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777704');
 
@@ -566,7 +546,7 @@ WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-77
 INSERT INTO wallet_transactions (
     id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
     payment_screenshot_url, payment_method, status,
-    approved_by_member_id, rejection_reason, rejected_at, created_at
+    approved_by_member_id, rejection_reason, created_at
 )
 SELECT
     'wt777777-7777-7777-7777-777777777705',
@@ -581,7 +561,6 @@ SELECT
     'rejected',
     'u2222222-2222-2222-2222-222222222222',
     'Payment screenshot appears to be modified or fake',
-    NOW() - INTERVAL '1 day',
     NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777705');
 
@@ -607,7 +586,7 @@ WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-77
 -- Ex-member subscription charge
 INSERT INTO wallet_transactions (
     id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
-    status, notes, created_at
+    status, created_at
 )
 SELECT
     'wt777777-7777-7777-7777-777777777707',
@@ -618,14 +597,13 @@ SELECT
     3500.00,
     3000.00,
     'approved',
-    'Monthly ex-member subscription fee',
     NOW() - INTERVAL '15 days'
 WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777707');
 
 -- Large pending deposit (escalated to leader)
 INSERT INTO wallet_transactions (
     id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
-    payment_screenshot_url, payment_method, status, is_escalated, created_at
+    payment_screenshot_url, payment_method, status, created_at
 )
 SELECT
     'wt777777-7777-7777-7777-777777777708',
@@ -637,15 +615,14 @@ SELECT
     58500.00,
     'https://picsum.photos/400/600?random=24',
     'Bankily',
-    'pending',
-    true,
+    'assigned_to_leader',
     NOW() - INTERVAL '6 hours'
 WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777708');
 
--- Refund transaction
+-- Refund transaction (approved by leader)
 INSERT INTO wallet_transactions (
     id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
-    status, notes, approved_by_leader_id, approved_at, created_at
+    status, approved_by_leader_id, approved_at, created_at
 )
 SELECT
     'wt777777-7777-7777-7777-777777777709',
@@ -656,14 +633,30 @@ SELECT
     4990.00,
     5000.00,
     'approved',
-    'Refund for duplicate post payment',
     'u4444444-4444-4444-4444-444444444441',
     NOW() - INTERVAL '4 days',
     NOW() - INTERVAL '4 days'
 WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777709');
 
+-- Report penalty transaction
+INSERT INTO wallet_transactions (
+    id, user_id, city_id, type, amount_mru, balance_before_mru, balance_after_mru,
+    status, created_at
+)
+SELECT
+    'wt777777-7777-7777-7777-777777777710',
+    'u2222222-2222-2222-2222-222222222221',
+    (SELECT id FROM cities WHERE name = 'Nouakchott' LIMIT 1),
+    'report_penalty',
+    500.00,
+    15500.00,
+    15000.00,
+    'approved',
+    NOW() - INTERVAL '2 days'
+WHERE NOT EXISTS (SELECT 1 FROM wallet_transactions WHERE id = 'wt777777-7777-7777-7777-777777777710');
+
 -- ============================================
--- 4. MEMBER REPORTS (Unfair rejection complaints)
+-- 4. MEMBER REPORTS (3 reports)
 -- ============================================
 
 -- Pending report against Member 2
@@ -686,7 +679,7 @@ WHERE NOT EXISTS (SELECT 1 FROM member_reports WHERE id = 'mr888888-8888-8888-88
 INSERT INTO member_reports (
     id, reporter_user_id, reported_member_id, transaction_id,
     reason, details, status,
-    reviewed_by_user_id, reviewed_at, review_notes, penalty_applied
+    reviewed_by_leader_id, reviewed_at, leader_notes, penalty_charged
 )
 SELECT
     'mr888888-8888-8888-8888-888888888802',
@@ -706,7 +699,7 @@ WHERE NOT EXISTS (SELECT 1 FROM member_reports WHERE id = 'mr888888-8888-8888-88
 INSERT INTO member_reports (
     id, reporter_user_id, reported_member_id, transaction_id,
     reason, details, status,
-    reviewed_by_user_id, reviewed_at, review_notes, penalty_applied
+    reviewed_by_leader_id, reviewed_at, leader_notes, penalty_charged
 )
 SELECT
     'mr888888-8888-8888-8888-888888888803',
@@ -723,87 +716,97 @@ SELECT
 WHERE NOT EXISTS (SELECT 1 FROM member_reports WHERE id = 'mr888888-8888-8888-8888-888888888803');
 
 -- ============================================
--- 5. NOTIFICATIONS
+-- 5. NOTIFICATIONS (12 notifications)
+-- Using correct column name: "read" instead of "is_read"
 -- ============================================
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999901', 'u1111111-1111-1111-1111-111111111111', 'deposit_approved', 'Deposit Approved', 'Your deposit of 5,000 MRU has been approved!', '{"transaction_id": "wt777777-7777-7777-7777-777777777702"}', true, NOW() - INTERVAL '3 days'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999901', 'u1111111-1111-1111-1111-111111111111', 'payment_approved', 'Deposit Approved', 'Your deposit of 5,000 MRU has been approved!', '{"transaction_id": "wt777777-7777-7777-7777-777777777702"}'::jsonb, true, NOW() - INTERVAL '3 days'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999901');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999902', 'u1111111-1111-1111-1111-111111111112', 'deposit_rejected', 'Deposit Rejected', 'Your deposit of 10,000 MRU was rejected.', '{"transaction_id": "wt777777-7777-7777-7777-777777777705"}', false, NOW() - INTERVAL '1 day'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999902', 'u1111111-1111-1111-1111-111111111112', 'payment_rejected', 'Deposit Rejected', 'Your deposit of 10,000 MRU was rejected.', '{"transaction_id": "wt777777-7777-7777-7777-777777777705"}'::jsonb, false, NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999902');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999903', 'u2222222-2222-2222-2222-222222222221', 'new_deposit_request', 'New Deposit Request', 'A user in your city submitted a deposit request.', '{"transaction_id": "wt777777-7777-7777-7777-777777777701"}', false, NOW() - INTERVAL '2 hours'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999903', 'u2222222-2222-2222-2222-222222222221', 'approval_reward', 'Reward Earned!', 'You earned 25 MRU for approving a deposit.', '{"transaction_id": "wt777777-7777-7777-7777-777777777704"}'::jsonb, true, NOW() - INTERVAL '3 days'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999903');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999904', 'u2222222-2222-2222-2222-222222222222', 'report_filed', 'Report Filed Against You', 'A user has filed a report against your rejection decision.', '{"report_id": "mr888888-8888-8888-8888-888888888801"}', false, NOW() - INTERVAL '1 day'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999904', 'u2222222-2222-2222-2222-222222222222', 'report_filed', 'Report Filed Against You', 'A user has filed a report against your rejection decision.', '{"report_id": "mr888888-8888-8888-8888-888888888801"}'::jsonb, false, NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999904');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999905', 'u4444444-4444-4444-4444-444444444441', 'escalated_deposit', 'Escalated Deposit', 'A large deposit (50,000 MRU) requires your review.', '{"transaction_id": "wt777777-7777-7777-7777-777777777708"}', false, NOW() - INTERVAL '6 hours'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999905', 'u4444444-4444-4444-4444-444444444441', 'no_member_in_city', 'Escalated Deposit', 'A large deposit (50,000 MRU) requires your review.', '{"transaction_id": "wt777777-7777-7777-7777-777777777708"}'::jsonb, false, NOW() - INTERVAL '6 hours'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999905');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999906', 'u3333333-3333-3333-3333-333333333331', 'subscription_reminder', 'Subscription Expiring', 'Your ex-member subscription will expire in 5 days.', '{}', false, NOW() - INTERVAL '10 days'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999906', 'u3333333-3333-3333-3333-333333333331', 'subscription_expired', 'Subscription Expiring', 'Your ex-member subscription will expire in 5 days.', '{}'::jsonb, false, NOW() - INTERVAL '10 days'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999906');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999907', 'u1111111-1111-1111-1111-111111111111', 'post_expired', 'Post Expired', 'Your post has expired. Renew it to keep it visible.', '{"post_id": "po666666-6666-6666-6666-666666666601"}', false, NOW() - INTERVAL '2 days'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999907', 'u1111111-1111-1111-1111-111111111111', 'post_created', 'Post Created', 'Your listing has been published successfully.', '{"post_id": "po666666-6666-6666-6666-666666666601"}'::jsonb, true, NOW() - INTERVAL '5 days'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999907');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999908', 'u2222222-2222-2222-2222-222222222221', 'approval_reward', 'Reward Earned!', 'You earned 25 MRU for approving a deposit.', '{"transaction_id": "wt777777-7777-7777-7777-777777777704"}', true, NOW() - INTERVAL '3 days'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999908', 'u2222222-2222-2222-2222-222222222221', 'penalty_charged', 'Penalty Applied', 'A penalty of 500 MRU has been deducted for delayed processing.', '{"report_id": "mr888888-8888-8888-8888-888888888802"}'::jsonb, true, NOW() - INTERVAL '2 days'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999908');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999909', 'u1111111-1111-1111-1111-111111111113', 'welcome', 'Welcome to Ejar!', 'Start by posting your first listing. You have 5 free posts!', '{}', false, NOW() - INTERVAL '1 day'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999909', 'u1111111-1111-1111-1111-111111111113', 'role_promoted', 'Welcome to Ejar!', 'Start by posting your first listing. You have 5 free posts!', '{}'::jsonb, false, NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999909');
 
-INSERT INTO notifications (id, user_id, type, title, message, data, is_read, created_at)
-SELECT 'nt999999-9999-9999-9999-999999999910', 'u4444444-4444-4444-4444-444444444441', 'pending_report', 'Pending Report', 'A new unfair rejection report requires your attention.', '{"report_id": "mr888888-8888-8888-8888-888888888801"}', false, NOW() - INTERVAL '1 day'
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999910', 'u4444444-4444-4444-4444-444444444441', 'report_filed', 'Pending Report', 'A new unfair rejection report requires your attention.', '{"report_id": "mr888888-8888-8888-8888-888888888801"}'::jsonb, false, NOW() - INTERVAL '1 day'
 WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999910');
+
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999911', 'u2222222-2222-2222-2222-222222222221', 'role_promoted', 'You are now a Member!', 'You have been promoted to member. You can now approve deposit requests in your city.', '{}'::jsonb, true, NOW() - INTERVAL '60 days'
+WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999911');
+
+INSERT INTO notifications (id, user_id, type, title, message, data, read, created_at)
+SELECT 'nt999999-9999-9999-9999-999999999912', 'u3333333-3333-3333-3333-333333333331', 'role_demoted', 'Membership Status Changed', 'Your membership has been converted to ex-member. Activate subscription to continue posting.', '{}'::jsonb, true, NOW() - INTERVAL '15 days'
+WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE id = 'nt999999-9999-9999-9999-999999999912');
 
 -- ============================================
 -- 6. SAVED POSTS (Favorites)
+-- No separate id column - uses composite primary key (user_id, post_id)
 -- ============================================
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101001', 'u1111111-1111-1111-1111-111111111111', 'po666666-6666-6666-6666-666666666603', NOW() - INTERVAL '2 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101001');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u1111111-1111-1111-1111-111111111111', 'po666666-6666-6666-6666-666666666603', NOW() - INTERVAL '2 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u1111111-1111-1111-1111-111111111111' AND post_id = 'po666666-6666-6666-6666-666666666603');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101002', 'u1111111-1111-1111-1111-111111111111', 'po666666-6666-6666-6666-666666666605', NOW() - INTERVAL '1 day'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101002');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u1111111-1111-1111-1111-111111111111', 'po666666-6666-6666-6666-666666666605', NOW() - INTERVAL '1 day'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u1111111-1111-1111-1111-111111111111' AND post_id = 'po666666-6666-6666-6666-666666666605');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101003', 'u1111111-1111-1111-1111-111111111112', 'po666666-6666-6666-6666-666666666601', NOW() - INTERVAL '4 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101003');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u1111111-1111-1111-1111-111111111112', 'po666666-6666-6666-6666-666666666601', NOW() - INTERVAL '4 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u1111111-1111-1111-1111-111111111112' AND post_id = 'po666666-6666-6666-6666-666666666601');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101004', 'u1111111-1111-1111-1111-111111111112', 'po666666-6666-6666-6666-666666666604', NOW() - INTERVAL '3 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101004');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u1111111-1111-1111-1111-111111111112', 'po666666-6666-6666-6666-666666666604', NOW() - INTERVAL '3 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u1111111-1111-1111-1111-111111111112' AND post_id = 'po666666-6666-6666-6666-666666666604');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101005', 'u2222222-2222-2222-2222-222222222221', 'po666666-6666-6666-6666-666666666608', NOW() - INTERVAL '5 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101005');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u2222222-2222-2222-2222-222222222221', 'po666666-6666-6666-6666-666666666608', NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u2222222-2222-2222-2222-222222222221' AND post_id = 'po666666-6666-6666-6666-666666666608');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101006', 'u2222222-2222-2222-2222-222222222222', 'po666666-6666-6666-6666-666666666602', NOW() - INTERVAL '6 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101006');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u2222222-2222-2222-2222-222222222222', 'po666666-6666-6666-6666-666666666602', NOW() - INTERVAL '6 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u2222222-2222-2222-2222-222222222222' AND post_id = 'po666666-6666-6666-6666-666666666602');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101007', 'u3333333-3333-3333-3333-333333333331', 'po666666-6666-6666-6666-666666666609', NOW() - INTERVAL '7 days'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101007');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u3333333-3333-3333-3333-333333333331', 'po666666-6666-6666-6666-666666666609', NOW() - INTERVAL '7 days'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u3333333-3333-3333-3333-333333333331' AND post_id = 'po666666-6666-6666-6666-666666666609');
 
-INSERT INTO saved_posts (id, user_id, post_id, created_at)
-SELECT 'sp101010-1010-1010-1010-101010101008', 'u4444444-4444-4444-4444-444444444441', 'po666666-6666-6666-6666-666666666605', NOW() - INTERVAL '1 day'
-WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE id = 'sp101010-1010-1010-1010-101010101008');
+INSERT INTO saved_posts (user_id, post_id, created_at)
+SELECT 'u4444444-4444-4444-4444-444444444441', 'po666666-6666-6666-6666-666666666605', NOW() - INTERVAL '1 day'
+WHERE NOT EXISTS (SELECT 1 FROM saved_posts WHERE user_id = 'u4444444-4444-4444-4444-444444444441' AND post_id = 'po666666-6666-6666-6666-666666666605');
 
 -- ============================================
--- 7. REVIEWS
+-- 7. REVIEWS (5 reviews)
 -- ============================================
 
 INSERT INTO reviews (id, post_id, user_id, rating, comment, created_at)
@@ -827,52 +830,305 @@ SELECT 'rv121212-1212-1212-1212-121212121205', 'po666666-6666-6666-6666-66666666
 WHERE NOT EXISTS (SELECT 1 FROM reviews WHERE id = 'rv121212-1212-1212-1212-121212121205');
 
 -- ============================================
--- 8. ROLE CHANGE LOGS
+-- 8. ROLE CHANGE LOGS (5 logs)
+-- Using correct column names from schema
 -- ============================================
 
-INSERT INTO role_change_logs (id, user_id, from_role, to_role, changed_by_user_id, reason, created_at)
-SELECT 'rc131313-1313-1313-1313-131313131301', 'u2222222-2222-2222-2222-222222222221', 'normal', 'member', 'u4444444-4444-4444-4444-444444444441', 'Promoted to member after verification', NOW() - INTERVAL '60 days'
+INSERT INTO role_change_logs (id, user_id, previous_role, new_role, changed_by_leader_id, user_balance_at_change, reason, created_at)
+SELECT 'rc131313-1313-1313-1313-131313131301', 'u2222222-2222-2222-2222-222222222221', 'normal', 'member', 'u4444444-4444-4444-4444-444444444441', 5000.00, 'Promoted to member after verification', NOW() - INTERVAL '60 days'
 WHERE NOT EXISTS (SELECT 1 FROM role_change_logs WHERE id = 'rc131313-1313-1313-1313-131313131301');
 
-INSERT INTO role_change_logs (id, user_id, from_role, to_role, changed_by_user_id, reason, created_at)
-SELECT 'rc131313-1313-1313-1313-131313131302', 'u2222222-2222-2222-2222-222222222222', 'normal', 'member', 'u4444444-4444-4444-4444-444444444441', 'Promoted to member for Nouadhibou region', NOW() - INTERVAL '30 days'
+INSERT INTO role_change_logs (id, user_id, previous_role, new_role, changed_by_leader_id, user_balance_at_change, reason, created_at)
+SELECT 'rc131313-1313-1313-1313-131313131302', 'u2222222-2222-2222-2222-222222222222', 'normal', 'member', 'u4444444-4444-4444-4444-444444444441', 3000.00, 'Promoted to member for Nouadhibou region', NOW() - INTERVAL '30 days'
 WHERE NOT EXISTS (SELECT 1 FROM role_change_logs WHERE id = 'rc131313-1313-1313-1313-131313131302');
 
-INSERT INTO role_change_logs (id, user_id, from_role, to_role, changed_by_user_id, reason, created_at)
-SELECT 'rc131313-1313-1313-1313-131313131303', 'u3333333-3333-3333-3333-333333333331', 'member', 'ex_member', NULL, 'Subscription expired - automatic demotion', NOW() - INTERVAL '15 days'
+INSERT INTO role_change_logs (id, user_id, previous_role, new_role, changed_by_leader_id, user_balance_at_change, reason, created_at)
+SELECT 'rc131313-1313-1313-1313-131313131303', 'u3333333-3333-3333-3333-333333333331', 'member', 'ex_member', NULL, 3500.00, 'Subscription expired - automatic demotion', NOW() - INTERVAL '15 days'
 WHERE NOT EXISTS (SELECT 1 FROM role_change_logs WHERE id = 'rc131313-1313-1313-1313-131313131303');
 
-INSERT INTO role_change_logs (id, user_id, from_role, to_role, changed_by_user_id, reason, created_at)
-SELECT 'rc131313-1313-1313-1313-131313131304', 'u3333333-3333-3333-3333-333333333332', 'member', 'ex_member', 'u4444444-4444-4444-4444-444444444441', 'Manual demotion due to inactivity', NOW() - INTERVAL '45 days'
+INSERT INTO role_change_logs (id, user_id, previous_role, new_role, changed_by_leader_id, user_balance_at_change, reason, created_at)
+SELECT 'rc131313-1313-1313-1313-131313131304', 'u3333333-3333-3333-3333-333333333332', 'member', 'ex_member', 'u4444444-4444-4444-4444-444444444441', 5000.00, 'Manual demotion due to inactivity', NOW() - INTERVAL '45 days'
 WHERE NOT EXISTS (SELECT 1 FROM role_change_logs WHERE id = 'rc131313-1313-1313-1313-131313131304');
 
-INSERT INTO role_change_logs (id, user_id, from_role, to_role, changed_by_user_id, reason, created_at)
-SELECT 'rc131313-1313-1313-1313-131313131305', 'u2222222-2222-2222-2222-222222222223', 'normal', 'member', 'u4444444-4444-4444-4444-444444444442', 'New member for Atar region', NOW() - INTERVAL '7 days'
+INSERT INTO role_change_logs (id, user_id, previous_role, new_role, changed_by_leader_id, user_balance_at_change, reason, created_at)
+SELECT 'rc131313-1313-1313-1313-131313131305', 'u2222222-2222-2222-2222-222222222223', 'normal', 'member', 'u4444444-4444-4444-4444-444444444442', 1000.00, 'New member for Atar region', NOW() - INTERVAL '7 days'
 WHERE NOT EXISTS (SELECT 1 FROM role_change_logs WHERE id = 'rc131313-1313-1313-1313-131313131305');
 
 -- ============================================
--- 9. SUBSCRIPTION HISTORY (for ex-members)
+-- 9. SUBSCRIPTION HISTORY (4 records)
 -- ============================================
 
-INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, created_at)
-SELECT 'sh141414-1414-1414-1414-141414141401', 'u3333333-3333-3333-3333-333333333331', 'activated', 500.00, 3500.00, 3000.00, NOW() - INTERVAL '15 days'
+INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, next_payment_due, created_at)
+SELECT 'sh141414-1414-1414-1414-141414141401', 'u3333333-3333-3333-3333-333333333331', 'activated', 500.00, 3500.00, 3000.00, NOW() + INTERVAL '15 days', NOW() - INTERVAL '15 days'
 WHERE NOT EXISTS (SELECT 1 FROM subscription_history WHERE id = 'sh141414-1414-1414-1414-141414141401');
 
-INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, created_at)
-SELECT 'sh141414-1414-1414-1414-141414141402', 'u3333333-3333-3333-3333-333333333332', 'expired', NULL, NULL, NULL, NOW() - INTERVAL '45 days'
+INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, next_payment_due, created_at)
+SELECT 'sh141414-1414-1414-1414-141414141402', 'u3333333-3333-3333-3333-333333333332', 'activated', 500.00, 5000.00, 4500.00, NOW() - INTERVAL '45 days', NOW() - INTERVAL '75 days'
 WHERE NOT EXISTS (SELECT 1 FROM subscription_history WHERE id = 'sh141414-1414-1414-1414-141414141402');
+
+INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, next_payment_due, created_at)
+SELECT 'sh141414-1414-1414-1414-141414141403', 'u3333333-3333-3333-3333-333333333332', 'expired', NULL, NULL, NULL, NULL, NOW() - INTERVAL '45 days'
+WHERE NOT EXISTS (SELECT 1 FROM subscription_history WHERE id = 'sh141414-1414-1414-1414-141414141403');
+
+INSERT INTO subscription_history (id, user_id, action, amount_charged_mru, balance_before_mru, balance_after_mru, next_payment_due, created_at)
+SELECT 'sh141414-1414-1414-1414-141414141404', 'u3333333-3333-3333-3333-333333333331', 'renewed', 500.00, 4000.00, 3500.00, NOW() + INTERVAL '45 days', NOW() - INTERVAL '45 days'
+WHERE NOT EXISTS (SELECT 1 FROM subscription_history WHERE id = 'sh141414-1414-1414-1414-141414141404');
+
+-- ============================================
+-- 10. CATEGORY FIELDS (Dynamic form fields for categories)
+-- ============================================
+
+-- Property category fields
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151501', 
+       (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
+       'bedrooms', 'Number of Bedrooms', 'select', 
+       '["1", "2", "3", "4", "5+"]'::jsonb, 
+       'Select bedrooms', true, 1
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151501');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151502', 
+       (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
+       'bathrooms', 'Number of Bathrooms', 'select', 
+       '["1", "2", "3", "4+"]'::jsonb, 
+       'Select bathrooms', true, 2
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151502');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151503', 
+       (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
+       'area_sqm', 'Area (m²)', 'number', NULL, 
+       'Enter area in square meters', false, 3
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151503');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151504', 
+       (SELECT id FROM service_categories WHERE name = 'Property' LIMIT 1),
+       'furnished', 'Furnished', 'checkbox', NULL, NULL, false, 4
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151504');
+
+-- Phones category fields
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151505', 
+       (SELECT id FROM service_categories WHERE name = 'Phones' LIMIT 1),
+       'brand', 'Brand', 'select', 
+       '["Apple", "Samsung", "Huawei", "Xiaomi", "Oppo", "Other"]'::jsonb, 
+       'Select brand', true, 1
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151505');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151506', 
+       (SELECT id FROM service_categories WHERE name = 'Phones' LIMIT 1),
+       'storage', 'Storage', 'select', 
+       '["32GB", "64GB", "128GB", "256GB", "512GB", "1TB"]'::jsonb, 
+       'Select storage', false, 2
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151506');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151507', 
+       (SELECT id FROM service_categories WHERE name = 'Phones' LIMIT 1),
+       'condition', 'Condition', 'select', 
+       '["New", "Like New", "Good", "Fair"]'::jsonb, 
+       'Select condition', true, 3
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151507');
+
+-- Cars category fields
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151508', 
+       (SELECT id FROM service_categories WHERE name = 'Cars' LIMIT 1),
+       'brand', 'Brand', 'select', 
+       '["Toyota", "Nissan", "Mercedes", "BMW", "Land Rover", "Hyundai", "Kia", "Other"]'::jsonb, 
+       'Select brand', true, 1
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151508');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151509', 
+       (SELECT id FROM service_categories WHERE name = 'Cars' LIMIT 1),
+       'year', 'Year', 'number', NULL, 
+       'Enter year', true, 2
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151509');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151510', 
+       (SELECT id FROM service_categories WHERE name = 'Cars' LIMIT 1),
+       'mileage_km', 'Mileage (km)', 'number', NULL, 
+       'Enter mileage', false, 3
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151510');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151511', 
+       (SELECT id FROM service_categories WHERE name = 'Cars' LIMIT 1),
+       'fuel_type', 'Fuel Type', 'select', 
+       '["Petrol", "Diesel", "Hybrid", "Electric"]'::jsonb, 
+       'Select fuel type', false, 4
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151511');
+
+-- Laptops category fields
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151512', 
+       (SELECT id FROM service_categories WHERE name = 'Laptops' LIMIT 1),
+       'brand', 'Brand', 'select', 
+       '["Apple", "Dell", "HP", "Lenovo", "Asus", "Acer", "Other"]'::jsonb, 
+       'Select brand', true, 1
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151512');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151513', 
+       (SELECT id FROM service_categories WHERE name = 'Laptops' LIMIT 1),
+       'ram', 'RAM', 'select', 
+       '["4GB", "8GB", "16GB", "32GB", "64GB"]'::jsonb, 
+       'Select RAM', false, 2
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151513');
+
+INSERT INTO category_fields (id, category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT 'cf151515-1515-1515-1515-151515151514', 
+       (SELECT id FROM service_categories WHERE name = 'Laptops' LIMIT 1),
+       'storage', 'Storage', 'select', 
+       '["128GB SSD", "256GB SSD", "512GB SSD", "1TB SSD", "1TB HDD", "2TB HDD"]'::jsonb, 
+       'Select storage', false, 3
+WHERE NOT EXISTS (SELECT 1 FROM category_fields WHERE id = 'cf151515-1515-1515-1515-151515151514');
+
+-- ============================================
+-- 11. POST AMENITIES (Junction table for property amenities)
+-- ============================================
+
+-- Apartment post amenities
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666601', 
+       (SELECT id FROM amenities WHERE slug = 'wifi' LIMIT 1),
+       NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666601' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'wifi' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666601', 
+       (SELECT id FROM amenities WHERE slug = 'ac' LIMIT 1),
+       NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666601' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'ac' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666601', 
+       (SELECT id FROM amenities WHERE slug = 'parking' LIMIT 1),
+       NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666601' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'parking' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666601', 
+       (SELECT id FROM amenities WHERE slug = 'security' LIMIT 1),
+       NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666601' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'security' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666601', 
+       (SELECT id FROM amenities WHERE slug = 'furnished' LIMIT 1),
+       NOW() - INTERVAL '5 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666601' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'furnished' LIMIT 1)
+);
+
+-- Villa post amenities
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666602', 
+       (SELECT id FROM amenities WHERE slug = 'generator' LIMIT 1),
+       NOW() - INTERVAL '10 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666602' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'generator' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666602', 
+       (SELECT id FROM amenities WHERE slug = 'parking' LIMIT 1),
+       NOW() - INTERVAL '10 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666602' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'parking' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666602', 
+       (SELECT id FROM amenities WHERE slug = 'security' LIMIT 1),
+       NOW() - INTERVAL '10 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666602' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'security' LIMIT 1)
+);
+
+-- Atar house amenities
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666608', 
+       (SELECT id FROM amenities WHERE slug = 'water' LIMIT 1),
+       NOW() - INTERVAL '12 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666608' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'water' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666608', 
+       (SELECT id FROM amenities WHERE slug = 'electricity' LIMIT 1),
+       NOW() - INTERVAL '12 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666608' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'electricity' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666608', 
+       (SELECT id FROM amenities WHERE slug = 'mosque' LIMIT 1),
+       NOW() - INTERVAL '12 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666608' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'mosque' LIMIT 1)
+);
+
+INSERT INTO post_amenities (post_id, amenity_id, created_at)
+SELECT 'po666666-6666-6666-6666-666666666608', 
+       (SELECT id FROM amenities WHERE slug = 'market' LIMIT 1),
+       NOW() - INTERVAL '12 days'
+WHERE NOT EXISTS (
+    SELECT 1 FROM post_amenities 
+    WHERE post_id = 'po666666-6666-6666-6666-666666666608' 
+    AND amenity_id = (SELECT id FROM amenities WHERE slug = 'market' LIMIT 1)
+);
 
 -- ============================================
 -- SEED DATA COMPLETE
 -- ============================================
 -- Total records created:
 -- - 11 Users (1 Guest, 3 Normal, 3 Member, 2 Ex-Member, 2 Leader)
--- - 11 Posts
--- - 9 Wallet Transactions
--- - 3 Member Reports
--- - 10 Notifications
--- - 8 Saved Posts
+-- - 11 Posts (across all categories)
+-- - 10 Wallet Transactions (deposits, payments, rewards, penalties)
+-- - 3 Member Reports (pending, approved, rejected)
+-- - 12 Notifications (various types)
+-- - 8 Saved Posts (favorites)
 -- - 5 Reviews
 -- - 5 Role Change Logs
--- - 2 Subscription History
+-- - 4 Subscription History records
+-- - 14 Category Fields (for Property, Phones, Cars, Laptops)
+-- - 12 Post Amenities (for property listings)
 -- ============================================
