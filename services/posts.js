@@ -53,7 +53,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -98,7 +98,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -122,7 +122,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -232,7 +232,7 @@ export const posts = {
       .insert(insertData)
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -281,7 +281,7 @@ export const posts = {
       .eq('user_id', userId)
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -369,7 +369,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -409,7 +409,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
@@ -436,7 +436,7 @@ export const posts = {
       .from('posts')
       .select(`
         *,
-        users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+        users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
         service_categories (id, name, type, slug)
       `)
