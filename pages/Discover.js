@@ -4,14 +4,13 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
-import { Header } from '../components/Header';
 import { CategoryTabs } from '../components/Filters';
 import { HotelCard } from '../components/Card';
 import { useTheme } from '../hooks/useTheme';
 import { useScreenInsets } from '../hooks/useScreenInsets';
 import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
-import { posts as postsApi, savedPosts as savedPostsApi } from '../services';
+import { posts as postsApi, savedPosts as savedPostsApi, categories as categoriesApi } from '../services';
 
 const CATEGORIES = [
   { id: 'all', label: 'All' },
@@ -50,10 +49,29 @@ export default function Discover({ navigation }) {
   const [selectedRating, setSelectedRating] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesMap, setCategoriesMap] = useState({});
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, [user, selectedCategory, priceRange, selectedRating, searchQuery]);
+  }, [user, selectedCategory, priceRange, selectedRating, searchQuery, categoriesMap]);
+
+  const loadCategories = async () => {
+    try {
+      const cats = await categoriesApi.getAll();
+      const map = {};
+      cats.forEach(cat => {
+        map[cat.slug.toLowerCase()] = cat.id;
+        map[cat.name.toLowerCase()] = cat.id;
+      });
+      setCategoriesMap(map);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -62,7 +80,10 @@ export default function Discover({ navigation }) {
       const filters = {};
       
       if (selectedCategory !== 'all') {
-        filters.category = selectedCategory;
+        const categoryId = categoriesMap[selectedCategory.toLowerCase()];
+        if (categoryId) {
+          filters.categoryId = categoryId;
+        }
       }
 
       if (searchQuery.trim()) {
@@ -176,15 +197,6 @@ export default function Discover({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Header
-          userData={{
-            name: user?.user_metadata?.full_name || 'Guest',
-            photo: user?.user_metadata?.avatar_url || null,
-          }}
-          onSettingsPress={() => navigation.navigate('Settings')}
-          onFavoritePress={() => navigation.navigate('Saved')}
-        />
-
         <View style={[spacingStyles.mxLg, spacingStyles.mbMd]}>
           <View style={[inputStyles.searchInput, { backgroundColor: theme.surface }]}>
             <Feather name="search" size={20} color={theme.textSecondary} />
