@@ -6,7 +6,9 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ||
   Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL || '';
 
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 
-  Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+  process.env.EXPO_PUBLIC_SUPABASE_KEY ||
+  Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+  Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase credentials not configured. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.');

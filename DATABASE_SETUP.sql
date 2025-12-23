@@ -27,6 +27,7 @@ CREATE INDEX idx_cities_is_active ON cities(is_active);
 CREATE TABLE service_categories (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
+    slug TEXT NOT NULL,
     type TEXT NOT NULL,
     description TEXT,
     metadata JSONB,
@@ -35,6 +36,7 @@ CREATE TABLE service_categories (
 );
 
 CREATE INDEX idx_service_categories_type ON service_categories(type);
+CREATE INDEX idx_service_categories_slug ON service_categories(slug);
 
 -- ============================================
 -- 3. USERS TABLE
@@ -541,14 +543,14 @@ CREATE POLICY post_amenities_delete_own ON post_amenities FOR DELETE USING (true
 -- ============================================
 -- SEED DATA - Service Categories (with icons)
 -- ============================================
-INSERT INTO service_categories (name, type, description, metadata) VALUES
-('Property', 'property', 'Real estate listings including houses, apartments, and land', '{"icon": "home", "sort_order": 1}'),
-('Phones', 'electronics', 'Mobile phones and accessories', '{"icon": "smartphone", "sort_order": 2}'),
-('Laptops', 'electronics', 'Laptops and computers', '{"icon": "monitor", "sort_order": 3}'),
-('Electronics', 'electronics', 'Electronic devices and gadgets', '{"icon": "zap", "sort_order": 4}'),
-('Cars', 'vehicles', 'Automobiles and vehicles', '{"icon": "truck", "sort_order": 5}'),
-('Furniture', 'home', 'Home furniture and decor', '{"icon": "box", "sort_order": 6}'),
-('Others', 'other', 'Miscellaneous items', '{"icon": "package", "sort_order": 7}');
+INSERT INTO service_categories (name, slug, type, description, metadata) VALUES
+('Property', 'property', 'property', 'Real estate listings including houses, apartments, and land', '{"icon": "home", "sort_order": 1}'),
+('Phones', 'phones', 'electronics', 'Mobile phones and accessories', '{"icon": "smartphone", "sort_order": 2}'),
+('Laptops', 'laptops', 'electronics', 'Laptops and computers', '{"icon": "monitor", "sort_order": 3}'),
+('Electronics', 'electronics', 'electronics', 'Electronic devices and gadgets', '{"icon": "zap", "sort_order": 4}'),
+('Cars', 'cars', 'vehicles', 'Automobiles and vehicles', '{"icon": "truck", "sort_order": 5}'),
+('Furniture', 'furniture', 'home', 'Home furniture and decor', '{"icon": "box", "sort_order": 6}'),
+('Others', 'others', 'other', 'Miscellaneous items', '{"icon": "package", "sort_order": 7}');
 
 -- ============================================
 -- SEED DATA - Listing Types
