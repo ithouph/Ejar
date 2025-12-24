@@ -12,12 +12,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { Spacing, layoutStyles, inputStyles, buttonStyles, modalStyles, spacingStyles, listStyles } from '../theme';
 import { posts as postsApi, savedPosts as savedPostsApi, categories as categoriesApi } from '../services';
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { id: 'all', label: 'All' },
-  { id: 'property', label: 'Property' },
-  { id: 'phones', label: 'Phones' },
-  { id: 'electronics', label: 'Electronics' },
-  { id: 'others', label: 'Others' },
 ];
 
 const AMENITIES_OPTIONS = [
@@ -50,6 +46,7 @@ export default function Discover({ navigation }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoriesMap, setCategoriesMap] = useState({});
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
 
   useEffect(() => {
     loadCategories();
@@ -63,11 +60,20 @@ export default function Discover({ navigation }) {
     try {
       const cats = await categoriesApi.getAll();
       const map = {};
+      const categoryList = [{ id: 'all', label: 'All' }];
+      
       cats.forEach(cat => {
         map[cat.slug.toLowerCase()] = cat.id;
         map[cat.name.toLowerCase()] = cat.id;
+        categoryList.push({
+          id: cat.slug.toLowerCase(),
+          label: cat.name,
+          dbId: cat.id,
+        });
       });
+      
       setCategoriesMap(map);
+      setCategories(categoryList);
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -226,7 +232,7 @@ export default function Discover({ navigation }) {
         </View>
 
         <CategoryTabs
-          categories={CATEGORIES}
+          categories={categories}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
         />
