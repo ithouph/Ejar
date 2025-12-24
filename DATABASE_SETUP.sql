@@ -716,3 +716,44 @@ COMMENT ON COLUMN users.ex_member_next_payment_due IS 'Next 500 MRU subscription
 COMMENT ON COLUMN posts.display_id IS 'Human-readable post ID shown to leaders (e.g., POST-2025-0001)';
 COMMENT ON COLUMN posts.paid IS 'Whether post is paid and visible on home feed';
 COMMENT ON COLUMN wallet_transactions.type IS 'Transaction type: deposit, post_payment, approval_reward, ex_member_subscription, report_penalty, refund';
+
+-- ============================================
+-- STORAGE BUCKET POLICIES FOR POST IMAGES
+-- ============================================
+-- Run these in Supabase SQL Editor after creating the 'post-images' bucket
+
+-- Create the storage bucket (if not exists via dashboard)
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('post-images', 'post-images', true);
+
+-- Allow authenticated users to upload images to their own folder
+CREATE POLICY "Users can upload post images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+    bucket_id = 'post-images' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to update their own images
+CREATE POLICY "Users can update own post images"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+    bucket_id = 'post-images' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to delete their own images
+CREATE POLICY "Users can delete own post images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+    bucket_id = 'post-images' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow public read access to all post images
+CREATE POLICY "Public can view post images"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'post-images');
