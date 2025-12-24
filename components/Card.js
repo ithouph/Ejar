@@ -81,7 +81,7 @@ export function HotelCard({ item, onPress, onFavoritePress, isFavorite }) {
             {item.category ? (
               <View style={styles.categoryBadge}>
                 <ThemedText type="bodySmall" style={styles.categoryText}>
-                  {item.category}
+                  {item.category.name || item.category}
                 </ThemedText>
               </View>
             ) : null}
