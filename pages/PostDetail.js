@@ -72,10 +72,10 @@ export default function PostDetail({ route, navigation }) {
     : [post.image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400'];
   
   const title = post.name || post.title || 'Untitled';
-  const location = post.location || post.city?.name || 'Nouakchott';
+  const location = post.location || post.cities?.name || post.city?.name || 'Nouakchott';
   const description = post.description || 'No description provided.';
-  const category = post.category?.name || (typeof post.category === 'string' ? post.category : 'others');
-  const whatsappNumber = post.user?.whatsapp_number || post.whatsapp_number || '+22200000000';
+  const category = post.service_categories?.name || post.category?.name || (typeof post.category === 'string' ? post.category : 'Others');
+  const whatsappNumber = post.users?.whatsapp_number || post.user?.whatsapp_number || post.whatsapp_number || '+22200000000';
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(`Hello, I'm interested in your listing: ${title}`);
@@ -95,7 +95,7 @@ export default function PostDetail({ route, navigation }) {
   };
 
   const handleCall = () => {
-    const phoneNumber = post.user?.phone || whatsappNumber;
+    const phoneNumber = post.users?.phone || post.user?.phone || whatsappNumber;
     Linking.openURL(`tel:${phoneNumber}`);
   };
 
@@ -287,12 +287,12 @@ export default function PostDetail({ route, navigation }) {
             <View style={styles.sellerRow}>
               <View style={[styles.sellerAvatar, { backgroundColor: theme.primary }]}>
                 <ThemedText type="h3" lightColor="#FFF" darkColor="#FFF">
-                  {(post.user?.first_name || 'S')[0].toUpperCase()}
+                  {(post.users?.first_name || post.user?.first_name || 'S')[0].toUpperCase()}
                 </ThemedText>
               </View>
               <View style={styles.sellerInfo}>
                 <ThemedText type="body" style={{ fontWeight: '600' }}>
-                  {post.user?.first_name ? `${post.user.first_name} ${post.user.last_name || ''}` : 'Seller'}
+                  {(post.users?.first_name || post.user?.first_name) ? `${post.users?.first_name || post.user?.first_name} ${post.users?.last_name || post.user?.last_name || ''}` : 'Seller'}
                 </ThemedText>
                 <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>
                   {location}
