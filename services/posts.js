@@ -199,6 +199,10 @@ export const posts = {
       throw new Error('Database not configured.');
     }
 
+    if (!userId || userId === 'guest') {
+      throw new Error('Please sign in to create a post.');
+    }
+
     const costInfo = await this.checkPostingCost(userId);
     
     if (!costInfo.canPost) {
