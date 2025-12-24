@@ -544,34 +544,16 @@ CREATE POLICY post_amenities_delete_own ON post_amenities FOR DELETE USING (true
 
 -- ============================================
 -- SEED DATA - Service Categories (with icons)
--- For fresh installs only - use MIGRATION below for existing databases
+-- Field definitions are stored in category_fields table
 -- ============================================
 INSERT INTO service_categories (name, slug, type, description, metadata) VALUES
-('Property', 'property', 'property', 'Real estate listings including houses, apartments, and land', '{"icon": "home", "sort_order": 1, "specFields": [{"key": "bedrooms", "label": "Bedrooms", "icon": "home", "type": "number"}, {"key": "bathrooms", "label": "Bathrooms", "icon": "droplet", "type": "number"}, {"key": "size_sqft", "label": "Size (sqft)", "icon": "maximize", "type": "number"}, {"key": "property_type", "label": "Property Type", "icon": "grid", "type": "select", "options": ["apartment", "house", "villa", "land", "studio"]}, {"key": "furnished", "label": "Furnished", "icon": "package", "type": "select", "options": ["yes", "no", "partially"]}, {"key": "monthly_rent", "label": "Monthly Rent", "icon": "dollar-sign", "type": "number"}, {"key": "deposit", "label": "Deposit", "icon": "dollar-sign", "type": "text"}, {"key": "land_size", "label": "Land Size", "icon": "map", "type": "text"}]}'),
-('Phones', 'phones', 'electronics', 'Mobile phones and accessories', '{"icon": "smartphone", "sort_order": 2, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "storage", "label": "Storage", "icon": "hard-drive", "type": "select", "options": ["32GB", "64GB", "128GB", "256GB", "512GB", "1TB"]}, {"key": "color", "label": "Color", "icon": "droplet", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}'),
-('Laptops', 'laptops', 'electronics', 'Laptops and computers', '{"icon": "monitor", "sort_order": 3, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "ram", "label": "RAM", "icon": "cpu", "type": "select", "options": ["4GB", "8GB", "16GB", "32GB", "64GB"]}, {"key": "storage", "label": "Storage", "icon": "hard-drive", "type": "select", "options": ["128GB", "256GB", "512GB", "1TB", "2TB"]}, {"key": "processor", "label": "Processor", "icon": "cpu", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}'),
-('Electronics', 'electronics', 'electronics', 'Electronic devices and gadgets', '{"icon": "zap", "sort_order": 4, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "warranty", "label": "Warranty", "icon": "shield", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}'),
-('Cars', 'cars', 'vehicles', 'Automobiles and vehicles', '{"icon": "truck", "sort_order": 5, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "year", "label": "Year", "icon": "calendar", "type": "number"}, {"key": "mileage", "label": "Mileage (km)", "icon": "navigation", "type": "number"}, {"key": "transmission", "label": "Transmission", "icon": "settings", "type": "select", "options": ["automatic", "manual"]}, {"key": "fuel_type", "label": "Fuel Type", "icon": "droplet", "type": "select", "options": ["petrol", "diesel", "electric", "hybrid"]}]}'),
-('Furniture', 'furniture', 'home', 'Home furniture and decor', '{"icon": "box", "sort_order": 6, "specFields": [{"key": "type", "label": "Type", "icon": "grid", "type": "text"}, {"key": "material", "label": "Material", "icon": "layers", "type": "text"}, {"key": "color", "label": "Color", "icon": "droplet", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}'),
-('Others', 'others', 'other', 'Miscellaneous items', '{"icon": "package", "sort_order": 7, "specFields": [{"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}');
-
--- ============================================
--- MIGRATION: Update existing service_categories with specFields
--- Run this on existing databases to add specFields to categories
--- ============================================
-UPDATE service_categories SET metadata = '{"icon": "home", "sort_order": 1, "specFields": [{"key": "bedrooms", "label": "Bedrooms", "icon": "home", "type": "number"}, {"key": "bathrooms", "label": "Bathrooms", "icon": "droplet", "type": "number"}, {"key": "size_sqft", "label": "Size (sqft)", "icon": "maximize", "type": "number"}, {"key": "property_type", "label": "Property Type", "icon": "grid", "type": "select", "options": ["apartment", "house", "villa", "land", "studio"]}, {"key": "furnished", "label": "Furnished", "icon": "package", "type": "select", "options": ["yes", "no", "partially"]}, {"key": "monthly_rent", "label": "Monthly Rent", "icon": "dollar-sign", "type": "number"}, {"key": "deposit", "label": "Deposit", "icon": "dollar-sign", "type": "text"}, {"key": "land_size", "label": "Land Size", "icon": "map", "type": "text"}]}' WHERE slug = 'property';
-
-UPDATE service_categories SET metadata = '{"icon": "smartphone", "sort_order": 2, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "storage", "label": "Storage", "icon": "hard-drive", "type": "select", "options": ["32GB", "64GB", "128GB", "256GB", "512GB", "1TB"]}, {"key": "color", "label": "Color", "icon": "droplet", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}' WHERE slug = 'phones';
-
-UPDATE service_categories SET metadata = '{"icon": "monitor", "sort_order": 3, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "ram", "label": "RAM", "icon": "cpu", "type": "select", "options": ["4GB", "8GB", "16GB", "32GB", "64GB"]}, {"key": "storage", "label": "Storage", "icon": "hard-drive", "type": "select", "options": ["128GB", "256GB", "512GB", "1TB", "2TB"]}, {"key": "processor", "label": "Processor", "icon": "cpu", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}' WHERE slug = 'laptops';
-
-UPDATE service_categories SET metadata = '{"icon": "zap", "sort_order": 4, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "warranty", "label": "Warranty", "icon": "shield", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}' WHERE slug = 'electronics';
-
-UPDATE service_categories SET metadata = '{"icon": "truck", "sort_order": 5, "specFields": [{"key": "brand", "label": "Brand", "icon": "tag", "type": "text"}, {"key": "model", "label": "Model", "icon": "info", "type": "text"}, {"key": "year", "label": "Year", "icon": "calendar", "type": "number"}, {"key": "mileage", "label": "Mileage (km)", "icon": "navigation", "type": "number"}, {"key": "transmission", "label": "Transmission", "icon": "settings", "type": "select", "options": ["automatic", "manual"]}, {"key": "fuel_type", "label": "Fuel Type", "icon": "droplet", "type": "select", "options": ["petrol", "diesel", "electric", "hybrid"]}]}' WHERE slug = 'cars';
-
-UPDATE service_categories SET metadata = '{"icon": "box", "sort_order": 6, "specFields": [{"key": "type", "label": "Type", "icon": "grid", "type": "text"}, {"key": "material", "label": "Material", "icon": "layers", "type": "text"}, {"key": "color", "label": "Color", "icon": "droplet", "type": "text"}, {"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}' WHERE slug = 'furniture';
-
-UPDATE service_categories SET metadata = '{"icon": "package", "sort_order": 7, "specFields": [{"key": "condition", "label": "Condition", "icon": "check-circle", "type": "select", "options": ["new", "like_new", "good", "fair"]}]}' WHERE slug = 'others';
+('Property', 'property', 'property', 'Real estate listings including houses, apartments, and land', '{"icon": "home", "sort_order": 1, "hasPropertyTypes": true, "hasListingTypes": true, "hasAmenities": true}'),
+('Phones', 'phones', 'electronics', 'Mobile phones and accessories', '{"icon": "smartphone", "sort_order": 2}'),
+('Laptops', 'laptops', 'electronics', 'Laptops and computers', '{"icon": "monitor", "sort_order": 3}'),
+('Electronics', 'electronics', 'electronics', 'Electronic devices and gadgets', '{"icon": "zap", "sort_order": 4}'),
+('Cars', 'cars', 'vehicles', 'Automobiles and vehicles', '{"icon": "truck", "sort_order": 5}'),
+('Furniture', 'furniture', 'home', 'Home furniture and decor', '{"icon": "box", "sort_order": 6}'),
+('Others', 'others', 'other', 'Miscellaneous items', '{"icon": "package", "sort_order": 7}');
 
 -- ============================================
 -- SEED DATA - Listing Types
@@ -621,6 +603,91 @@ INSERT INTO amenities (name, slug, icon, category, sort_order) VALUES
 ('Laundry', 'laundry', 'refresh-cw', 'nearby', 6),
 ('Restaurant', 'restaurant', 'coffee', 'nearby', 7),
 ('Bank', 'bank', 'credit-card', 'nearby', 8);
+
+-- ============================================
+-- SEED DATA - Category Fields (Dynamic form fields per category)
+-- These define what fields to show in PostDetail and AddPost
+-- ============================================
+
+-- Property category fields (get category_id from service_categories where slug = 'property')
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'property_type', 'Property Type', 'select', NULL, NULL, true, 1 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'bedrooms', 'Bedrooms', 'number', NULL, 'e.g., 3', false, 2 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'bathrooms', 'Bathrooms', 'number', NULL, 'e.g., 2', false, 3 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'size_sqft', 'Size (sq ft)', 'number', NULL, 'e.g., 1500', false, 4 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'monthly_rent', 'Monthly Rent', 'number', NULL, 'e.g., 2500', false, 5 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'deposit', 'Deposit Amount', 'number', NULL, 'e.g., 5000', false, 6 FROM service_categories WHERE slug = 'property';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'min_contract', 'Min Contract Duration', 'text', NULL, 'e.g., 6 months', false, 7 FROM service_categories WHERE slug = 'property';
+
+-- Phones category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'brand', 'Brand', 'text', NULL, 'e.g., Apple, Samsung', true, 1 FROM service_categories WHERE slug = 'phones';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'model', 'Model', 'text', NULL, 'e.g., iPhone 14 Pro', true, 2 FROM service_categories WHERE slug = 'phones';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'storage', 'Storage', 'select', '["32GB", "64GB", "128GB", "256GB", "512GB", "1TB"]', NULL, false, 3 FROM service_categories WHERE slug = 'phones';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'color', 'Color', 'text', NULL, 'e.g., Black, White', false, 4 FROM service_categories WHERE slug = 'phones';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'condition', 'Condition', 'select', '["new", "like_new", "good", "fair"]', NULL, true, 5 FROM service_categories WHERE slug = 'phones';
+
+-- Laptops category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'brand', 'Brand', 'text', NULL, 'e.g., Apple, Dell, HP', true, 1 FROM service_categories WHERE slug = 'laptops';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'model', 'Model', 'text', NULL, 'e.g., MacBook Pro 14', true, 2 FROM service_categories WHERE slug = 'laptops';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'processor', 'Processor', 'text', NULL, 'e.g., M3, Intel i7', false, 3 FROM service_categories WHERE slug = 'laptops';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'ram', 'RAM', 'select', '["4GB", "8GB", "16GB", "32GB", "64GB"]', NULL, false, 4 FROM service_categories WHERE slug = 'laptops';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'storage', 'Storage', 'select', '["128GB", "256GB", "512GB", "1TB", "2TB"]', NULL, false, 5 FROM service_categories WHERE slug = 'laptops';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'condition', 'Condition', 'select', '["new", "like_new", "good", "fair"]', NULL, true, 6 FROM service_categories WHERE slug = 'laptops';
+
+-- Electronics category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'brand', 'Brand', 'text', NULL, 'e.g., Sony, LG', false, 1 FROM service_categories WHERE slug = 'electronics';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'model', 'Model', 'text', NULL, NULL, false, 2 FROM service_categories WHERE slug = 'electronics';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'warranty', 'Warranty', 'text', NULL, 'e.g., 1 year', false, 3 FROM service_categories WHERE slug = 'electronics';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'condition', 'Condition', 'select', '["new", "like_new", "good", "fair"]', NULL, true, 4 FROM service_categories WHERE slug = 'electronics';
+
+-- Cars category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'brand', 'Brand', 'text', NULL, 'e.g., Toyota, Honda', true, 1 FROM service_categories WHERE slug = 'cars';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'model', 'Model', 'text', NULL, 'e.g., Camry, Civic', true, 2 FROM service_categories WHERE slug = 'cars';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'year', 'Year', 'number', NULL, 'e.g., 2022', true, 3 FROM service_categories WHERE slug = 'cars';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'mileage', 'Mileage (km)', 'number', NULL, 'e.g., 50000', false, 4 FROM service_categories WHERE slug = 'cars';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'transmission', 'Transmission', 'select', '["automatic", "manual"]', NULL, false, 5 FROM service_categories WHERE slug = 'cars';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'fuel_type', 'Fuel Type', 'select', '["petrol", "diesel", "electric", "hybrid"]', NULL, false, 6 FROM service_categories WHERE slug = 'cars';
+
+-- Furniture category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'type', 'Type', 'text', NULL, 'e.g., Sofa, Table', false, 1 FROM service_categories WHERE slug = 'furniture';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'material', 'Material', 'text', NULL, 'e.g., Wood, Leather', false, 2 FROM service_categories WHERE slug = 'furniture';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'color', 'Color', 'text', NULL, 'e.g., Brown, White', false, 3 FROM service_categories WHERE slug = 'furniture';
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'condition', 'Condition', 'select', '["new", "like_new", "good", "fair"]', NULL, true, 4 FROM service_categories WHERE slug = 'furniture';
+
+-- Others category fields
+INSERT INTO category_fields (category_id, field_key, field_label, field_type, options, placeholder, is_required, sort_order)
+SELECT id, 'condition', 'Condition', 'select', '["new", "like_new", "good", "fair"]', NULL, false, 1 FROM service_categories WHERE slug = 'others';
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
