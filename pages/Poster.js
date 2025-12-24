@@ -42,7 +42,7 @@ export default function Poster({ route, navigation }) {
             <Image source={{ uri: item.url }} style={styles.image} resizeMode="cover" />
             <View style={styles.categoryBadge}>
               <ThemedText type="bodyLarge" lightColor="#FFF" darkColor="#FFF" style={styles.categoryText}>
-                {item.category}
+                {item.category?.name || item.category || 'Photo'}
               </ThemedText>
               <ThemedText type="caption" lightColor="#FFF" darkColor="#FFF">
                 Swipe
