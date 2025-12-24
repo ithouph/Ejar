@@ -234,6 +234,7 @@ export default function AddPost({ navigation }) {
   const [selectedCity, setSelectedCity] = useState(null);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [batteryHealth, setBatteryHealth] = useState('');
   const [storage, setStorage] = useState('');
@@ -508,35 +509,30 @@ export default function AddPost({ navigation }) {
   }
 
   async function handleSubmit() {
+    setErrorMessage('');
+    
     if (profile?.isGuest) {
-      Alert.alert(
-        'Sign In Required',
-        'Please sign in to create a post. Guest users cannot create posts.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Sign In', onPress: () => navigation.navigate('Login') },
-        ]
-      );
+      setErrorMessage('Sign in required. Guest users cannot create posts.');
       return;
     }
 
     if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a title');
+      setErrorMessage('Please enter a title');
       return;
     }
 
     if (!description.trim()) {
-      Alert.alert('Error', 'Please enter a description');
+      setErrorMessage('Please enter a description');
       return;
     }
 
     if (!selectedCity) {
-      Alert.alert('Error', 'Please select a city');
+      setErrorMessage('Please select a city');
       return;
     }
 
     if (images.length < 2) {
-      Alert.alert('Error', 'Please add at least 2 images');
+      setErrorMessage('Please add at least 2 photos');
       return;
     }
 
@@ -578,9 +574,10 @@ export default function AddPost({ navigation }) {
           },
         ]
       );
+      navigation.goBack();
     } catch (error) {
       console.error('Error creating post:', error);
-      Alert.alert('Error', 'Failed to create post. Please try again.');
+      setErrorMessage(error.message || 'Failed to create post. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -888,6 +885,18 @@ export default function AddPost({ navigation }) {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {errorMessage ? (
+          <View style={[styles.errorBanner, { backgroundColor: '#fee2e2', borderColor: '#fecaca' }]}>
+            <Feather name="alert-circle" size={18} color="#dc2626" />
+            <ThemedText type="body" style={{ color: '#dc2626', flex: 1, marginLeft: Spacing.sm }}>
+              {errorMessage}
+            </ThemedText>
+            <Pressable onPress={() => setErrorMessage('')}>
+              <Feather name="x" size={18} color="#dc2626" />
+            </Pressable>
+          </View>
+        ) : null}
+
         <View style={styles.section}>
           <ThemedText type="bodyLarge" style={styles.sectionTitle}>
             Category
@@ -1182,5 +1191,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    marginBottom: Spacing.md,
   },
 });
