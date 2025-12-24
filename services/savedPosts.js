@@ -45,7 +45,7 @@ export const savedPosts = {
         *,
         posts (
           *,
-          users (id, first_name, last_name, profile_photo_url, whatsapp_number),
+          users!posts_user_id_fkey (id, first_name, last_name, profile_photo_url, whatsapp_number),
           cities (id, name, region),
           service_categories (id, name, type)
         )
@@ -53,7 +53,10 @@ export const savedPosts = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error loading favorites:', error);
+      return [];
+    }
 
     return (data || [])
       .filter(item => item.posts && item.posts.status === 'active')
