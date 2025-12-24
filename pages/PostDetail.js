@@ -99,6 +99,11 @@ export default function PostDetail({ route, navigation }) {
       
       if (categoryId) {
         promises.push(categoryFields.getByCategoryId(categoryId).catch(() => []));
+      } else if (categorySlug) {
+        promises.push(categoryFields.getByCategorySlug(categorySlug).catch(() => []));
+      } else if (category) {
+        const slug = category.toLowerCase().replace(/\s+/g, '_');
+        promises.push(categoryFields.getByCategorySlug(slug).catch(() => []));
       } else {
         promises.push(Promise.resolve([]));
       }
@@ -109,7 +114,7 @@ export default function PostDetail({ route, navigation }) {
         promises.push(Promise.resolve([]));
       }
       
-      if (categorySlug === 'property') {
+      if (categorySlug === 'property' || category?.toLowerCase() === 'property') {
         promises.push(propertyTypes.getAll().catch(() => []));
         promises.push(listingTypes.getAll().catch(() => []));
       } else {
@@ -200,7 +205,11 @@ export default function PostDetail({ route, navigation }) {
     const condition = post.condition;
 
     const definedKeys = fields.map(f => f.field_key);
-    const legacyKeys = Object.keys(specs).filter(key => !definedKeys.includes(key) && specs[key]);
+    const allSpecKeys = Object.keys(specs).filter(key => specs[key]);
+    const legacyKeys = allSpecKeys.filter(key => !definedKeys.includes(key));
+
+    const hasFieldsFromDb = fields.length > 0;
+    const hasAnySpecs = allSpecKeys.length > 0 || condition;
 
     return (
       <>
@@ -211,28 +220,42 @@ export default function PostDetail({ route, navigation }) {
           </ThemedText>
           <View style={styles.specsGrid}>
             <SpecItem icon="grid" label="Category" value={category} theme={theme} />
-            {fields.map((field) => {
-              let displayValue = specs[field.field_key];
-              
-              if (field.field_key === 'condition') {
-                displayValue = condition ? formatCondition(condition) : null;
-              } else if (field.field_key === 'property_type' && displayValue) {
-                displayValue = getPropertyTypeName(displayValue);
-              }
-              
-              if (!displayValue) return null;
-              
-              return (
+            
+            {hasFieldsFromDb ? (
+              fields.map((field) => {
+                let displayValue = specs[field.field_key];
+                
+                if (field.field_key === 'condition') {
+                  displayValue = condition ? formatCondition(condition) : null;
+                } else if (field.field_key === 'property_type' && displayValue) {
+                  displayValue = getPropertyTypeName(displayValue);
+                }
+                
+                if (!displayValue) return null;
+                
+                return (
+                  <SpecItem 
+                    key={field.field_key}
+                    icon={getFieldIcon(field.field_key)} 
+                    label={field.field_label} 
+                    value={String(displayValue)} 
+                    theme={theme} 
+                  />
+                );
+              })
+            ) : (
+              allSpecKeys.map((key) => (
                 <SpecItem 
-                  key={field.field_key}
-                  icon={getFieldIcon(field.field_key)} 
-                  label={field.field_label} 
-                  value={String(displayValue)} 
+                  key={key}
+                  icon={getFieldIcon(key)} 
+                  label={formatLabel(key)} 
+                  value={String(specs[key])} 
                   theme={theme} 
                 />
-              );
-            })}
-            {legacyKeys.map((key) => (
+              ))
+            )}
+            
+            {hasFieldsFromDb ? legacyKeys.map((key) => (
               <SpecItem 
                 key={key}
                 icon={getFieldIcon(key)} 
@@ -240,8 +263,9 @@ export default function PostDetail({ route, navigation }) {
                 value={String(specs[key])} 
                 theme={theme} 
               />
-            ))}
-            {condition && !fields.find(f => f.field_key === 'condition') ? (
+            )) : null}
+            
+            {condition && (!hasFieldsFromDb || !fields.find(f => f.field_key === 'condition')) ? (
               <SpecItem icon="check-circle" label="Condition" value={formatCondition(condition)} theme={theme} />
             ) : null}
           </View>
