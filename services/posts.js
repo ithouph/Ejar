@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase';
 import { wallet } from './wallet';
+import * as ImagePicker from 'expo-image-picker';
 
 function formatPost(post) {
   if (!post) return null;
@@ -456,5 +457,27 @@ export const posts = {
     }
 
     return (data || []).map(post => formatPost(post));
+  },
+
+  async pickImages(maxCount = 5) {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      throw new Error('Permission to access photo library was denied.');
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: true,
+      selectionLimit: maxCount,
+      quality: 0.8,
+      aspect: [4, 3],
+    });
+
+    if (result.canceled) {
+      return [];
+    }
+
+    return result.assets.map(asset => asset.uri);
   },
 };
