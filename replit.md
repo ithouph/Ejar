@@ -22,9 +22,9 @@ Ejar is a React Native mobile application built with Expo designed as a marketpl
   - Proper error handling with user-friendly messages
   - Services throw errors instead of returning empty arrays
 - **Guest User Support**: Added "Continue as Guest" functionality
-  - Guest User ID: `u0000000-0000-0000-0000-000000000001`
+  - Guest User ID: `e8409589-ae7b-4b07-8e35-b6dd9363f9d7`
   - Loads from database when available, local fallback otherwise
-  - Guest users can browse but cannot post or access wallet
+  - Guest users can browse and create posts (using guest user ID)
   - `isGuest` flag in AuthContext to check guest status
 - **Comprehensive Seed Data**: DATABASE_SEED.sql includes all test data
   - Users for all 5 roles (Guest, Normal, Member, Ex-Member, Leader)
