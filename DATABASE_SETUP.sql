@@ -643,9 +643,12 @@ FOR SELECT USING (
     (user_id = auth.uid())
 );
 
--- Posts: Users can insert their own posts
+-- Posts: Users can insert their own posts (including guest user)
 CREATE POLICY posts_insert_own ON posts
-FOR INSERT WITH CHECK (user_id = auth.uid());
+FOR INSERT WITH CHECK (
+  user_id = auth.uid() OR 
+  user_id = 'u0000000-0000-0000-0000-000000000001'::uuid
+);
 
 -- Posts: Users can update their own posts
 CREATE POLICY posts_update_own ON posts

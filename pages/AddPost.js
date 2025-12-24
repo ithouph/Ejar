@@ -510,11 +510,6 @@ export default function AddPost({ navigation }) {
 
   async function handleSubmit() {
     setErrorMessage('');
-    
-    if (profile?.isGuest) {
-      setErrorMessage('Sign in required. Guest users cannot create posts.');
-      return;
-    }
 
     if (!title.trim()) {
       setErrorMessage('Please enter a title');
