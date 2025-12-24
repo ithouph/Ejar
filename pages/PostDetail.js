@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image, Pressable, Dimensions, FlatList, Linking, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Image, Pressable, Dimensions, FlatList, Linking, Alert, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { ThemedText } from '../components/ThemedText';
 import { ThemedView } from '../components/ThemedView';
 import { useTheme } from '../hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, BorderRadius } from '../theme/global';
+import { categoryFields } from '../services/categoryFields';
+import { amenities } from '../services/amenities';
+import { propertyTypes } from '../services/propertyTypes';
+import { listingTypes } from '../services/listingTypes';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -66,6 +70,11 @@ export default function PostDetail({ route, navigation }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fields, setFields] = useState([]);
+  const [postAmenities, setPostAmenities] = useState([]);
+  const [allPropertyTypes, setAllPropertyTypes] = useState([]);
+  const [allListingTypes, setAllListingTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const images = post.images && post.images.length > 0 
     ? post.images 
@@ -75,7 +84,51 @@ export default function PostDetail({ route, navigation }) {
   const location = post.location || post.cities?.name || post.city?.name || 'Nouakchott';
   const description = post.description || 'No description provided.';
   const category = post.service_categories?.name || post.category?.name || (typeof post.category === 'string' ? post.category : 'Others');
+  const categoryId = post.categoryId || post.category_id || post.service_categories?.id || post.category?.id;
+  const categorySlug = post.service_categories?.slug || post.category?.slug;
   const whatsappNumber = post.users?.whatsapp_number || post.user?.whatsapp_number || post.whatsapp_number || '+22200000000';
+
+  useEffect(() => {
+    loadRelatedData();
+  }, [categoryId, post.id]);
+
+  const loadRelatedData = async () => {
+    setLoading(true);
+    try {
+      const promises = [];
+      
+      if (categoryId) {
+        promises.push(categoryFields.getByCategoryId(categoryId).catch(() => []));
+      } else {
+        promises.push(Promise.resolve([]));
+      }
+      
+      if (post.id) {
+        promises.push(amenities.getPostAmenities(post.id).catch(() => []));
+      } else {
+        promises.push(Promise.resolve([]));
+      }
+      
+      if (categorySlug === 'property') {
+        promises.push(propertyTypes.getAll().catch(() => []));
+        promises.push(listingTypes.getAll().catch(() => []));
+      } else {
+        promises.push(Promise.resolve([]));
+        promises.push(Promise.resolve([]));
+      }
+      
+      const [fieldsData, amenitiesData, propTypes, listTypes] = await Promise.all(promises);
+      
+      setFields(fieldsData || []);
+      setPostAmenities(amenitiesData || []);
+      setAllPropertyTypes(propTypes || []);
+      setAllListingTypes(listTypes || []);
+    } catch (error) {
+      console.error('Error loading related data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(`Hello, I'm interested in your listing: ${title}`);
@@ -99,18 +152,55 @@ export default function PostDetail({ route, navigation }) {
     Linking.openURL(`tel:${phoneNumber}`);
   };
 
+  const getFieldIcon = (fieldKey) => {
+    const icons = {
+      bedrooms: 'home',
+      bathrooms: 'droplet',
+      size_sqft: 'maximize',
+      property_type: 'grid',
+      monthly_rent: 'dollar-sign',
+      deposit: 'dollar-sign',
+      min_contract: 'calendar',
+      brand: 'tag',
+      model: 'info',
+      storage: 'hard-drive',
+      color: 'droplet',
+      condition: 'check-circle',
+      ram: 'cpu',
+      processor: 'cpu',
+      year: 'calendar',
+      mileage: 'navigation',
+      transmission: 'settings',
+      fuel_type: 'droplet',
+      type: 'grid',
+      material: 'layers',
+      warranty: 'shield',
+    };
+    return icons[fieldKey] || 'info';
+  };
+
+  const formatLabel = (key) => {
+    return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
+  const getPropertyTypeName = (typeValue) => {
+    if (!typeValue) return null;
+    const found = allPropertyTypes.find(pt => pt.slug === typeValue || pt.id === typeValue || pt.name === typeValue);
+    return found ? found.name : typeValue;
+  };
+
+  const getListingTypeName = (typeValue) => {
+    if (!typeValue) return null;
+    const found = allListingTypes.find(lt => lt.slug === typeValue || lt.id === typeValue || lt.name === typeValue);
+    return found ? found.name : typeValue;
+  };
+
   const renderSpecifications = () => {
-    const categoryMeta = post.category?.metadata || post.service_categories?.metadata || {};
-    const specFields = categoryMeta.specFields || [];
     const specs = post.specifications || {};
     const condition = post.condition;
 
-    const definedKeys = specFields.map(f => f.key);
+    const definedKeys = fields.map(f => f.field_key);
     const legacyKeys = Object.keys(specs).filter(key => !definedKeys.includes(key) && specs[key]);
-
-    const formatLabel = (key) => {
-      return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    };
 
     return (
       <>
@@ -121,20 +211,22 @@ export default function PostDetail({ route, navigation }) {
           </ThemedText>
           <View style={styles.specsGrid}>
             <SpecItem icon="grid" label="Category" value={category} theme={theme} />
-            {specFields.map((field) => {
-              let displayValue = specs[field.key];
+            {fields.map((field) => {
+              let displayValue = specs[field.field_key];
               
-              if (field.key === 'condition') {
+              if (field.field_key === 'condition') {
                 displayValue = condition ? formatCondition(condition) : null;
+              } else if (field.field_key === 'property_type' && displayValue) {
+                displayValue = getPropertyTypeName(displayValue);
               }
               
               if (!displayValue) return null;
               
               return (
                 <SpecItem 
-                  key={field.key}
-                  icon={field.icon || 'info'} 
-                  label={field.label} 
+                  key={field.field_key}
+                  icon={getFieldIcon(field.field_key)} 
+                  label={field.field_label} 
                   value={String(displayValue)} 
                   theme={theme} 
                 />
@@ -143,16 +235,70 @@ export default function PostDetail({ route, navigation }) {
             {legacyKeys.map((key) => (
               <SpecItem 
                 key={key}
-                icon="info" 
+                icon={getFieldIcon(key)} 
                 label={formatLabel(key)} 
                 value={String(specs[key])} 
                 theme={theme} 
               />
             ))}
-            {condition && !specFields.find(f => f.key === 'condition') ? (
+            {condition && !fields.find(f => f.field_key === 'condition') ? (
               <SpecItem icon="check-circle" label="Condition" value={formatCondition(condition)} theme={theme} />
             ) : null}
           </View>
+        </View>
+      </>
+    );
+  };
+
+  const renderAmenities = () => {
+    if (!postAmenities || postAmenities.length === 0) return null;
+    
+    const indoor = postAmenities.filter(pa => pa.amenity?.category === 'indoor');
+    const nearby = postAmenities.filter(pa => pa.amenity?.category === 'nearby');
+
+    return (
+      <>
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        <View style={styles.section}>
+          <ThemedText type="h3" style={styles.sectionTitle}>
+            Amenities
+          </ThemedText>
+          
+          {indoor.length > 0 ? (
+            <View style={styles.amenitiesSection}>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}>
+                Indoor Features
+              </ThemedText>
+              <View style={styles.amenitiesGrid}>
+                {indoor.map((pa) => (
+                  <View key={pa.amenity_id} style={[styles.amenityItem, { backgroundColor: theme.surface }]}>
+                    <Feather name={pa.amenity?.icon || 'check'} size={16} color={theme.primary} />
+                    <ThemedText type="bodySmall" style={{ marginLeft: Spacing.xs }}>
+                      {pa.amenity?.name}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+          
+          {nearby.length > 0 ? (
+            <View style={[styles.amenitiesSection, { marginTop: indoor.length > 0 ? Spacing.md : 0 }]}>
+              <ThemedText type="bodySmall" style={{ color: theme.textSecondary, marginBottom: Spacing.sm }}>
+                Nearby
+              </ThemedText>
+              <View style={styles.amenitiesGrid}>
+                {nearby.map((pa) => (
+                  <View key={pa.amenity_id} style={[styles.amenityItem, { backgroundColor: theme.surface }]}>
+                    <Feather name={pa.amenity?.icon || 'map-pin'} size={16} color={theme.primary} />
+                    <ThemedText type="bodySmall" style={{ marginLeft: Spacing.xs }}>
+                      {pa.amenity?.name}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
         </View>
       </>
     );
@@ -253,6 +399,8 @@ export default function PostDetail({ route, navigation }) {
           </View>
 
           {renderSpecifications()}
+
+          {renderAmenities()}
 
           {post.created_at ? (
             <View style={styles.detailRow}>
@@ -475,5 +623,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
+  },
+  amenitiesSection: {
+    marginBottom: Spacing.sm,
+  },
+  amenitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  amenityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.medium,
   },
 });

@@ -73,6 +73,13 @@ Ejar is a React Native mobile application built with Expo designed as a marketpl
   - Users table with role, city_id, phone, whatsapp_number fields
   - Wallet transactions with type-based tracking
   - Member reports and activity logging
+- **Dynamic Category Fields**: PostDetail fetches specifications from database tables
+  - `category_fields` table defines form fields per category (bedrooms, brand, model, etc.)
+  - `post_amenities` junction table links posts to amenities
+  - `property_types` table for Property category (Apartment, House, Villa, etc.)
+  - `listing_types` table for listing options (For Rent, For Sale, etc.)
+  - `amenities` table with indoor and nearby categories
+  - PostDetail dynamically loads and displays specs based on category
 
 ## System Architecture
 
