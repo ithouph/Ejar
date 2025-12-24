@@ -158,15 +158,15 @@ export const auth = {
   },
 
   async continueAsGuest() {
-    const GUEST_PHONE = '+22200000000';
+    const GUEST_USER_ID = 'e8409589-ae7b-4b07-8e35-b6dd9363f9d7';
     const GUEST_SESSION_KEY = '@ejar_guest_session';
     
     try {
       if (supabase) {
         const { data: guestUser, error } = await supabase
           .from('users')
-          .select('*')
-          .eq('phone', GUEST_PHONE)
+          .select('*, cities(name)')
+          .eq('id', GUEST_USER_ID)
           .single();
         
         if (error || !guestUser) {
@@ -180,14 +180,15 @@ export const auth = {
             },
             profile: {
               id: guestUser.id,
-              firstName: guestUser.first_name,
-              lastName: guestUser.last_name,
+              firstName: guestUser.first_name || 'Guest',
+              lastName: guestUser.last_name || 'User',
               phone: guestUser.phone,
               whatsappNumber: guestUser.whatsapp_number,
               cityId: guestUser.city_id,
-              role: guestUser.role,
+              cityName: guestUser.cities?.name || 'Nouakchott',
+              role: guestUser.role || 'normal',
               walletBalance: parseFloat(guestUser.wallet_balance_mru) || 0,
-              freePostsRemaining: guestUser.free_posts_remaining || 0,
+              freePostsRemaining: guestUser.free_posts_remaining || 5,
               isGuest: true,
             },
             access_token: 'guest-token-' + Date.now(),
@@ -198,27 +199,28 @@ export const auth = {
           await AsyncStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(guestSession));
           await AsyncStorage.setItem(DEV_MODE_KEY, 'guest');
           
-          console.log('Guest session created from database');
+          console.log('Guest session created from database with ID:', guestUser.id);
           return { user: guestSession.user, session: guestSession, profile: guestSession.profile };
         }
       }
       
       const localGuestUser = {
-        id: 'guest-' + Date.now(),
-        phone: GUEST_PHONE,
+        id: GUEST_USER_ID,
+        phone: '+22200000000',
         created_at: new Date().toISOString(),
       };
       
       const localGuestProfile = {
-        id: localGuestUser.id,
+        id: GUEST_USER_ID,
         firstName: 'Guest',
         lastName: 'User',
-        phone: GUEST_PHONE,
-        whatsappNumber: GUEST_PHONE,
+        phone: '+22200000000',
+        whatsappNumber: '+22200000000',
         cityId: null,
+        cityName: 'Nouakchott',
         role: 'normal',
         walletBalance: 0,
-        freePostsRemaining: 0,
+        freePostsRemaining: 5,
         isGuest: true,
       };
       
@@ -233,7 +235,7 @@ export const auth = {
       await AsyncStorage.setItem(GUEST_SESSION_KEY, JSON.stringify(localGuestSession));
       await AsyncStorage.setItem(DEV_MODE_KEY, 'guest');
       
-      console.log('Guest session created locally');
+      console.log('Guest session created locally with ID:', GUEST_USER_ID);
       return { user: localGuestUser, session: localGuestSession, profile: localGuestProfile };
     } catch (err) {
       console.error('Failed to create guest session:', err);

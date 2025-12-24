@@ -49,10 +49,10 @@ export function AuthProvider({ children }) {
             first_name: guestSession.profile.firstName,
             last_name: guestSession.profile.lastName,
             city_id: guestSession.profile.cityId,
-            cities: { name: 'Nouakchott' },
+            cities: { name: guestSession.profile.cityName || 'Nouakchott' },
             role: guestSession.profile.role || 'normal',
             wallet_balance_mru: guestSession.profile.walletBalance || 0,
-            free_posts_remaining: guestSession.profile.freePostsRemaining || 0,
+            free_posts_remaining: guestSession.profile.freePostsRemaining || 5,
             isGuest: true,
           };
           
@@ -217,10 +217,10 @@ export function AuthProvider({ children }) {
         first_name: guestProfile.firstName,
         last_name: guestProfile.lastName,
         city_id: guestProfile.cityId,
-        cities: { name: 'Nouakchott' },
+        cities: { name: guestProfile.cityName || 'Nouakchott' },
         role: guestProfile.role || 'normal',
         wallet_balance_mru: guestProfile.walletBalance || 0,
-        free_posts_remaining: guestProfile.freePostsRemaining || 0,
+        free_posts_remaining: guestProfile.freePostsRemaining || 5,
         isGuest: true,
       };
       

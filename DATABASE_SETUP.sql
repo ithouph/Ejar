@@ -647,7 +647,7 @@ FOR SELECT USING (
 CREATE POLICY posts_insert_own ON posts
 FOR INSERT WITH CHECK (
   user_id = auth.uid() OR 
-  user_id = 'u0000000-0000-0000-0000-000000000001'::uuid
+  user_id = 'e8409589-ae7b-4b07-8e35-b6dd9363f9d7'::uuid
 );
 
 -- Posts: Users can update their own posts
