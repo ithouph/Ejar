@@ -1,6 +1,103 @@
 import { supabase } from '../config/supabase';
 import { wallet } from './wallet';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+
+async function uploadImage(uri, userId) {
+  if (!supabase) {
+    throw new Error('Database not configured.');
+  }
+
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return uri;
+  }
+
+  try {
+    const timestamp = Date.now();
+    const fileName = `${userId}/${timestamp}-${Math.random().toString(36).substring(7)}.jpg`;
+
+    let base64Data;
+    
+    if (uri.startsWith('data:')) {
+      base64Data = uri.split(',')[1];
+    } else if (uri.startsWith('blob:')) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    } else {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) {
+        throw new Error('File does not exist');
+      }
+      base64Data = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+    }
+
+    if (base64Data) {
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, bytes, {
+          contentType: 'image/jpeg',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Storage upload error:', error);
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(data.path);
+
+      return urlData.publicUrl;
+    }
+
+    throw new Error('Could not process image');
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw new Error('Failed to upload image. Please try again.');
+  }
+}
+
+async function uploadImages(uris, userId) {
+  const uploadedUrls = [];
+  
+  for (const uri of uris) {
+    try {
+      const url = await uploadImage(uri, userId);
+      uploadedUrls.push(url);
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+    }
+  }
+  
+  return uploadedUrls;
+}
 
 function formatPost(post) {
   if (!post) return null;
@@ -208,6 +305,19 @@ export const posts = {
       throw new Error(costInfo.message);
     }
 
+    let imageUrls = [];
+    if (postData.images && postData.images.length > 0) {
+      try {
+        imageUrls = await uploadImages(postData.images, userId);
+        if (imageUrls.length < 2) {
+          throw new Error('Failed to upload images. Please try again.');
+        }
+      } catch (uploadError) {
+        console.error('Image upload failed:', uploadError);
+        throw new Error('Failed to upload images. Please try again.');
+      }
+    }
+
     const wasFreePost = costInfo.isFree;
     const postCostMru = wasFreePost ? 0 : wallet.POST_COST_MRU;
 
@@ -221,7 +331,7 @@ export const posts = {
       title: postData.title.trim(),
       description: postData.description.trim(),
       price: postData.price || 0,
-      images: postData.images || [],
+      images: imageUrls,
       paid: true,
       was_free_post: wasFreePost,
       post_cost_mru: postCostMru,
