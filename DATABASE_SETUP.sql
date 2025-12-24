@@ -737,6 +737,15 @@ WITH CHECK (
     (storage.foldername(name))[1] = auth.uid()::text
 );
 
+-- Allow guest user to upload images (using anon role)
+CREATE POLICY "Guest can upload post images"
+ON storage.objects FOR INSERT
+TO anon
+WITH CHECK (
+    bucket_id = 'post-images' AND
+    (storage.foldername(name))[1] = 'e8409589-ae7b-4b07-8e35-b6dd9363f9d7'
+);
+
 -- Allow authenticated users to update their own images
 CREATE POLICY "Users can update own post images"
 ON storage.objects FOR UPDATE
