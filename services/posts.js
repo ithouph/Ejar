@@ -135,7 +135,10 @@ function formatPost(post) {
       name: post.service_categories.name,
       type: post.service_categories.type,
       slug: post.service_categories.slug,
+      metadata: post.service_categories.metadata || {},
     } : null,
+    specifications: post.specifications || {},
+    condition: post.condition || null,
   };
 }
 
@@ -151,7 +154,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('status', 'active')
       .eq('paid', true);
@@ -196,7 +199,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('id', postId)
       .single();
@@ -220,7 +223,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('user_id', userId)
       .neq('status', 'deleted')
@@ -347,7 +350,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .single();
 
@@ -394,7 +397,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .single();
 
@@ -482,7 +485,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('status', 'active')
       .eq('paid', true);
@@ -522,7 +525,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('city_id', cityId)
       .eq('status', 'active')
@@ -549,7 +552,7 @@ export const posts = {
         *,
         users!user_id (id, first_name, last_name, profile_photo_url, whatsapp_number),
         cities (id, name, region),
-        service_categories (id, name, type, slug)
+        service_categories (id, name, type, slug, metadata)
       `)
       .eq('category_id', categoryId)
       .eq('status', 'active')
