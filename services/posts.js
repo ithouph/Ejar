@@ -21,8 +21,6 @@ function formatPost(post) {
     totalFavorites: post.total_favorites || 0,
     createdAt: post.created_at,
     updatedAt: post.updated_at,
-    specifications: post.specifications || null,
-    listingType: post.listing_type || null,
     user: post.users ? {
       id: post.users.id,
       firstName: post.users.first_name,
@@ -224,8 +222,6 @@ export const posts = {
       description: postData.description.trim(),
       price: postData.price || 0,
       images: postData.images || [],
-      listing_type: postData.listingType || 'sale',
-      specifications: postData.specifications || {},
       paid: true,
       was_free_post: wasFreePost,
       post_cost_mru: postCostMru,
@@ -274,8 +270,6 @@ export const posts = {
     if (updates.price !== undefined) updateData.price = updates.price;
     if (updates.images !== undefined) updateData.images = updates.images;
     if (updates.status !== undefined) updateData.status = updates.status;
-    if (updates.specifications !== undefined) updateData.specifications = updates.specifications;
-    if (updates.listingType !== undefined) updateData.listing_type = updates.listingType;
     if (updates.cityId !== undefined) updateData.city_id = updates.cityId;
     if (updates.categoryId !== undefined) updateData.category_id = updates.categoryId;
 
