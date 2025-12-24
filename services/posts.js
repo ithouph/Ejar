@@ -332,6 +332,8 @@ export const posts = {
       description: postData.description.trim(),
       price: postData.price || 0,
       images: imageUrls,
+      specifications: postData.specifications || {},
+      condition: postData.condition || null,
       paid: true,
       was_free_post: wasFreePost,
       post_cost_mru: postCostMru,

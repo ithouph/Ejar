@@ -111,6 +111,8 @@ CREATE TABLE posts (
     description TEXT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     images TEXT[],
+    specifications JSONB DEFAULT '{}'::jsonb,
+    condition TEXT CHECK (condition IN ('new', 'like_new', 'good', 'fair', 'poor')),
     
     -- Payment Status
     paid BOOLEAN DEFAULT false,
