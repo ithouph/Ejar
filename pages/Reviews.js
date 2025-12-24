@@ -29,7 +29,7 @@ function ReviewCard({ review, theme }) {
   const userName = review.users?.full_name || 'Unknown User';
   const userPhoto = review.users?.photo_url || 'https://via.placeholder.com/40';
   const postTitle = review.posts?.title || 'Untitled Post';
-  const postCategory = review.posts?.category || '';
+  const postCategory = review.posts?.category?.name || (typeof review.posts?.category === 'string' ? review.posts?.category : '');
 
   return (
     <View style={[styles.reviewCard, { backgroundColor: theme.surface }]}>

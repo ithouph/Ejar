@@ -27,7 +27,7 @@ export default function PostDetail({ route, navigation }) {
   const title = post.name || post.title || 'Untitled';
   const location = post.location || post.city?.name || 'Nouakchott';
   const description = post.description || 'No description provided.';
-  const category = post.category || 'others';
+  const category = post.category?.name || (typeof post.category === 'string' ? post.category : 'others');
   const whatsappNumber = post.user?.whatsapp_number || post.whatsapp_number || '+22200000000';
 
   const handleWhatsApp = () => {
