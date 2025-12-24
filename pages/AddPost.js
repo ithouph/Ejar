@@ -537,6 +537,8 @@ export default function AddPost({ navigation }) {
       const categoryId = isUuid(selectedCategory?.id) ? selectedCategory.id : null;
       const categorySlug = getCategorySlug();
 
+      const specifications = getSpecifications();
+      
       const postData = {
         title: title.trim(),
         description: description.trim(),
@@ -544,6 +546,8 @@ export default function AddPost({ navigation }) {
         cityId: selectedCity?.id || null,
         images,
         categoryId,
+        specifications,
+        condition,
       };
 
       const newPost = await postsApi.create(user?.id || 'guest', postData);

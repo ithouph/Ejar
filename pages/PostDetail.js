@@ -14,6 +14,53 @@ function formatPrice(price) {
   return new Intl.NumberFormat('en-US').format(price) + ' MRU';
 }
 
+function formatCondition(condition) {
+  if (!condition) return '';
+  const labels = {
+    new: 'New',
+    like_new: 'Like New',
+    good: 'Good',
+    fair: 'Fair',
+    poor: 'Poor',
+  };
+  return labels[condition] || condition;
+}
+
+function SpecItem({ icon, label, value, theme }) {
+  if (!value) return null;
+  return (
+    <View style={specStyles.specItem}>
+      <View style={[specStyles.specIcon, { backgroundColor: theme.surface }]}>
+        <Feather name={icon} size={18} color={theme.primary} />
+      </View>
+      <View style={specStyles.specContent}>
+        <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>{label}</ThemedText>
+        <ThemedText type="body" style={{ textTransform: 'capitalize' }}>{String(value)}</ThemedText>
+      </View>
+    </View>
+  );
+}
+
+const specStyles = StyleSheet.create({
+  specItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    width: '48%',
+    marginBottom: Spacing.md,
+  },
+  specIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  specContent: {
+    flex: 1,
+  },
+});
+
 export default function PostDetail({ route, navigation }) {
   const { post } = route.params;
   const { theme } = useTheme();
@@ -146,16 +193,77 @@ export default function PostDetail({ route, navigation }) {
             </ThemedText>
           </View>
 
-          {post.condition ? (
-            <View style={styles.detailRow}>
-              <View style={[styles.detailIcon, { backgroundColor: theme.surface }]}>
-                <Feather name="check-circle" size={20} color={theme.primary} />
+          {(post.specifications && Object.keys(post.specifications).length > 0) || post.condition ? (
+            <>
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+              <View style={styles.section}>
+                <ThemedText type="h3" style={styles.sectionTitle}>
+                  Specifications
+                </ThemedText>
+                <View style={styles.specsGrid}>
+                  {post.condition ? (
+                    <SpecItem icon="check-circle" label="Condition" value={formatCondition(post.condition)} theme={theme} />
+                  ) : null}
+                  {post.specifications?.brand ? (
+                    <SpecItem icon="tag" label="Brand" value={post.specifications.brand} theme={theme} />
+                  ) : null}
+                  {post.specifications?.model ? (
+                    <SpecItem icon="info" label="Model" value={post.specifications.model} theme={theme} />
+                  ) : null}
+                  {post.specifications?.storage ? (
+                    <SpecItem icon="hard-drive" label="Storage" value={post.specifications.storage} theme={theme} />
+                  ) : null}
+                  {post.specifications?.ram ? (
+                    <SpecItem icon="cpu" label="RAM" value={post.specifications.ram} theme={theme} />
+                  ) : null}
+                  {post.specifications?.processor ? (
+                    <SpecItem icon="cpu" label="Processor" value={post.specifications.processor} theme={theme} />
+                  ) : null}
+                  {post.specifications?.color ? (
+                    <SpecItem icon="droplet" label="Color" value={post.specifications.color} theme={theme} />
+                  ) : null}
+                  {post.specifications?.warranty ? (
+                    <SpecItem icon="shield" label="Warranty" value={post.specifications.warranty} theme={theme} />
+                  ) : null}
+                  {post.specifications?.year ? (
+                    <SpecItem icon="calendar" label="Year" value={post.specifications.year} theme={theme} />
+                  ) : null}
+                  {post.specifications?.mileage ? (
+                    <SpecItem icon="navigation" label="Mileage" value={post.specifications.mileage} theme={theme} />
+                  ) : null}
+                  {post.specifications?.transmission ? (
+                    <SpecItem icon="settings" label="Transmission" value={post.specifications.transmission} theme={theme} />
+                  ) : null}
+                  {post.specifications?.fuel_type ? (
+                    <SpecItem icon="droplet" label="Fuel Type" value={post.specifications.fuel_type} theme={theme} />
+                  ) : null}
+                  {post.specifications?.bedrooms ? (
+                    <SpecItem icon="home" label="Bedrooms" value={post.specifications.bedrooms} theme={theme} />
+                  ) : null}
+                  {post.specifications?.bathrooms ? (
+                    <SpecItem icon="droplet" label="Bathrooms" value={post.specifications.bathrooms} theme={theme} />
+                  ) : null}
+                  {post.specifications?.size_sqft ? (
+                    <SpecItem icon="maximize" label="Size" value={`${post.specifications.size_sqft} sqft`} theme={theme} />
+                  ) : null}
+                  {post.specifications?.land_size ? (
+                    <SpecItem icon="map" label="Land Size" value={post.specifications.land_size} theme={theme} />
+                  ) : null}
+                  {post.specifications?.property_type ? (
+                    <SpecItem icon="home" label="Property Type" value={post.specifications.property_type} theme={theme} />
+                  ) : null}
+                  {post.specifications?.furnished ? (
+                    <SpecItem icon="package" label="Furnished" value={post.specifications.furnished} theme={theme} />
+                  ) : null}
+                  {post.specifications?.monthly_rent ? (
+                    <SpecItem icon="dollar-sign" label="Monthly Rent" value={`${post.specifications.monthly_rent} MRU`} theme={theme} />
+                  ) : null}
+                  {post.specifications?.deposit ? (
+                    <SpecItem icon="dollar-sign" label="Deposit" value={post.specifications.deposit} theme={theme} />
+                  ) : null}
+                </View>
               </View>
-              <View>
-                <ThemedText type="bodySmall" style={{ color: theme.textSecondary }}>Condition</ThemedText>
-                <ThemedText type="body" style={{ textTransform: 'capitalize' }}>{post.condition}</ThemedText>
-              </View>
-            </View>
+            </>
           ) : null}
 
           {post.created_at ? (
@@ -317,6 +425,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontWeight: '600',
+  },
+  specsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   detailRow: {
     flexDirection: 'row',
