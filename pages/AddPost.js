@@ -537,7 +537,7 @@ export default function AddPost({ navigation }) {
       const categoryId = isUuid(selectedCategory?.id) ? selectedCategory.id : null;
       const categorySlug = getCategorySlug();
 
-      const specifications = getSpecifications();
+      const specifications = getCategorySpecifications();
       
       const postData = {
         title: title.trim(),
