@@ -535,8 +535,8 @@ export default function AddPost({ navigation }) {
       return;
     }
 
-    if (images.length === 0) {
-      Alert.alert('Error', 'Please add at least one image');
+    if (images.length < 2) {
+      Alert.alert('Error', 'Please add at least 2 images');
       return;
     }
 
@@ -550,15 +550,9 @@ export default function AddPost({ navigation }) {
         title: title.trim(),
         description: description.trim(),
         price: price ? parseFloat(price) : null,
-        location: selectedCity?.name || '',
         cityId: selectedCity?.id || null,
         images,
-        listingType,
         categoryId,
-        category: categorySlug,
-        specifications: getCategorySpecifications(),
-        userName: user?.user_metadata?.full_name || user?.email || 'Anonymous User',
-        userPhoto: user?.user_metadata?.avatar_url || 'https://via.placeholder.com/40',
       };
 
       const newPost = await postsApi.create(user?.id || 'guest', postData);
