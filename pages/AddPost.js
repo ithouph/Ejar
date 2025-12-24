@@ -214,7 +214,7 @@ function LoadingScreen({ theme }) {
 
 export default function AddPost({ navigation }) {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const insets = useScreenInsets();
   
   const [dataLoading, setDataLoading] = useState(true);
@@ -508,6 +508,18 @@ export default function AddPost({ navigation }) {
   }
 
   async function handleSubmit() {
+    if (profile?.isGuest) {
+      Alert.alert(
+        'Sign In Required',
+        'Please sign in to create a post. Guest users cannot create posts.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
+    }
+
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a title');
       return;
