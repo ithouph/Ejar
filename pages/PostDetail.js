@@ -99,6 +99,65 @@ export default function PostDetail({ route, navigation }) {
     Linking.openURL(`tel:${phoneNumber}`);
   };
 
+  const renderSpecifications = () => {
+    const categoryMeta = post.category?.metadata || post.service_categories?.metadata || {};
+    const specFields = categoryMeta.specFields || [];
+    const specs = post.specifications || {};
+    const condition = post.condition;
+
+    const definedKeys = specFields.map(f => f.key);
+    const legacyKeys = Object.keys(specs).filter(key => !definedKeys.includes(key) && specs[key]);
+
+    const formatLabel = (key) => {
+      return key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
+
+    return (
+      <>
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        <View style={styles.section}>
+          <ThemedText type="h3" style={styles.sectionTitle}>
+            Details
+          </ThemedText>
+          <View style={styles.specsGrid}>
+            <SpecItem icon="grid" label="Category" value={category} theme={theme} />
+            {specFields.map((field) => {
+              let displayValue = specs[field.key];
+              
+              if (field.key === 'condition') {
+                displayValue = condition ? formatCondition(condition) : null;
+              }
+              
+              if (!displayValue) return null;
+              
+              return (
+                <SpecItem 
+                  key={field.key}
+                  icon={field.icon || 'info'} 
+                  label={field.label} 
+                  value={String(displayValue)} 
+                  theme={theme} 
+                />
+              );
+            })}
+            {legacyKeys.map((key) => (
+              <SpecItem 
+                key={key}
+                icon="info" 
+                label={formatLabel(key)} 
+                value={String(specs[key])} 
+                theme={theme} 
+              />
+            ))}
+            {condition && !specFields.find(f => f.key === 'condition') ? (
+              <SpecItem icon="check-circle" label="Condition" value={formatCondition(condition)} theme={theme} />
+            ) : null}
+          </View>
+        </View>
+      </>
+    );
+  };
+
   return (
     <ThemedView style={styles.container}>
       <ScrollView
@@ -193,78 +252,7 @@ export default function PostDetail({ route, navigation }) {
             </ThemedText>
           </View>
 
-          {(post.specifications && Object.keys(post.specifications).length > 0) || post.condition ? (
-            <>
-              <View style={[styles.divider, { backgroundColor: theme.border }]} />
-              <View style={styles.section}>
-                <ThemedText type="h3" style={styles.sectionTitle}>
-                  Specifications
-                </ThemedText>
-                <View style={styles.specsGrid}>
-                  {post.condition ? (
-                    <SpecItem icon="check-circle" label="Condition" value={formatCondition(post.condition)} theme={theme} />
-                  ) : null}
-                  {post.specifications?.brand ? (
-                    <SpecItem icon="tag" label="Brand" value={post.specifications.brand} theme={theme} />
-                  ) : null}
-                  {post.specifications?.model ? (
-                    <SpecItem icon="info" label="Model" value={post.specifications.model} theme={theme} />
-                  ) : null}
-                  {post.specifications?.storage ? (
-                    <SpecItem icon="hard-drive" label="Storage" value={post.specifications.storage} theme={theme} />
-                  ) : null}
-                  {post.specifications?.ram ? (
-                    <SpecItem icon="cpu" label="RAM" value={post.specifications.ram} theme={theme} />
-                  ) : null}
-                  {post.specifications?.processor ? (
-                    <SpecItem icon="cpu" label="Processor" value={post.specifications.processor} theme={theme} />
-                  ) : null}
-                  {post.specifications?.color ? (
-                    <SpecItem icon="droplet" label="Color" value={post.specifications.color} theme={theme} />
-                  ) : null}
-                  {post.specifications?.warranty ? (
-                    <SpecItem icon="shield" label="Warranty" value={post.specifications.warranty} theme={theme} />
-                  ) : null}
-                  {post.specifications?.year ? (
-                    <SpecItem icon="calendar" label="Year" value={post.specifications.year} theme={theme} />
-                  ) : null}
-                  {post.specifications?.mileage ? (
-                    <SpecItem icon="navigation" label="Mileage" value={post.specifications.mileage} theme={theme} />
-                  ) : null}
-                  {post.specifications?.transmission ? (
-                    <SpecItem icon="settings" label="Transmission" value={post.specifications.transmission} theme={theme} />
-                  ) : null}
-                  {post.specifications?.fuel_type ? (
-                    <SpecItem icon="droplet" label="Fuel Type" value={post.specifications.fuel_type} theme={theme} />
-                  ) : null}
-                  {post.specifications?.bedrooms ? (
-                    <SpecItem icon="home" label="Bedrooms" value={post.specifications.bedrooms} theme={theme} />
-                  ) : null}
-                  {post.specifications?.bathrooms ? (
-                    <SpecItem icon="droplet" label="Bathrooms" value={post.specifications.bathrooms} theme={theme} />
-                  ) : null}
-                  {post.specifications?.size_sqft ? (
-                    <SpecItem icon="maximize" label="Size" value={`${post.specifications.size_sqft} sqft`} theme={theme} />
-                  ) : null}
-                  {post.specifications?.land_size ? (
-                    <SpecItem icon="map" label="Land Size" value={post.specifications.land_size} theme={theme} />
-                  ) : null}
-                  {post.specifications?.property_type ? (
-                    <SpecItem icon="home" label="Property Type" value={post.specifications.property_type} theme={theme} />
-                  ) : null}
-                  {post.specifications?.furnished ? (
-                    <SpecItem icon="package" label="Furnished" value={post.specifications.furnished} theme={theme} />
-                  ) : null}
-                  {post.specifications?.monthly_rent ? (
-                    <SpecItem icon="dollar-sign" label="Monthly Rent" value={`${post.specifications.monthly_rent} MRU`} theme={theme} />
-                  ) : null}
-                  {post.specifications?.deposit ? (
-                    <SpecItem icon="dollar-sign" label="Deposit" value={post.specifications.deposit} theme={theme} />
-                  ) : null}
-                </View>
-              </View>
-            </>
-          ) : null}
+          {renderSpecifications()}
 
           {post.created_at ? (
             <View style={styles.detailRow}>
